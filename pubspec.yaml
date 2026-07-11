@@ -1,0 +1,31 @@
+name: neon_timeline_flutter
+description: >-
+  Production-ready Flutter timelines and schedules with neon rendering,
+  drag-to-reschedule, overlap logic, slidable actions, slivers, and accessibility.
+version: 3.2.0
+homepage: https://github.com/rayanMS1122/neon_timeline_flutter
+repository: https://github.com/rayanMS1122/neon_timeline_flutter
+
+topics:
+  - timeline
+  - schedule
+  - animation
+  - slidable
+  - widgets
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+  flutter: '>=3.22.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_slidable: '>=3.1.2 <4.0.0'
+
+dev_dependencies:
+  flutter_lints: ^4.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

@@ -1,0 +1,53 @@
+# Source-control and local metadata
+.git/
+.github/
+.gitignore
+.gitattributes
+.metadata
+
+# Dart and Flutter tooling
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+build/
+coverage/
+doc/api/
+pubspec.lock
+
+# IDEs and editors
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+*.swp
+*.swo
+
+# Host files and logs
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+
+# Application scaffolding left from local package development. The published
+# library is platform-independent and contains no native plugin implementation.
+android/
+ios/
+linux/
+macos/
+web/
+windows/
+
+# Flutter build and symbol outputs
+*.symbols
+*.map.json
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Private integration and internal implementation notes kept in the source
+# archive but intentionally excluded from the public pub.dev artifact.
+FOCUSFORGE_INTEGRATION.md
+PACKAGE_AUDIT.md
+V2_IMPLEMENTATION.md
+V3_IMPLEMENTATION.md

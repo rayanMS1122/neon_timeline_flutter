@@ -1,0 +1,21 @@
+name: neon_timeline_flutter_example
+description: Interactive showcase for the neon_timeline_flutter package.
+publish_to: none
+version: 1.0.0
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+  flutter: '>=3.22.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  neon_timeline_flutter:
+    path: ../
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
