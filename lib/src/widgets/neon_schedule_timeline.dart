@@ -477,7 +477,10 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
       if (occupiedEnd == null || current.end.isAfter(occupiedEnd)) {
         occupiedEnd = current.end;
       }
-      final occupiedThroughCurrent = occupiedEnd!;
+      final occupiedThroughCurrent = previousOccupiedEnd == null ||
+              current.end.isAfter(previousOccupiedEnd)
+          ? current.end
+          : previousOccupiedEnd;
       final displayStart = current.entry.start.isBefore(dayStart)
           ? dayStart
           : current.entry.start;

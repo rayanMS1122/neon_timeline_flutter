@@ -44,6 +44,7 @@ windows/
 *.map.json
 .flutter-plugins
 .flutter-plugins-dependencies
+example/build/
 
 # Private integration and internal implementation notes kept in the source
 # archive but intentionally excluded from the public pub.dev artifact.
