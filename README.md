@@ -1,5 +1,7 @@
 # Neon Timeline Flutter
 
+![Neon Timeline Showcase](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshot.png)
+
 Production-ready Flutter timelines and planner schedules with animated neon
 rendering, slivers, drag-to-reschedule, overlap detection, current-time markers,
 and polished slide actions.
