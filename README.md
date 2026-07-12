@@ -262,21 +262,27 @@ final theme = NeonTimelineThemeData.spectral().copyWith(
 The advanced appearance remains enabled, but continuous work is constrained:
 
 - schedule rows are built lazily near the viewport;
-- one sampled motion clock is shared by visible painters;
+- one 24 Hz sampled motion clock is shared by visible painters;
+- clocks sleep completely when no animated painter is listening;
 - decorative motion pauses while scrolling and when the app is inactive;
-- only the current/active schedule card animates continuously by default;
+- at most one current/active schedule row animates continuously by default;
+- standalone indicators and connectors use the same sampled clock rather than a
+  display-refresh controller;
 - standalone advanced cards animate on interaction unless
   `continuousAnimation: true` is requested;
+- Gaussian painter blur is cached on native platforms and avoided on Web;
 - advanced backdrop filters share one grouped backdrop input;
-- drag updates are snapped and throttled.
+- drag and hover updates are snapped, coalesced, and throttled;
+- asynchronous slide actions are protected against duplicate submission.
 
 ```dart
 NeonScheduleTimeline<Task>(
   entries: entries,
   selectedDate: selectedDate,
-  motionFramesPerSecond: 30,
+  motionFramesPerSecond: 24,
   pauseMotionWhileScrolling: true,
   animateOnlyCurrentEntry: true,
+  maxAnimatedEntries: 1,
   addAutomaticKeepAlives: false,
   itemBuilder: buildTask,
 )

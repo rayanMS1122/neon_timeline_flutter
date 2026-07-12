@@ -7,12 +7,11 @@ import '../utils/neon_timeline_duration.dart';
 /// A shared, sampled animation clock for timeline indicators, connectors, and
 /// advanced cards.
 ///
-/// The source controller remains frame-synchronised, but descendants are only
-/// notified at [framesPerSecond]. This keeps the visual motion while avoiding
-/// a full repaint of every advanced painter at the display refresh rate.
-/// Motion also pauses while a descendant scroll view is moving, while the app
-/// is inactive, when [TickerMode] is disabled, or when reduced motion is
-/// requested by the platform.
+/// Unlike a normal [AnimationController], this clock does not wake up on every
+/// display refresh and then throw frames away. It schedules only the painter
+/// samples requested by [framesPerSecond], and completely stops when no
+/// descendant listens to it. That substantially reduces idle CPU usage in long
+/// timelines while keeping all widgets synchronized.
 class NeonTimelineMotionScope extends StatefulWidget {
   /// Creates a synchronized motion scope.
   const NeonTimelineMotionScope({
@@ -20,7 +19,7 @@ class NeonTimelineMotionScope extends StatefulWidget {
     this.enabled = true,
     this.duration = const Duration(milliseconds: 4200),
     this.phaseOffset = 0,
-    this.framesPerSecond = 30,
+    this.framesPerSecond = 24,
     this.pauseWhenScrolling = true,
     this.scrollResumeDelay = const Duration(milliseconds: 120),
     this.pauseWhenAppInactive = true,
@@ -42,8 +41,6 @@ class NeonTimelineMotionScope extends StatefulWidget {
   final double phaseOffset;
 
   /// Maximum number of expensive painter notifications per second.
-  ///
-  /// `30` is the package default. Use `60` only for a small hero timeline.
   final int framesPerSecond;
 
   /// Whether motion pauses while a descendant scrollable is moving.
@@ -71,18 +68,20 @@ class NeonTimelineMotionScope extends StatefulWidget {
 }
 
 class _NeonTimelineMotionScopeState extends State<NeonTimelineMotionScope>
-    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+    with WidgetsBindingObserver {
   static const _fallbackDuration = Duration(milliseconds: 4200);
 
-  late final AnimationController _controller;
   late final _SampledAnimation _sampledAnimation;
+  Timer? _tickTimer;
   Timer? _resumeTimer;
   ValueNotifier<bool>? _ancestorScrollingNotifier;
+
   bool _scrolling = false;
   bool _appIsActive = true;
-  int _lastDispatchMicros = -1;
   bool _reduceMotion = false;
   bool _tickerEnabled = true;
+  bool _disposing = false;
+  double _phase = 0;
 
   Duration get _effectiveDuration => neonPositiveDuration(
         widget.duration,
@@ -101,8 +100,24 @@ class _NeonTimelineMotionScopeState extends State<NeonTimelineMotionScope>
   double get _effectivePhaseOffset =>
       widget.phaseOffset.clamp(0.0, 1.0).toDouble();
 
-  int get _frameIntervalMicros =>
-      (Duration.microsecondsPerSecond / _effectiveFramesPerSecond).round();
+  Duration get _frameInterval {
+    final micros =
+        (Duration.microsecondsPerSecond / _effectiveFramesPerSecond).round();
+    return Duration(
+      microseconds: micros.clamp(1000, 1000000).toInt(),
+    );
+  }
+
+  bool get _canRun {
+    return mounted &&
+        !_disposing &&
+        widget.enabled &&
+        _sampledAnimation.hasConsumers &&
+        !_reduceMotion &&
+        _tickerEnabled &&
+        (!widget.pauseWhenScrolling || !_scrolling) &&
+        (!widget.pauseWhenAppInactive || _appIsActive);
+  }
 
   @override
   void initState() {
@@ -111,14 +126,10 @@ class _NeonTimelineMotionScopeState extends State<NeonTimelineMotionScope>
     final lifecycleState = WidgetsBinding.instance.lifecycleState;
     _appIsActive =
         lifecycleState == null || lifecycleState == AppLifecycleState.resumed;
-    _controller = AnimationController(
-      vsync: this,
-      duration: _effectiveDuration,
-      value: _effectivePhaseOffset,
-    )..addListener(_dispatchSample);
+    _phase = _effectivePhaseOffset;
     _sampledAnimation = _SampledAnimation(
-      value: _effectivePhaseOffset,
-      status: _controller.status,
+      value: _phase,
+      status: AnimationStatus.dismissed,
       onListenerStateChanged: _sync,
     );
   }
@@ -126,8 +137,7 @@ class _NeonTimelineMotionScopeState extends State<NeonTimelineMotionScope>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _reduceMotion =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    _reduceMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     _tickerEnabled = TickerMode.of(context);
     _attachAncestorScrollable();
     _sync();
@@ -136,29 +146,29 @@ class _NeonTimelineMotionScopeState extends State<NeonTimelineMotionScope>
   @override
   void didUpdateWidget(covariant NeonTimelineMotionScope oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.duration != widget.duration) {
-      _controller.duration = _effectiveDuration;
+
+    if (oldWidget.framesPerSecond != widget.framesPerSecond ||
+        oldWidget.duration != widget.duration) {
+      _restartTimerIfRunning();
     }
-    if (oldWidget.framesPerSecond != widget.framesPerSecond) {
-      _lastDispatchMicros = -1;
-    }
+
     if (oldWidget.pauseWhenScrolling != widget.pauseWhenScrolling) {
       _resumeTimer?.cancel();
       _resumeTimer = null;
       _scrolling = widget.pauseWhenScrolling &&
           (_ancestorScrollingNotifier?.value ?? false);
     }
-    if (oldWidget.phaseOffset != widget.phaseOffset &&
-        !_controller.isAnimating) {
-      _controller.value = _effectivePhaseOffset;
-      _sampledAnimation.update(_effectivePhaseOffset, _controller.status);
+
+    if (oldWidget.phaseOffset != widget.phaseOffset && _tickTimer == null) {
+      _phase = _effectivePhaseOffset;
+      _sampledAnimation.update(
+        _phase,
+        AnimationStatus.dismissed,
+        isAnimating: false,
+      );
     }
-    if (oldWidget.enabled != widget.enabled ||
-        oldWidget.duration != widget.duration ||
-        oldWidget.pauseWhenScrolling != widget.pauseWhenScrolling ||
-        oldWidget.pauseWhenAppInactive != widget.pauseWhenAppInactive) {
-      _sync();
-    }
+
+    _sync();
   }
 
   @override
@@ -192,34 +202,57 @@ class _NeonTimelineMotionScopeState extends State<NeonTimelineMotionScope>
     }
   }
 
-  void _dispatchSample() {
-    final elapsedMicros =
-        _controller.lastElapsedDuration?.inMicroseconds ?? 0;
-    if (_lastDispatchMicros >= 0 &&
-        elapsedMicros - _lastDispatchMicros < _frameIntervalMicros) {
+  void _scheduleTick() {
+    if (!_canRun || _tickTimer != null) return;
+    _tickTimer = Timer(_frameInterval, _handleTick);
+  }
+
+  void _handleTick() {
+    _tickTimer = null;
+    if (!_canRun) {
+      _sync();
       return;
     }
-    _lastDispatchMicros = elapsedMicros;
-    _sampledAnimation.update(_controller.value, _controller.status);
+
+    final durationMicros = _effectiveDuration.inMicroseconds;
+    final step = durationMicros <= 0
+        ? 0.0
+        : _frameInterval.inMicroseconds / durationMicros;
+    _phase = (_phase + step) % 1.0;
+    _sampledAnimation.update(
+      _phase,
+      AnimationStatus.forward,
+      isAnimating: true,
+    );
+    _scheduleTick();
+  }
+
+  void _restartTimerIfRunning() {
+    if (_tickTimer == null) return;
+    _tickTimer?.cancel();
+    _tickTimer = null;
+    _scheduleTick();
   }
 
   void _sync() {
     if (!mounted) return;
-    final canRun = widget.enabled &&
-        _sampledAnimation.hasConsumers &&
-        !_reduceMotion &&
-        _tickerEnabled &&
-        (!widget.pauseWhenScrolling || !_scrolling) &&
-        (!widget.pauseWhenAppInactive || _appIsActive);
-
-    if (canRun) {
-      if (!_controller.isAnimating) {
-        _lastDispatchMicros = -1;
-        _controller.repeat();
-      }
+    if (_canRun) {
+      _sampledAnimation.update(
+        _phase,
+        AnimationStatus.forward,
+        isAnimating: true,
+        notifyValueListeners: false,
+      );
+      _scheduleTick();
     } else {
-      _controller.stop();
-      _sampledAnimation.update(_controller.value, _controller.status);
+      _tickTimer?.cancel();
+      _tickTimer = null;
+      _sampledAnimation.update(
+        _phase,
+        AnimationStatus.dismissed,
+        isAnimating: false,
+        notifyValueListeners: false,
+      );
     }
   }
 
@@ -262,12 +295,11 @@ class _NeonTimelineMotionScopeState extends State<NeonTimelineMotionScope>
 
   @override
   void dispose() {
+    _disposing = true;
     WidgetsBinding.instance.removeObserver(this);
+    _tickTimer?.cancel();
     _resumeTimer?.cancel();
     _ancestorScrollingNotifier?.removeListener(_handleAncestorScrollChanged);
-    _controller
-      ..removeListener(_dispatchSample)
-      ..dispose();
     _sampledAnimation.dispose();
     super.dispose();
   }
@@ -291,6 +323,173 @@ class _NeonTimelineMotionScopeState extends State<NeonTimelineMotionScope>
       result = BackdropGroup(child: result);
     }
     return result;
+  }
+}
+
+/// Low-overhead sampled clock used by standalone indicators and connectors.
+///
+/// Most applications should use [NeonTimelineMotionScope]. This clock exists so
+/// a standalone animated component does not fall back to a display-rate
+/// [AnimationController]. It also sleeps when it has no listeners or when the
+/// application is not resumed.
+class NeonTimelineMotionClock with WidgetsBindingObserver {
+  /// Creates a sampled local clock.
+  NeonTimelineMotionClock({
+    required Duration duration,
+    int framesPerSecond = 24,
+    double initialValue = 0,
+  })  : _duration = neonPositiveDuration(
+          duration,
+          fallback: const Duration(milliseconds: 4200),
+          debugLabel: 'NeonTimelineMotionClock.duration',
+        ),
+        _framesPerSecond = framesPerSecond.clamp(1, 120).toInt(),
+        _phase = initialValue.clamp(0.0, 1.0).toDouble() {
+    final lifecycleState = WidgetsBinding.instance.lifecycleState;
+    _appIsActive =
+        lifecycleState == null || lifecycleState == AppLifecycleState.resumed;
+    _animation = _SampledAnimation(
+      value: _phase,
+      status: AnimationStatus.dismissed,
+      onListenerStateChanged: _sync,
+    );
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  late final _SampledAnimation _animation;
+  Timer? _timer;
+  Duration _duration;
+  int _framesPerSecond;
+  double _phase;
+  bool _requested = false;
+  bool _appIsActive = true;
+  bool _disposed = false;
+
+  /// Animation consumed by a painter or animated widget.
+  Animation<double> get animation => _animation;
+
+  Duration get _interval => Duration(
+        microseconds: (Duration.microsecondsPerSecond / _framesPerSecond)
+            .round()
+            .clamp(1000, 1000000)
+            .toInt(),
+      );
+
+  bool get _canRun => !_disposed &&
+      _requested &&
+      _appIsActive &&
+      _animation.hasConsumers;
+
+  /// Updates clock parameters without replacing the [animation] object.
+  void configure({Duration? duration, int? framesPerSecond}) {
+    if (_disposed) return;
+    var changed = false;
+    if (duration != null) {
+      final normalized = neonPositiveDuration(
+        duration,
+        fallback: const Duration(milliseconds: 4200),
+        debugLabel: 'NeonTimelineMotionClock.duration',
+      );
+      if (normalized != _duration) {
+        _duration = normalized;
+        changed = true;
+      }
+    }
+    if (framesPerSecond != null) {
+      final normalized = framesPerSecond.clamp(1, 120).toInt();
+      if (normalized != _framesPerSecond) {
+        _framesPerSecond = normalized;
+        changed = true;
+      }
+    }
+    if (!changed) return;
+    if (_timer != null) {
+      _timer!.cancel();
+      _timer = null;
+    }
+    _sync();
+  }
+
+  /// Requests continuous sampled motion.
+  void start() {
+    if (_disposed || _requested) return;
+    _requested = true;
+    _sync();
+  }
+
+  /// Stops motion and optionally selects a stable visual phase.
+  void stop({double value = 0.28}) {
+    if (_disposed) return;
+    _requested = false;
+    _timer?.cancel();
+    _timer = null;
+    _phase = value.clamp(0.0, 1.0).toDouble();
+    _animation.update(
+      _phase,
+      AnimationStatus.dismissed,
+      isAnimating: false,
+    );
+  }
+
+  void _sync() {
+    if (!_canRun) {
+      _timer?.cancel();
+      _timer = null;
+      _animation.update(
+        _phase,
+        AnimationStatus.dismissed,
+        isAnimating: false,
+        notifyValueListeners: false,
+      );
+      return;
+    }
+    _animation.update(
+      _phase,
+      AnimationStatus.forward,
+      isAnimating: true,
+      notifyValueListeners: false,
+    );
+    _schedule();
+  }
+
+  void _schedule() {
+    if (!_canRun || _timer != null) return;
+    _timer = Timer(_interval, _tick);
+  }
+
+  void _tick() {
+    _timer = null;
+    if (!_canRun) {
+      _sync();
+      return;
+    }
+    final durationMicros = _duration.inMicroseconds;
+    final step = durationMicros <= 0
+        ? 0.0
+        : _interval.inMicroseconds / durationMicros;
+    _phase = (_phase + step) % 1.0;
+    _animation.update(
+      _phase,
+      AnimationStatus.forward,
+      isAnimating: true,
+    );
+    _schedule();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _appIsActive = state == AppLifecycleState.resumed;
+    _sync();
+  }
+
+  /// Releases timers, listeners, and lifecycle observation.
+  void dispose() {
+    if (_disposed) return;
+    _disposed = true;
+    WidgetsBinding.instance.removeObserver(this);
+    _timer?.cancel();
+    _timer = null;
+    _animation.dispose();
   }
 }
 
@@ -329,12 +528,12 @@ class _SampledAnimation extends ChangeNotifier implements Animation<double> {
   final VoidCallback onListenerStateChanged;
   double _value;
   AnimationStatus _status;
+  bool _isAnimating = false;
   int _listenerCount = 0;
   final Set<AnimationStatusListener> _statusListeners =
       <AnimationStatusListener>{};
 
-  bool get hasConsumers =>
-      _listenerCount > 0 || _statusListeners.isNotEmpty;
+  bool get hasConsumers => _listenerCount > 0 || _statusListeners.isNotEmpty;
 
   @override
   void addListener(VoidCallback listener) {
@@ -358,11 +557,17 @@ class _SampledAnimation extends ChangeNotifier implements Animation<double> {
   @override
   AnimationStatus get status => _status;
 
-  void update(double value, AnimationStatus status) {
+  void update(
+    double value,
+    AnimationStatus status, {
+    required bool isAnimating,
+    bool notifyValueListeners = true,
+  }) {
     final valueChanged = value != _value;
     final statusChanged = status != _status;
     _value = value;
     _status = status;
+    _isAnimating = isAnimating;
 
     if (statusChanged) {
       for (final listener in List<AnimationStatusListener>.of(
@@ -371,7 +576,7 @@ class _SampledAnimation extends ChangeNotifier implements Animation<double> {
         listener(status);
       }
     }
-    if (valueChanged) notifyListeners();
+    if (valueChanged && notifyValueListeners) notifyListeners();
   }
 
   @override
@@ -392,7 +597,7 @@ class _SampledAnimation extends ChangeNotifier implements Animation<double> {
   Animation<U> drive<U>(Animatable<U> child) => child.animate(this);
 
   @override
-  bool get isAnimating => status == AnimationStatus.forward || status == AnimationStatus.reverse;
+  bool get isAnimating => _isAnimating;
 
   @override
   bool get isCompleted => status == AnimationStatus.completed;
@@ -401,7 +606,8 @@ class _SampledAnimation extends ChangeNotifier implements Animation<double> {
   bool get isDismissed => status == AnimationStatus.dismissed;
 
   @override
-  bool get isForwardOrCompleted => status == AnimationStatus.forward || status == AnimationStatus.completed;
+  bool get isForwardOrCompleted =>
+      status == AnimationStatus.forward || status == AnimationStatus.completed;
 
   @override
   String toStringDetails() => '$status; $value';

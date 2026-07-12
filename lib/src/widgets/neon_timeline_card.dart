@@ -4,10 +4,10 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-
-import '../utils/neon_perf_utils.dart';
+import 'package:flutter/scheduler.dart';
 
 import '../theme/neon_timeline_theme.dart';
+import '../utils/neon_perf_utils.dart';
 import '../utils/neon_timeline_duration.dart';
 import 'neon_timeline_motion.dart';
 
@@ -129,6 +129,8 @@ class _NeonTimelineCardState extends State<NeonTimelineCard> {
   bool _focused = false;
   bool _pressed = false;
   Offset _pointer = Offset.zero;
+  Offset? _pendingPointer;
+  bool _pointerUpdateScheduled = false;
 
   bool get _advanced =>
       widget.variant == NeonTimelineCardVariant.prismatic ||
@@ -142,7 +144,7 @@ class _NeonTimelineCardState extends State<NeonTimelineCard> {
   void _updatePointer(PointerHoverEvent event, Size size) {
     if (!widget.enableParallax || size.isEmpty) return;
     final center = size.center(Offset.zero);
-    final next = Offset(
+    _pendingPointer = Offset(
       ((event.localPosition.dx - center.dx) / math.max(1, center.dx))
           .clamp(-1.0, 1.0)
           .toDouble(),
@@ -150,9 +152,17 @@ class _NeonTimelineCardState extends State<NeonTimelineCard> {
           .clamp(-1.0, 1.0)
           .toDouble(),
     );
-    if ((_pointer - next).distanceSquared > 0.0005) {
-      setState(() => _pointer = next);
-    }
+    if (_pointerUpdateScheduled) return;
+    _pointerUpdateScheduled = true;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _pointerUpdateScheduled = false;
+      if (!mounted) return;
+      final next = _pendingPointer;
+      _pendingPointer = null;
+      if (next != null && (_pointer - next).distanceSquared > 0.0005) {
+        setState(() => _pointer = next);
+      }
+    });
   }
 
   @override
@@ -455,7 +465,7 @@ class _NeonTimelineCardState extends State<NeonTimelineCard> {
 }
 
 class _CardFxPainter extends CustomPainter {
-  const _CardFxPainter({
+  _CardFxPainter({
     required this.variant,
     required this.borderRadius,
     required this.accent,
@@ -479,6 +489,18 @@ class _CardFxPainter extends CustomPainter {
   final bool pressed;
   final double intensity;
 
+  final NeonPaintPool _paintPool = NeonPaintPool();
+  final Paint _fillPaint = Paint();
+  final Paint _strokePaint = Paint()..style = PaintingStyle.stroke;
+  final Paint _glowPaint = Paint()..style = PaintingStyle.stroke;
+  final Path _scanlinePath = Path();
+  final Path _verticalGridPath = Path();
+  final Path _horizontalGridPath = Path();
+  final Map<int, List<Path>> _ribbonPathCache = <int, List<Path>>{};
+  Size _ribbonCacheSize = Size.zero;
+  int _ribbonCachePointerX = 0;
+  int _ribbonCachePointerY = 0;
+
   double get phase => animation.value;
 
   double get _strength {
@@ -491,6 +513,7 @@ class _CardFxPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (size.isEmpty) return;
+    _paintPool.reset();
     final rect = Offset.zero & size;
     final rrect = borderRadius.toRRect(rect.deflate(0.5));
     final strength = _strength;
@@ -520,7 +543,7 @@ class _CardFxPainter extends CustomPainter {
     canvas.drawCircle(
       center,
       math.max(rect.width, rect.height) * 0.56,
-      Paint()
+      _paintPool.next()
         ..shader = ui.Gradient.radial(
           center,
           math.max(rect.width, rect.height) * 0.56,
@@ -544,7 +567,7 @@ class _CardFxPainter extends CustomPainter {
     canvas.translate(-center.dx, -center.dy);
     canvas.drawRect(
       sheen,
-      Paint()
+      _paintPool.next()
         ..shader = LinearGradient(
           colors: <Color>[
             Colors.transparent,
@@ -560,7 +583,7 @@ class _CardFxPainter extends CustomPainter {
 
     canvas.drawRRect(
       rrect,
-      Paint()
+      _paintPool.next()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.0
         ..shader = SweepGradient(
@@ -585,43 +608,65 @@ class _CardFxPainter extends CustomPainter {
     canvas.clipRRect(rrect);
     const spacing = 4.0;
     final shift = (phase * spacing * 2) % spacing;
+    _scanlinePath.reset();
     for (double y = rect.top - spacing; y <= rect.bottom; y += spacing) {
       final yy = y + shift;
-      final shimmer = 0.45 + 0.55 * math.sin(yy * 0.28 + phase * 8);
-      canvas.drawLine(
-        Offset(rect.left, yy),
-        Offset(rect.right, yy),
-        Paint()
-          ..strokeWidth = 0.45
-          ..color = accent.withOpacity(
-            (0.055 * shimmer * strength).clamp(0.0, 1.0).toDouble(),
-          ),
-      );
+      _scanlinePath
+        ..moveTo(rect.left, yy)
+        ..lineTo(rect.right, yy);
     }
+    _strokePaint
+      ..shader = null
+      ..maskFilter = null
+      ..strokeWidth = 0.45
+      ..strokeCap = StrokeCap.butt
+      ..color = accent.withOpacity(0.030 * strength);
+    canvas.drawPath(_scanlinePath, _strokePaint);
+
+    // A second sparse shimmer pass preserves the moving holographic texture
+    // without issuing one draw call and one Paint allocation per scanline.
+    _scanlinePath.reset();
+    var lineIndex = 0;
+    for (double y = rect.top - spacing; y <= rect.bottom; y += spacing) {
+      final yy = y + shift;
+      if ((lineIndex++ & 3) == 0) {
+        _scanlinePath
+          ..moveTo(rect.left, yy)
+          ..lineTo(rect.right, yy);
+      }
+    }
+    _strokePaint.color = accent.withOpacity(0.025 * strength);
+    canvas.drawPath(_scanlinePath, _strokePaint);
     canvas.restore();
 
-    final brackets = <(Offset, Offset)>[
-      (rect.topLeft, rect.topLeft + const Offset(16, 0)),
-      (rect.topLeft, rect.topLeft + const Offset(0, 16)),
-      (rect.topRight, rect.topRight + const Offset(-16, 0)),
-      (rect.topRight, rect.topRight + const Offset(0, 16)),
-      (rect.bottomLeft, rect.bottomLeft + const Offset(16, 0)),
-      (rect.bottomLeft, rect.bottomLeft + const Offset(0, -16)),
-      (rect.bottomRight, rect.bottomRight + const Offset(-16, 0)),
-      (rect.bottomRight, rect.bottomRight + const Offset(0, -16)),
-    ];
-    for (var index = 0; index < brackets.length; index++) {
-      final segment = brackets[index];
-      canvas.drawLine(
-        segment.$1,
-        segment.$2,
-        Paint()
-          ..strokeWidth = index.isEven ? 1.05 : 0.75
-          ..strokeCap = StrokeCap.round
-          ..color = (index % 3 == 0 ? secondary : accent)
-              .withOpacity(0.42 * strength),
-      );
-    }
+    final primaryBrackets = Path()
+      ..moveTo(rect.left, rect.top)
+      ..lineTo(rect.left + 16, rect.top)
+      ..moveTo(rect.right, rect.top)
+      ..lineTo(rect.right - 16, rect.top)
+      ..moveTo(rect.left, rect.bottom)
+      ..lineTo(rect.left + 16, rect.bottom)
+      ..moveTo(rect.right, rect.bottom)
+      ..lineTo(rect.right - 16, rect.bottom);
+    _strokePaint
+      ..strokeWidth = 1.05
+      ..strokeCap = StrokeCap.round
+      ..color = accent.withOpacity(0.42 * strength);
+    canvas.drawPath(primaryBrackets, _strokePaint);
+
+    final secondaryBrackets = Path()
+      ..moveTo(rect.left, rect.top)
+      ..lineTo(rect.left, rect.top + 16)
+      ..moveTo(rect.right, rect.top)
+      ..lineTo(rect.right, rect.top + 16)
+      ..moveTo(rect.left, rect.bottom)
+      ..lineTo(rect.left, rect.bottom - 16)
+      ..moveTo(rect.right, rect.bottom)
+      ..lineTo(rect.right, rect.bottom - 16);
+    _strokePaint
+      ..strokeWidth = 0.75
+      ..color = secondary.withOpacity(0.42 * strength);
+    canvas.drawPath(secondaryBrackets, _strokePaint);
   }
 
   void _paintLiquidCrystal(
@@ -638,94 +683,109 @@ class _CardFxPainter extends CustomPainter {
           pointer.dx * rect.width * 0.18,
           pointer.dy * rect.height * 0.20,
         );
+    _fillPaint
+      ..style = PaintingStyle.fill
+      ..maskFilter = null
+      ..shader = ui.Gradient.radial(
+        pointerCenter,
+        math.max(rect.width, rect.height) * 0.52,
+        <Color>[
+          Colors.white.withOpacity(0.11 * strength),
+          accent.withOpacity(0.07 * strength),
+          secondary.withOpacity(0.035 * strength),
+          Colors.transparent,
+        ],
+        const <double>[0, 0.22, 0.58, 1],
+      );
     canvas.drawCircle(
       pointerCenter,
       math.max(rect.width, rect.height) * 0.52,
-      Paint()
-        ..shader = ui.Gradient.radial(
-          pointerCenter,
-          math.max(rect.width, rect.height) * 0.52,
-          <Color>[
-            Colors.white.withOpacity(0.11 * strength),
-            accent.withOpacity(0.07 * strength),
-            secondary.withOpacity(0.035 * strength),
-            Colors.transparent,
-          ],
-          const <double>[0, 0.22, 0.58, 1],
-        ),
+      _fillPaint,
     );
 
     final ribbonCount = rect.width < 220 ? 4 : 6;
+    final phaseBucket = NeonPhaseQuantizer.bucket(phase, buckets: 96);
+    final pointerX = (pointer.dx * 32).round();
+    final pointerY = (pointer.dy * 32).round();
+    if (_ribbonCacheSize != rect.size ||
+        _ribbonCachePointerX != pointerX ||
+        _ribbonCachePointerY != pointerY) {
+      _ribbonPathCache.clear();
+      _ribbonCacheSize = rect.size;
+      _ribbonCachePointerX = pointerX;
+      _ribbonCachePointerY = pointerY;
+    }
+    final paths = _ribbonPathCache.putIfAbsent(
+      phaseBucket,
+      () => _buildRibbonPaths(
+        rect: rect,
+        ribbonCount: ribbonCount,
+        phase: NeonPhaseQuantizer.phaseFor(phaseBucket, buckets: 96),
+        pointerY: pointerY / 32,
+      ),
+    );
+    if (_ribbonPathCache.length > 96) {
+      _ribbonPathCache.remove(_ribbonPathCache.keys.first);
+    }
+
     for (var ribbon = 0; ribbon < ribbonCount; ribbon++) {
-      final path = Path();
-      final yBase = rect.top +
-          (ribbon + 0.5) / ribbonCount * rect.height +
-          math.sin(phase * math.pi * 2 + ribbon) * 4;
-      const steps = 48;
-      for (var step = 0; step <= steps; step++) {
-        final t = step / steps;
-        final x = rect.left + t * rect.width;
-        final wave = math.sin(
-              t * math.pi * (2.2 + ribbon * 0.17) +
-                  phase * math.pi * 2 * (ribbon.isEven ? 0.7 : -0.5) +
-                  ribbon,
-            ) *
-            (4.0 + ribbon * 0.7);
-        final y = yBase + wave + pointer.dy * 4 * (1 - t);
-        if (step == 0) {
-          path.moveTo(x, y);
-        } else {
-          path.lineTo(x, y);
-        }
-      }
       final ribbonColor = switch (ribbon % 3) {
         0 => accent,
         1 => secondary,
         _ => Colors.white,
       };
-      canvas.drawPath(
-        path,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 5.5 + ribbon * 0.45
-          ..strokeCap = StrokeCap.round
-          ..color = ribbonColor.withOpacity(0.035 * strength)
-          ..applyBlur(kIsWeb ? null : const MaskFilter.blur(BlurStyle.normal, 6)),
-      );
-      canvas.drawPath(
-        path,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 0.42 + (ribbon % 2) * 0.18
-          ..strokeCap = StrokeCap.round
-          ..color = ribbonColor.withOpacity(0.16 * strength),
-      );
+      _glowPaint
+        ..shader = null
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5.5 + ribbon * 0.45
+        ..strokeCap = StrokeCap.round
+        ..color = ribbonColor.withOpacity(0.035 * strength)
+        ..maskFilter = null
+        ..applyBlur(
+          NeonBlur.normal(6),
+        );
+      canvas.drawPath(paths[ribbon], _glowPaint);
+
+      _strokePaint
+        ..shader = null
+        ..maskFilter = null
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.42 + (ribbon % 2) * 0.18
+        ..strokeCap = StrokeCap.round
+        ..color = ribbonColor.withOpacity(0.16 * strength);
+      canvas.drawPath(paths[ribbon], _strokePaint);
     }
 
     final gridOpacity = 0.035 * strength;
     final spacing = math.max(14.0, rect.width / 18);
     final shift = phase * spacing;
+    _verticalGridPath.reset();
     for (double x = rect.left - spacing;
         x <= rect.right + spacing;
         x += spacing) {
       final xx = x + shift % spacing;
-      canvas.drawLine(
-        Offset(xx, rect.top),
-        Offset(xx, rect.bottom),
-        Paint()
-          ..strokeWidth = 0.35
-          ..color = accent.withOpacity(gridOpacity),
-      );
+      _verticalGridPath
+        ..moveTo(xx, rect.top)
+        ..lineTo(xx, rect.bottom);
     }
+    _strokePaint
+      ..shader = null
+      ..maskFilter = null
+      ..strokeCap = StrokeCap.butt
+      ..strokeWidth = 0.35
+      ..color = accent.withOpacity(gridOpacity);
+    canvas.drawPath(_verticalGridPath, _strokePaint);
+
+    _horizontalGridPath.reset();
     for (double y = rect.top; y <= rect.bottom; y += spacing) {
-      canvas.drawLine(
-        Offset(rect.left, y),
-        Offset(rect.right, y),
-        Paint()
-          ..strokeWidth = 0.3
-          ..color = secondary.withOpacity(gridOpacity * 0.7),
-      );
+      _horizontalGridPath
+        ..moveTo(rect.left, y)
+        ..lineTo(rect.right, y);
     }
+    _strokePaint
+      ..strokeWidth = 0.3
+      ..color = secondary.withOpacity(gridOpacity * 0.7);
+    canvas.drawPath(_horizontalGridPath, _strokePaint);
     canvas.restore();
 
     final rotation = phase * math.pi * 0.18 + pointer.dx * 0.12;
@@ -733,23 +793,55 @@ class _CardFxPainter extends CustomPainter {
     canvas.translate(rect.center.dx, rect.center.dy);
     canvas.rotate(rotation);
     canvas.translate(-rect.center.dx, -rect.center.dy);
-    canvas.drawRRect(
-      rrect,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.05
-        ..shader = SweepGradient(
-          colors: <Color>[
-            Colors.white.withOpacity(0.68 * strength),
-            accent.withOpacity(0.82 * strength),
-            secondary.withOpacity(0.76 * strength),
-            Colors.white.withOpacity(0.30 * strength),
-            Colors.white.withOpacity(0.68 * strength),
-          ],
-          stops: const <double>[0, 0.24, 0.56, 0.82, 1],
-        ).createShader(rect),
-    );
+    _strokePaint
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.05
+      ..strokeCap = StrokeCap.butt
+      ..maskFilter = null
+      ..shader = SweepGradient(
+        colors: <Color>[
+          Colors.white.withOpacity(0.68 * strength),
+          accent.withOpacity(0.82 * strength),
+          secondary.withOpacity(0.76 * strength),
+          Colors.white.withOpacity(0.30 * strength),
+          Colors.white.withOpacity(0.68 * strength),
+        ],
+        stops: const <double>[0, 0.24, 0.56, 0.82, 1],
+      ).createShader(rect);
+    canvas.drawRRect(rrect, _strokePaint);
     canvas.restore();
+  }
+
+  List<Path> _buildRibbonPaths({
+    required Rect rect,
+    required int ribbonCount,
+    required double phase,
+    required double pointerY,
+  }) {
+    const steps = 48;
+    return List<Path>.generate(ribbonCount, (ribbon) {
+      final path = Path();
+      final yBase = rect.top +
+          (ribbon + 0.5) / ribbonCount * rect.height +
+          NeonTrig.sinTurns(phase + ribbon / (math.pi * 2)) * 4;
+      for (var step = 0; step <= steps; step++) {
+        final t = step / steps;
+        final x = rect.left + t * rect.width;
+        final wave = NeonTrig.sin(
+              t * math.pi * (2.2 + ribbon * 0.17) +
+                  phase * math.pi * 2 * (ribbon.isEven ? 0.7 : -0.5) +
+                  ribbon,
+            ) *
+            (4.0 + ribbon * 0.7);
+        final y = yBase + wave + pointerY * 4 * (1 - t);
+        if (step == 0) {
+          path.moveTo(x, y);
+        } else {
+          path.lineTo(x, y);
+        }
+      }
+      return path;
+    }, growable: false);
   }
 
   @override

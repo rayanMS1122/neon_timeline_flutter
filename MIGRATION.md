@@ -14,7 +14,7 @@ Replace the dependency:
 
 ```yaml
 dependencies:
-  neon_timeline_flutter: ^3.2.0
+  neon_timeline_flutter: ^3.3.0
 ```
 
 Replace the import:
@@ -26,6 +26,27 @@ import 'package:neon_timeline_flutter/neon_timeline_flutter.dart';
 Do not keep both packages unprefixed in the same library while migrating; many
 timeline concepts have similar names even though their APIs differ.
 
+
+
+## Upgrading from 3.2.x to 3.3.0
+
+The update is source-compatible for normal integrations. Visual presets and
+layout remain unchanged. The default sampled motion rate is now 24 Hz, and
+`NeonScheduleTimeline` limits continuous animation to one focal row.
+
+```dart
+NeonScheduleTimeline<Task>(
+  motionFramesPerSecond: 24,
+  maxAnimatedEntries: 1,
+  pauseMotionWhileScrolling: true,
+  // ...
+)
+```
+
+Set `maxAnimatedEntries` higher only after profiling a release build on the
+slowest supported device. Use `0` for a static timeline while retaining the same
+active colors and advanced surfaces. Rapid async slide-action taps are now
+coalesced until the first operation completes.
 
 ## Upgrading from 3.1.0 to 3.2.0
 

@@ -170,6 +170,7 @@ class NeonSlidableTimeline extends StatelessWidget {
 
     return ClipRRect(
       borderRadius: borderRadius,
+      clipBehavior: Clip.hardEdge,
       child: Slidable(
         key: slidableKey ?? child.key,
         enabled: enabled,
@@ -199,12 +200,17 @@ class NeonSlidableTimeline extends StatelessWidget {
     required double extentRatio,
     required NeonTimelineDismissCallback? onDismissed,
   }) {
+    final safeExtentRatio = extentRatio.clamp(0.05, 1.0).toDouble();
+    final safeOpenThreshold = openThreshold.clamp(0.0, 1.0).toDouble();
+    final safeCloseThreshold = closeThreshold
+        .clamp(0.0, safeOpenThreshold)
+        .toDouble();
     return ActionPane(
       motion: _motionWidget(),
-      extentRatio: extentRatio,
-      openThreshold: openThreshold,
-      closeThreshold: closeThreshold,
-      dragDismissible: dragDismissible,
+      extentRatio: safeExtentRatio,
+      openThreshold: safeOpenThreshold,
+      closeThreshold: safeCloseThreshold,
+      dragDismissible: dragDismissible && onDismissed != null,
       dismissible: onDismissed == null
           ? null
           : DismissiblePane(
@@ -263,7 +269,7 @@ class NeonSlidableTimeline extends StatelessWidget {
   }
 }
 
-class _NeonSlidableAction extends StatelessWidget {
+class _NeonSlidableAction extends StatefulWidget {
   const _NeonSlidableAction({
     required this.action,
     required this.borderRadius,
@@ -274,11 +280,20 @@ class _NeonSlidableAction extends StatelessWidget {
   final BorderRadius borderRadius;
   final NeonTimelineAsyncErrorCallback? onError;
 
+  @override
+  State<_NeonSlidableAction> createState() => _NeonSlidableActionState();
+}
+
+class _NeonSlidableActionState extends State<_NeonSlidableAction> {
+  bool _busy = false;
+
   Future<void> _runGuarded(BuildContext context) async {
+    if (_busy) return;
+    setState(() => _busy = true);
     try {
-      await Future<void>.sync(() => action.onPressed(context));
+      await Future<void>.sync(() => widget.action.onPressed(context));
     } catch (error, stackTrace) {
-      final handler = onError;
+      final handler = widget.onError;
       if (handler != null) {
         try {
           handler(error, stackTrace);
@@ -302,80 +317,89 @@ class _NeonSlidableAction extends StatelessWidget {
         library: 'neon_timeline_flutter',
         context: ErrorDescription('while running a slidable timeline action'),
       ));
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final timelineTheme = NeonTimelineTheme.of(context);
+    final action = widget.action;
     final color = action.color;
 
     return CustomSlidableAction(
-      flex: action.flex,
+      flex: action.flex.clamp(1, 1000).toInt(),
       autoClose: action.autoClose,
       padding: EdgeInsets.zero,
       backgroundColor: Colors.transparent,
       foregroundColor: action.foregroundColor,
       onPressed: (actionContext) {
-        unawaited(_runGuarded(actionContext));
+        if (!_busy) unawaited(_runGuarded(actionContext));
       },
-      child: Semantics(
-        button: true,
-        label: action.semanticLabel ?? action.label,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: <Color>[
-                color.withOpacity(0.96),
-                Color.lerp(color, timelineTheme.surfaceColor, 0.28)!
-                    .withOpacity(0.98),
+      child: RepaintBoundary(
+        child: Semantics(
+          button: true,
+          enabled: !_busy,
+          label: action.semanticLabel ?? action.label,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: <Color>[
+                  color.withOpacity(0.96),
+                  Color.lerp(color, timelineTheme.surfaceColor, 0.28)!
+                      .withOpacity(0.98),
+                ],
+              ),
+              borderRadius: widget.borderRadius,
+              border: Border.all(
+                color: Colors.white.withOpacity(0.13),
+              ),
+              boxShadow: <BoxShadow>[
+                BoxShadow(
+                  color: color.withOpacity(0.30),
+                  blurRadius: 22,
+                  spreadRadius: -8,
+                ),
               ],
             ),
-            borderRadius: borderRadius,
-            border: Border.all(
-              color: Colors.white.withOpacity(0.13),
+            child: IgnorePointer(
+              ignoring: _busy,
+              child: action.child ??
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 10,
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Icon(
+                          action.icon,
+                          color: action.foregroundColor,
+                          size: 22,
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          action.label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: action.foregroundColor,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.45,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
             ),
-            boxShadow: <BoxShadow>[
-              BoxShadow(
-                color: color.withOpacity(0.30),
-                blurRadius: 22,
-                spreadRadius: -8,
-              ),
-            ],
           ),
-          child: action.child ??
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 10,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Icon(
-                      action.icon,
-                      color: action.foregroundColor,
-                      size: 22,
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      action.label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: action.foregroundColor,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.45,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
         ),
       ),
     );

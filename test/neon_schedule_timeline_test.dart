@@ -51,6 +51,45 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('detects in-place entry-list replacement safely', (tester) async {
+    final day = DateTime(2026, 7, 11);
+    final entries = <NeonScheduleEntry<_Task>>[
+      NeonScheduleEntry<_Task>(
+        id: 'task',
+        value: const _Task('Before'),
+        start: DateTime(2026, 7, 11, 9),
+      ),
+    ];
+
+    Widget buildTimeline() {
+      return _host(
+        NeonScheduleTimeline<_Task>(
+          entries: entries,
+          selectedDate: day,
+          now: day.subtract(const Duration(days: 1)),
+          motionEnabled: false,
+          itemBuilder: (context, details) =>
+              Text(details.entry.value.title),
+        ),
+      );
+    }
+
+    await tester.pumpWidget(buildTimeline());
+    expect(find.text('Before'), findsOneWidget);
+
+    entries[0] = NeonScheduleEntry<_Task>(
+      id: 'task',
+      value: const _Task('After'),
+      start: DateTime(2026, 7, 11, 10),
+    );
+    await tester.pumpWidget(buildTimeline());
+    await tester.pump();
+
+    expect(find.text('Before'), findsNothing);
+    expect(find.text('After'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('long press movement is snapped and reported', (tester) async {
     final day = DateTime(2026, 7, 11);
     DateTime? movedTo;

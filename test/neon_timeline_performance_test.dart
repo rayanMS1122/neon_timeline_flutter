@@ -95,6 +95,44 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('schedule caps continuously animated rows', (tester) async {
+    final day = DateTime(2026, 7, 11);
+
+    await tester.pumpWidget(
+      _host(
+        NeonScheduleTimeline<String>(
+          entries: <NeonScheduleEntry<String>>[
+            NeonScheduleEntry<String>(
+              id: 'active-a',
+              value: 'A',
+              start: DateTime(2026, 7, 11, 9),
+              status: NeonTimelineStatus.active,
+            ),
+            NeonScheduleEntry<String>(
+              id: 'active-b',
+              value: 'B',
+              start: DateTime(2026, 7, 11, 10),
+              status: NeonTimelineStatus.active,
+            ),
+          ],
+          selectedDate: day,
+          now: day.subtract(const Duration(days: 1)),
+          maxAnimatedEntries: 1,
+          itemBuilder: (context, details) => Text(details.entry.value),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final indicators = tester
+        .widgetList<NeonTimelineIndicator>(
+          find.byType(NeonTimelineIndicator),
+        )
+        .toList(growable: false);
+    expect(indicators.where((indicator) => indicator.animate), hasLength(1));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('shared motion publishes at the configured sample rate',
       (tester) async {
     var notifications = 0;

@@ -3,11 +3,11 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 import '../models/neon_timeline_types.dart';
 import '../theme/neon_timeline_theme.dart';
 import '../utils/neon_perf_utils.dart';
-import '../utils/neon_timeline_duration.dart';
 import 'neon_timeline_motion.dart';
 
 /// A status-aware marker with glass, quantum, singularity, hologram, and neural-core modes.
@@ -49,43 +49,40 @@ class NeonTimelineIndicator extends StatefulWidget {
   State<NeonTimelineIndicator> createState() => _NeonTimelineIndicatorState();
 }
 
-class _NeonTimelineIndicatorState extends State<NeonTimelineIndicator>
-    with SingleTickerProviderStateMixin {
+class _NeonTimelineIndicatorState extends State<NeonTimelineIndicator> {
   static const Animation<double> _inactiveAnimation =
       AlwaysStoppedAnimation<double>(0);
   static const Animation<double> _activeStillAnimation =
       AlwaysStoppedAnimation<double>(0.28);
 
-  AnimationController? _controller;
+  NeonTimelineMotionClock? _localClock;
   NeonTimelineMotionData? _sharedMotion;
   bool _hovered = false;
   bool _focused = false;
   bool _pressed = false;
   Offset _pointer = Offset.zero;
+  Offset? _pendingPointer;
+  bool _pointerUpdateScheduled = false;
 
-  AnimationController _ensureController() {
-    return _controller ??= AnimationController(
-      vsync: this,
-      duration: neonPositiveDuration(
-        NeonTimelineTheme.of(context).motionDuration,
-        fallback: const Duration(milliseconds: 4200),
-        debugLabel: 'NeonTimelineThemeData.motionDuration',
-      ),
+  NeonTimelineMotionClock _ensureLocalClock() {
+    final duration = NeonTimelineTheme.of(context).motionDuration;
+    final clock = _localClock ??= NeonTimelineMotionClock(
+      duration: duration,
+      framesPerSecond: 24,
+      initialValue: widget.status == NeonTimelineStatus.active ? 0.28 : 0,
     );
+    clock.configure(duration: duration, framesPerSecond: 24);
+    return clock;
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _sharedMotion = NeonTimelineMotionScope.maybeOf(context);
-    final controller = _controller;
-    if (controller != null) {
-      controller.duration = neonPositiveDuration(
-        NeonTimelineTheme.of(context).motionDuration,
-        fallback: const Duration(milliseconds: 4200),
-        debugLabel: 'NeonTimelineThemeData.motionDuration',
-      );
-    }
+    _localClock?.configure(
+      duration: NeonTimelineTheme.of(context).motionDuration,
+      framesPerSecond: 24,
+    );
     _syncAnimation();
   }
 
@@ -106,7 +103,7 @@ class _NeonTimelineIndicatorState extends State<NeonTimelineIndicator>
       return _sharedMotion!.animation;
     }
     if (shouldAnimate && _sharedMotion == null) {
-      return _ensureController();
+      return _ensureLocalClock().animation;
     }
     return widget.status == NeonTimelineStatus.active
         ? _activeStillAnimation
@@ -116,17 +113,18 @@ class _NeonTimelineIndicatorState extends State<NeonTimelineIndicator>
   void _syncAnimation() {
     final reduceMotion =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final tickerEnabled = TickerMode.of(context);
     final shouldAnimate = widget.animate &&
         widget.status == NeonTimelineStatus.active &&
-        !reduceMotion;
-    final controller = _controller;
-    if (shouldAnimate && _sharedMotion == null) {
-      final localController = _ensureController();
-      if (!localController.isAnimating) localController.repeat();
-    } else if (controller != null) {
-      controller
-        ..stop()
-        ..value = widget.status == NeonTimelineStatus.active ? 0.28 : 0;
+        !reduceMotion &&
+        tickerEnabled &&
+        _sharedMotion == null;
+    if (shouldAnimate) {
+      _ensureLocalClock().start();
+    } else {
+      _localClock?.stop(
+        value: widget.status == NeonTimelineStatus.active ? 0.28 : 0,
+      );
     }
   }
 
@@ -137,7 +135,7 @@ class _NeonTimelineIndicatorState extends State<NeonTimelineIndicator>
   void _updatePointer(PointerHoverEvent event, double extent) {
     if (extent <= 0) return;
     final center = Offset(extent / 2, extent / 2);
-    final normalized = Offset(
+    _pendingPointer = Offset(
       ((event.localPosition.dx - center.dx) / center.dx)
           .clamp(-1.0, 1.0)
           .toDouble(),
@@ -145,14 +143,23 @@ class _NeonTimelineIndicatorState extends State<NeonTimelineIndicator>
           .clamp(-1.0, 1.0)
           .toDouble(),
     );
-    if ((_pointer - normalized).distanceSquared > 0.0004) {
-      setState(() => _pointer = normalized);
-    }
+    if (_pointerUpdateScheduled) return;
+    _pointerUpdateScheduled = true;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _pointerUpdateScheduled = false;
+      if (!mounted) return;
+      final normalized = _pendingPointer;
+      _pendingPointer = null;
+      if (normalized != null &&
+          (_pointer - normalized).distanceSquared > 0.0004) {
+        setState(() => _pointer = normalized);
+      }
+    });
   }
 
   @override
   void dispose() {
-    _controller?.dispose();
+    _localClock?.dispose();
     super.dispose();
   }
 
@@ -290,7 +297,7 @@ class _IndicatorBody extends StatelessWidget {
         child: child,
         builder: (context, child) {
           final pulse =
-              0.5 + 0.5 * math.sin(animation.value * math.pi * 2);
+              0.5 + 0.5 * NeonTrig.sin(animation.value * math.pi * 2);
           return Transform.scale(
             scale: 1 + pulse * 0.07,
             child: _ClassicIndicatorBody(
@@ -387,6 +394,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
   final NeonTimelineIndicatorStyle style;
   final NeonTimelineStatus status;
   final Animation<double> animation;
+  final NeonPaintPool _paintPool = NeonPaintPool();
+  final NeonPathPool _pathPool = NeonPathPool();
 
   double get phase => animation.value;
 
@@ -425,6 +434,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (size.isEmpty) return;
+    _paintPool.reset();
+    _pathPool.reset();
     final center = size.center(Offset.zero);
     final pulseScale = status == NeonTimelineStatus.active
         ? 1 + pulse * 0.012
@@ -556,7 +567,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
     canvas.drawCircle(
       center.translate(0, radius * (0.08 + style.depth * 0.08)),
       radius * 0.92,
-      Paint()
+      _paintPool.next()
         ..color = Colors.black.withOpacity(0.44)
         ..applyBlur(_blurs.shadow),
     );
@@ -576,14 +587,14 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         width: radius * 4.0 * breath,
         height: radius * 2.15 * breath,
       ),
-      Paint()
+      _paintPool.next()
         ..color = style.glowColor.withOpacity(0.055 * strength)
         ..applyBlur(_blurs.auraSoft),
     );
     canvas.drawCircle(
       center,
       radius * 1.45 * breath,
-      Paint()
+      _paintPool.next()
         ..shader = ui.Gradient.radial(
           center,
           radius * 1.45,
@@ -624,7 +635,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
     for (final layer in layers) {
       canvas.drawPath(
         shape,
-        Paint()
+        _paintPool.next()
           ..style = PaintingStyle.stroke
           ..strokeWidth = layer.width
           ..color = layer.color
@@ -657,7 +668,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         parallax;
     canvas.drawPath(
       shape,
-      Paint()
+      _paintPool.next()
         ..shader = ui.Gradient.radial(
           focal,
           radius * (1.20 + style.refraction * 0.16),
@@ -675,7 +686,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
     canvas.drawCircle(
       center.translate(radius * 0.25, radius * 0.28) - parallax * 0.4,
       radius * 0.72,
-      Paint()
+      _paintPool.next()
         ..shader = ui.Gradient.radial(
           center.translate(radius * 0.18, radius * 0.20),
           radius * 0.82,
@@ -691,14 +702,14 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         width: radius * 1.15,
         height: radius * 0.38,
       ),
-      Paint()
+      _paintPool.next()
         ..shader = LinearGradient(
           colors: <Color>[
             Colors.white.withOpacity(0.22 * strength),
             Colors.white.withOpacity(0.02),
           ],
         ).createShader(bounds)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+        ..applyBlur(NeonBlur.normal(3)),
     );
     canvas.restore();
   }
@@ -714,7 +725,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
   ) {
     canvas.drawPath(
       shape,
-      Paint()
+      _paintPool.next()
         ..shader = ui.Gradient.radial(
           center + parallax * 0.35,
           radius * 1.16,
@@ -734,17 +745,14 @@ class _AdvancedIndicatorPainter extends CustomPainter {
     canvas.drawCircle(
       center + parallax * 0.18,
       horizonRadius * 1.55,
-      Paint()
+      _paintPool.next()
         ..color = style.secondaryColor.withOpacity(0.10 * strength)
-        ..maskFilter = MaskFilter.blur(
-          BlurStyle.normal,
-          math.max(4.0, style.glowRadius * 0.42),
-        ),
+        ..applyBlur(NeonBlur.normal(math.max(4.0, style.glowRadius * 0.42))),
     );
     canvas.drawCircle(
       center + parallax * 0.18,
       horizonRadius,
-      Paint()
+      _paintPool.next()
         ..shader = ui.Gradient.radial(
           center + parallax * 0.18,
           horizonRadius,
@@ -768,7 +776,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
     canvas.translate(-center.dx, -center.dy);
     canvas.drawOval(
       diskRect,
-      Paint()
+      _paintPool.next()
         ..style = PaintingStyle.stroke
         ..strokeWidth = math.max(1.2, radius * 0.10)
         ..shader = SweepGradient(
@@ -782,14 +790,11 @@ class _AdvancedIndicatorPainter extends CustomPainter {
           ],
           stops: const <double>[0, 0.16, 0.38, 0.62, 0.84, 1],
         ).createShader(bounds)
-        ..maskFilter = MaskFilter.blur(
-          BlurStyle.normal,
-          math.max(1.5, style.glowRadius * 0.22),
-        ),
+        ..applyBlur(NeonBlur.normal(math.max(1.5, style.glowRadius * 0.22))),
     );
     canvas.drawOval(
       diskRect.deflate(radius * 0.035),
-      Paint()
+      _paintPool.next()
         ..style = PaintingStyle.stroke
         ..strokeWidth = math.max(0.55, style.borderWidth * 0.54)
         ..color = Colors.white.withOpacity(0.78 * strength),
@@ -800,11 +805,11 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       final spacing = math.max(2.0, radius * 0.11);
       for (double y = bounds.top; y <= bounds.bottom; y += spacing) {
         final shimmer =
-            0.5 + 0.5 * math.sin(y * 0.45 + phase * math.pi * 2 * 0.7);
+            0.5 + 0.5 * NeonTrig.sin(y * 0.45 + phase * math.pi * 2 * 0.7);
         canvas.drawLine(
           Offset(bounds.left, y),
           Offset(bounds.right, y),
-          Paint()
+          _paintPool.next()
             ..strokeWidth = 0.45
             ..color = style.tertiaryColor.withOpacity(
               style.scanlineOpacity * 0.12 * shimmer * strength,
@@ -826,7 +831,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
   ) {
     canvas.drawPath(
       shape,
-      Paint()
+      _paintPool.next()
         ..shader = ui.Gradient.radial(
           center.translate(-radius * 0.18, -radius * 0.22) + parallax,
           radius * 1.28,
@@ -845,11 +850,11 @@ class _AdvancedIndicatorPainter extends CustomPainter {
     for (double y = bounds.top - spacing; y <= bounds.bottom; y += spacing) {
       final phaseShift = (phase * radius * 0.8) % spacing;
       final yy = y + phaseShift;
-      final shimmer = 0.45 + 0.55 * math.sin(yy * 0.72 + phase * 8);
+      final shimmer = 0.45 + 0.55 * NeonTrig.sin(yy * 0.72 + phase * 8);
       canvas.drawLine(
         Offset(bounds.left, yy),
         Offset(bounds.right, yy),
-        Paint()
+        _paintPool.next()
           ..strokeWidth = 0.55
           ..color = style.color.withOpacity(
             (style.scanlineOpacity * 0.34 * shimmer * strength)
@@ -867,7 +872,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       canvas.drawLine(
         Offset(x, bounds.top),
         Offset(x, bounds.bottom),
-        Paint()
+        _paintPool.next()
           ..strokeWidth = 0.35
           ..color = style.tertiaryColor.withOpacity(
             0.025 * flicker * style.detail * strength,
@@ -888,7 +893,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
     canvas.translate(-shift, 0);
     canvas.drawPath(
       shape,
-      Paint()
+      _paintPool.next()
         ..style = PaintingStyle.stroke
         ..strokeWidth = math.max(0.45, style.borderWidth * 0.52)
         ..color = style.secondaryColor.withOpacity(
@@ -900,7 +905,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
     canvas.translate(shift, 0);
     canvas.drawPath(
       shape,
-      Paint()
+      _paintPool.next()
         ..style = PaintingStyle.stroke
         ..strokeWidth = math.max(0.45, style.borderWidth * 0.48)
         ..color = style.tertiaryColor.withOpacity(
@@ -923,7 +928,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
     canvas.translate(-center.dx, -center.dy);
     canvas.drawPath(
       shape,
-      Paint()
+      _paintPool.next()
         ..style = PaintingStyle.stroke
         ..strokeWidth = math.max(1.2, style.borderWidth * 1.35)
         ..shader = SweepGradient(
@@ -944,7 +949,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
 
     canvas.drawPath(
       shape,
-      Paint()
+      _paintPool.next()
         ..style = PaintingStyle.stroke
         ..strokeWidth = math.max(0.65, style.borderWidth * 0.58)
         ..color = Colors.white.withOpacity(0.42 * strength),
@@ -962,7 +967,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
   ) {
     canvas.drawPath(
       shape,
-      Paint()
+      _paintPool.next()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 0.75
         ..color = style.borderColor.withOpacity(0.20 * strength),
@@ -978,7 +983,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         -math.pi * 0.92,
         math.pi * 0.56,
         false,
-        Paint()
+        _paintPool.next()
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round
           ..strokeWidth = math.max(0.65, style.borderWidth * 0.62)
@@ -999,7 +1004,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         0.18 + phase * 0.18,
         0.92,
         false,
-        Paint()
+        _paintPool.next()
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round
           ..strokeWidth = 0.62
@@ -1042,7 +1047,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         -math.pi * 0.92 + index * 0.66,
         math.pi * sweep,
         false,
-        Paint()
+        _paintPool.next()
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round
           ..strokeWidth =
@@ -1050,10 +1055,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
           ..color = colors[index].withOpacity(
             (0.34 - index * 0.055) * coronaStrength,
           )
-          ..maskFilter = MaskFilter.blur(
-            BlurStyle.normal,
-            math.max(1.2, style.glowRadius * (0.18 + index * 0.05)),
-          ),
+          ..applyBlur(NeonBlur.normal(math.max(1.2, style.glowRadius * (0.18 + index * 0.05)))),
       );
       canvas.restore();
     }
@@ -1061,7 +1063,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
     canvas.drawCircle(
       center,
       radius + 7.5,
-      Paint()
+      _paintPool.next()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 0.45
         ..shader = SweepGradient(
@@ -1108,7 +1110,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         start,
         sweep,
         false,
-        Paint()
+        _paintPool.next()
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round
           ..strokeWidth = math.max(0.52, style.borderWidth * 0.52)
@@ -1118,15 +1120,12 @@ class _AdvancedIndicatorPainter extends CustomPainter {
                 style.corona *
                 style.detail,
           )
-          ..maskFilter = MaskFilter.blur(
-            BlurStyle.normal,
-            math.max(0.9, style.glowRadius * 0.13),
-          ),
+          ..applyBlur(NeonBlur.normal(math.max(0.9, style.glowRadius * 0.13))),
       );
     }
 
     for (var field = 0; field < 3; field++) {
-      final path = Path();
+      final path = _pathPool.next();
       const steps = 42;
       for (var step = 0; step <= steps; step++) {
         final t = step / steps;
@@ -1150,13 +1149,13 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       final color = field.isEven ? style.secondaryColor : style.tertiaryColor;
       canvas.drawPath(
         path,
-        Paint()
+        _paintPool.next()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 0.42 + field * 0.12
           ..color = color.withOpacity(
             (0.10 - field * 0.018) * strength * style.detail,
           )
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.2),
+          ..applyBlur(NeonBlur.normal(1.2)),
       );
     }
   }
@@ -1180,12 +1179,12 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         start,
         gap * 0.58,
         false,
-        Paint()
+        _paintPool.next()
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round
           ..strokeWidth = math.max(0.65, style.borderWidth * 0.58)
           ..color = color.withOpacity(0.32 * strength * style.detail)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.1),
+          ..applyBlur(NeonBlur.normal(1.1)),
       );
     }
 
@@ -1204,7 +1203,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       canvas.drawLine(
         inner,
         outer,
-        Paint()
+        _paintPool.next()
           ..strokeWidth = index % 4 == 0 ? 0.85 : 0.48
           ..strokeCap = StrokeCap.round
           ..color = style.borderColor.withOpacity(
@@ -1226,13 +1225,13 @@ class _AdvancedIndicatorPainter extends CustomPainter {
     canvas.clipPath(shape);
     final amplitude = radius * 0.08 * style.corona;
     for (var band = 0; band < 3; band++) {
-      final path = Path();
+      final path = _pathPool.next();
       final top = center.dy - radius * 0.48 + band * radius * 0.32;
       for (var step = 0; step <= 24; step++) {
         final t = step / 24;
         final x = center.dx - radius + t * radius * 2;
         final y = top +
-            math.sin(
+            NeonTrig.sin(
                   t * math.pi * (3.2 + band * 0.7) +
                       phase * math.pi * 2 * (band.isEven ? 0.55 : -0.38),
                 ) *
@@ -1245,12 +1244,12 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       }
       canvas.drawPath(
         path,
-        Paint()
+        _paintPool.next()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 0.48 + band * 0.12
           ..color = (band.isEven ? style.tertiaryColor : style.secondaryColor)
               .withOpacity(0.11 * strength * style.detail)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 0.8),
+          ..applyBlur(NeonBlur.normal(0.8)),
       );
     }
     canvas.restore();
@@ -1269,7 +1268,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       -math.pi * 0.88 + phase * 0.20,
       math.pi * 0.72,
       false,
-      Paint()
+      _paintPool.next()
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
         ..strokeWidth = math.max(0.75, style.borderWidth * 0.62)
@@ -1287,7 +1286,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       0.24 - phase * 0.16,
       math.pi * 0.56,
       false,
-      Paint()
+      _paintPool.next()
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
         ..strokeWidth = 0.58
@@ -1315,7 +1314,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       final alpha = 0.08 + _hash01(seed + 43) * 0.18;
       canvas.drawRect(
         Rect.fromLTWH(x, y, width, 0.45),
-        Paint()
+        _paintPool.next()
           ..color = (index.isEven ? style.color : style.tertiaryColor)
               .withOpacity(alpha * strength * style.detail),
       );
@@ -1363,7 +1362,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         start,
         sweep,
         false,
-        Paint()
+        _paintPool.next()
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round
           ..strokeWidth = math.max(0.42, style.borderWidth * 0.46)
@@ -1373,10 +1372,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
                 style.corona *
                 style.detail,
           )
-          ..maskFilter = MaskFilter.blur(
-            BlurStyle.normal,
-            0.8 + normalized * 1.7,
-          ),
+          ..applyBlur(NeonBlur.normal(0.8 + normalized * 1.7)),
       );
     }
 
@@ -1396,7 +1392,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       final tangentA = Offset(-NeonTrig.sin(angle), NeonTrig.cos(angle));
       final tangentB = Offset(-NeonTrig.sin(endAngle), NeonTrig.cos(endAngle));
       final lift = radius * (0.58 + (index % 4) * 0.09);
-      final path = Path()
+      final path = _pathPool.next()
         ..moveTo(start.dx, start.dy)
         ..cubicTo(
           start.dx + tangentA.dx * lift,
@@ -1409,14 +1405,14 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       final color = index.isEven ? style.secondaryColor : style.tertiaryColor;
       canvas.drawPath(
         path,
-        Paint()
+        _paintPool.next()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 0.45 + (index % 3) * 0.12
           ..strokeCap = StrokeCap.round
           ..color = color.withOpacity(
             0.12 * strength * style.refraction * style.detail,
           )
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 0.8),
+          ..applyBlur(NeonBlur.normal(0.8)),
       );
     }
   }
@@ -1433,7 +1429,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
     final focal = center.translate(-radius * 0.18, -radius * 0.22) + parallax;
     canvas.drawPath(
       shape,
-      Paint()
+      _paintPool.next()
         ..shader = ui.Gradient.radial(
           focal,
           radius * 1.24,
@@ -1456,8 +1452,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       final shellRadius = radius * (0.22 + index * 0.105);
       final shellCenter = center +
           Offset(
-            math.cos(shellPhase) * radius * 0.055,
-            math.sin(shellPhase * 1.13) * radius * 0.048,
+            NeonTrig.cos(shellPhase) * radius * 0.055,
+            NeonTrig.sin(shellPhase * 1.13) * radius * 0.048,
           ) +
           parallax * (0.18 + index * 0.05);
       final color = switch (index % 3) {
@@ -1468,13 +1464,13 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       canvas.drawCircle(
         shellCenter,
         shellRadius,
-        Paint()
+        _paintPool.next()
           ..style = PaintingStyle.stroke
           ..strokeWidth = math.max(0.52, style.borderWidth * 0.52)
           ..color = color.withOpacity(
             (0.08 + index * 0.018) * strength * style.detail,
           )
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 0.7),
+          ..applyBlur(NeonBlur.normal(0.7)),
       );
     }
 
@@ -1482,7 +1478,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
     canvas.drawCircle(
       nucleus,
       radius * 0.28,
-      Paint()
+      _paintPool.next()
         ..shader = ui.Gradient.radial(
           nucleus.translate(-radius * 0.07, -radius * 0.08),
           radius * 0.34,
@@ -1494,10 +1490,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
           ],
           const <double>[0, 0.18, 0.55, 1],
         )
-        ..maskFilter = MaskFilter.blur(
-          BlurStyle.normal,
-          1.2 + style.refraction * 1.8,
-        ),
+        ..applyBlur(NeonBlur.normal(1.2 + style.refraction * 1.8)),
     );
 
     final causticCount = 4 + _qualityFactor * 2;
@@ -1514,7 +1507,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       canvas.drawLine(
         inner,
         outer,
-        Paint()
+        _paintPool.next()
           ..strokeWidth = 0.42 + (index.isEven ? 0.22 : 0)
           ..strokeCap = StrokeCap.round
           ..shader = ui.Gradient.linear(
@@ -1534,7 +1527,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
 
     canvas.drawPath(
       shape,
-      Paint()
+      _paintPool.next()
         ..style = PaintingStyle.stroke
         ..strokeWidth = math.max(0.7, style.borderWidth * 0.62)
         ..color = Colors.white.withOpacity(0.19 * strength),
@@ -1575,7 +1568,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         canvas.drawLine(
           from,
           to,
-          Paint()
+          _paintPool.next()
             ..strokeWidth = 0.32 + distanceFactor * 0.24
             ..color = (step == 2 ? style.secondaryColor : style.tertiaryColor)
                 .withOpacity(
@@ -1592,7 +1585,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       canvas.drawCircle(
         point,
         0.55 + (index % 3) * 0.12,
-        Paint()..color = color.withOpacity(0.62 * twinkle * strength),
+        _paintPool.next()..color = color.withOpacity(0.62 * twinkle * strength),
       );
     }
     canvas.restore();
@@ -1607,13 +1600,13 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         canvas.drawCircle(
           center,
           waveRadius,
-          Paint()
+          _paintPool.next()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 0.55 + (1 - progress) * 0.7
             ..color =
                 (index.isEven ? style.secondaryColor : style.tertiaryColor)
                     .withOpacity(alpha)
-            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.2),
+            ..applyBlur(NeonBlur.normal(1.2)),
         );
       }
     }
@@ -1624,11 +1617,11 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         math.pi / 4,
         -math.pi / 4,
       ]) {
-        final vector = Offset(math.cos(angle), math.sin(angle)) * diagonal;
+        final vector = Offset(NeonTrig.cos(angle), NeonTrig.sin(angle)) * diagonal;
         canvas.drawLine(
           center - vector,
           center + vector,
-          Paint()
+          _paintPool.next()
             ..shader = ui.Gradient.linear(
               center - vector,
               center + vector,
@@ -1649,7 +1642,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
             )
             ..strokeWidth = 0.68
             ..strokeCap = StrokeCap.round
-            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.4),
+            ..applyBlur(NeonBlur.normal(1.4)),
         );
       }
     }
@@ -1658,7 +1651,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
   void _paintFocusHalo(Canvas canvas, Path shape, double strength) {
     canvas.drawPath(
       shape,
-      Paint()
+      _paintPool.next()
         ..style = PaintingStyle.stroke
         ..strokeWidth = math.max(2.0, style.borderWidth * 1.6)
         ..color = Colors.white.withOpacity(0.42 * strength)
@@ -1679,7 +1672,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
     canvas.drawLine(
       center.translate(0, -verticalLength),
       center.translate(0, verticalLength),
-      Paint()
+      _paintPool.next()
         ..shader = LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -1700,13 +1693,13 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         )
         ..strokeWidth = 1.5
         ..strokeCap = StrokeCap.round
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.4),
+        ..applyBlur(NeonBlur.normal(2.4)),
     );
 
     canvas.drawLine(
       center.translate(-horizontalLength, 0),
       center.translate(horizontalLength, 0),
-      Paint()
+      _paintPool.next()
         ..shader = LinearGradient(
           colors: <Color>[
             Colors.transparent,
@@ -1725,7 +1718,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         )
         ..strokeWidth = 1.05
         ..strokeCap = StrokeCap.round
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
+        ..applyBlur(NeonBlur.normal(2)),
     );
   }
 
@@ -1755,14 +1748,14 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       canvas.drawCircle(
         position,
         dotRadius + 1.4,
-        Paint()
+        _paintPool.next()
           ..color = color.withOpacity(0.13 * strength * style.detail)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
+          ..applyBlur(NeonBlur.normal(2)),
       );
       canvas.drawCircle(
         position,
         dotRadius,
-        Paint()..color = color.withOpacity(0.72 * strength * style.detail),
+        _paintPool.next()..color = color.withOpacity(0.72 * strength * style.detail),
       );
     }
   }
@@ -1794,16 +1787,16 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       canvas.drawCircle(
         position,
         size + 0.9,
-        Paint()
+        _paintPool.next()
           ..color = color.withOpacity(
             0.08 * strength * style.detail * twinkle * style.noise,
           )
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.5),
+          ..applyBlur(NeonBlur.normal(1.5)),
       );
       canvas.drawCircle(
         position,
         size,
-        Paint()
+        _paintPool.next()
           ..color = color.withOpacity(
             0.38 * strength * style.detail * twinkle,
           ),
@@ -1823,13 +1816,13 @@ class _AdvancedIndicatorPainter extends CustomPainter {
     final bounds = spark.getBounds();
     canvas.drawPath(
       spark,
-      Paint()
+      _paintPool.next()
         ..color = style.secondaryColor.withOpacity(0.32 * strength)
         ..applyBlur(_blurs.sparkGlow),
     );
     canvas.drawPath(
       spark,
-      Paint()
+      _paintPool.next()
         ..shader = RadialGradient(
           center: const Alignment(-0.12, -0.16),
           radius: 0.9,
@@ -1844,18 +1837,18 @@ class _AdvancedIndicatorPainter extends CustomPainter {
     canvas.drawCircle(
       center,
       math.max(1.6, radius * 0.08),
-      Paint()
+      _paintPool.next()
         ..color = Colors.white.withOpacity(0.92 * strength)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.8),
+        ..applyBlur(NeonBlur.normal(1.8)),
     );
   }
 
   Path _shapePath(Rect rect, NeonIndicatorShape shape) {
     switch (shape) {
       case NeonIndicatorShape.circle:
-        return Path()..addOval(rect);
+        return _pathPool.next()..addOval(rect);
       case NeonIndicatorShape.square:
-        return Path()
+        return _pathPool.next()
           ..addRRect(
             RRect.fromRectAndRadius(
               rect,
@@ -1864,7 +1857,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
           );
       case NeonIndicatorShape.diamond:
         final center = rect.center;
-        return Path()
+        return _pathPool.next()
           ..moveTo(center.dx, rect.top)
           ..lineTo(rect.right, center.dy)
           ..lineTo(center.dx, rect.bottom)
@@ -1874,7 +1867,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
   }
 
   Path _fourPointSparkle(Offset center, double outer, double inner) {
-    return Path()
+    return _pathPool.next()
       ..moveTo(center.dx, center.dy - outer)
       ..cubicTo(
         center.dx - inner * 0.24,

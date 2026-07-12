@@ -3,6 +3,42 @@
 All notable changes to `neon_timeline_flutter` are documented here. The package
 follows semantic versioning.
 
+## 3.3.1
+
+- Hardened advanced indicator and card painters against out-of-range dynamic opacity values during animated neon effects.
+- Added explicit gradient stops for multi-color custom shaders used by the neural-core indicator path, keeping newer Flutter renderers stable.
+
+## 3.3.0
+
+- Replaced display-refresh animation controllers with sampled timer clocks for
+  shared and standalone indicator/connector motion. Idle clocks now allocate no
+  frame callbacks and stop with no listeners, inactive lifecycle, scrolling,
+  reduced motion, or disabled ticker mode.
+- Lowered the production motion default from 30 to 24 painter updates per
+  second without changing animation duration, geometry, colors, or interaction.
+- Added `maxAnimatedEntries` to `NeonScheduleTimeline`; the production default
+  keeps one focal row moving while all other rows retain the same advanced
+  painted state at a stable phase.
+- Routed every painter blur through one quantized native cache and disabled
+  Gaussian `MaskFilter` passes on Flutter Web. Layered neon shapes remain, while
+  the browser avoids the worst software-rasterized hot path.
+- Added bounded paint and path pools to the advanced card, indicator, and
+  connector painters, removing most per-frame `Paint`/`Path` wrapper churn.
+- Quantized and cached liquid-crystal ribbon geometry and connector wave paths,
+  batched card grids and holographic scanlines, and replaced repeated trigonometry
+  with lookup-table reads in painter loops.
+- Coalesced hover/parallax updates to at most one state update per rendered frame.
+- Reworked schedule overlap metadata into one O(n) sweep after sorting, removing
+  temporary prefix arrays while preserving nested-overlap behavior. A shallow
+  immutable snapshot also detects in-place list element replacement safely and
+  reuses plans across new list wrappers containing the same entry objects.
+- Hardened drag auto-scroll, duplicate entry keys, async move/action failures,
+  and lifecycle teardown.
+- Added an in-flight lock to slidable actions so rapid taps cannot submit the
+  same asynchronous operation multiple times.
+- Added regression coverage for sampled motion, lazy row construction, nested
+  overlaps, animation caps, and duplicate async slide activation.
+
 ## 3.2.1
 
 - Optimized Flutter Web performance by bypassing expensive CPU software-rasterised backdrop blur filters and mask glows.

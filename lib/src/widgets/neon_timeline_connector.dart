@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import '../models/neon_timeline_types.dart';
 import '../theme/neon_timeline_theme.dart';
 import '../utils/neon_perf_utils.dart';
-import '../utils/neon_timeline_duration.dart';
 import 'neon_timeline_motion.dart';
 
 /// A solid, energy, plasma, warp, hologram, or photon-lattice connector.
@@ -28,20 +27,23 @@ class NeonTimelineConnector extends StatefulWidget {
   State<NeonTimelineConnector> createState() => _NeonTimelineConnectorState();
 }
 
-class _NeonTimelineConnectorState extends State<NeonTimelineConnector>
-    with SingleTickerProviderStateMixin {
-  AnimationController? _controller;
+class _NeonTimelineConnectorState extends State<NeonTimelineConnector> {
+  NeonTimelineMotionClock? _localClock;
   NeonTimelineMotionData? _sharedMotion;
 
-  AnimationController _ensureController(NeonTimelineConnectorStyle style) {
-    return _controller ??= AnimationController(
-      vsync: this,
-      duration: neonPositiveDuration(
-        style.animationDuration,
-        fallback: const Duration(milliseconds: 3400),
-        debugLabel: 'NeonTimelineConnectorStyle.animationDuration',
-      ),
+  NeonTimelineMotionClock _ensureLocalClock(
+    NeonTimelineConnectorStyle style,
+  ) {
+    final clock = _localClock ??= NeonTimelineMotionClock(
+      duration: style.animationDuration,
+      framesPerSecond: 24,
+      initialValue: 0.28,
     );
+    clock.configure(
+      duration: style.animationDuration,
+      framesPerSecond: 24,
+    );
+    return clock;
   }
 
   @override
@@ -69,38 +71,35 @@ class _NeonTimelineConnectorState extends State<NeonTimelineConnector>
       return _sharedMotion!.animation;
     }
     if (shouldAnimate && _sharedMotion == null) {
-      return _ensureController(style);
+      return _ensureLocalClock(style).animation;
     }
     return const AlwaysStoppedAnimation<double>(0.28);
   }
 
   void _configureAnimation(NeonTimelineConnectorStyle style) {
-    final controller = _controller;
-    if (controller != null) {
-      controller.duration = neonPositiveDuration(
-        style.animationDuration,
-        fallback: const Duration(milliseconds: 3400),
-        debugLabel: 'NeonTimelineConnectorStyle.animationDuration',
-      );
-    }
+    _localClock?.configure(
+      duration: style.animationDuration,
+      framesPerSecond: 24,
+    );
     final reduceMotion =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final tickerEnabled = TickerMode.of(context);
     final advanced = style.effect != NeonConnectorEffect.classic;
-    final shouldAnimate =
-        advanced && style.animated && !reduceMotion && _sharedMotion == null;
+    final shouldAnimate = advanced &&
+        style.animated &&
+        !reduceMotion &&
+        tickerEnabled &&
+        _sharedMotion == null;
     if (shouldAnimate) {
-      final localController = _ensureController(style);
-      if (!localController.isAnimating) localController.repeat();
-    } else if (controller != null) {
-      controller
-        ..stop()
-        ..value = 0.28;
+      _ensureLocalClock(style).start();
+    } else {
+      _localClock?.stop(value: 0.28);
     }
   }
 
   @override
   void dispose() {
-    _controller?.dispose();
+    _localClock?.dispose();
     super.dispose();
   }
 
@@ -134,17 +133,19 @@ class _ConnectorPainter extends CustomPainter {
   final Axis axis;
   final NeonTimelineConnectorStyle style;
   final Animation<double> animation;
+  final NeonPaintPool _paintPool = NeonPaintPool();
+  final NeonPathPool _pathPool = NeonPathPool();
 
   // Reusable Paint objects for draws that don't need a per-call shader.
   // Allocating these once and mutating color/strokeWidth is faster than
-  // creating a new Paint() on every frame.
+  // creating a new _paintPool.next() on every frame.
   final Paint _particleGlowPaint = Paint();
   final Paint _particleDotPaint = Paint();
-  static const MaskFilter _particleBlur =
-      MaskFilter.blur(BlurStyle.normal, 1.8);
+  static final MaskFilter? _particleBlur = NeonBlur.normal(1.8);
 
   // Cached blur filters — computed once per painter instance.
   late final NeonBlurCache _blurs = NeonBlurCache(glowRadius: style.glowRadius);
+  final Map<int, Path> _wavePathCache = <int, Path>{};
 
   double get _phase =>
       ((animation.value + style.phaseOffset) * style.flowSpeed) % 1.0;
@@ -152,6 +153,8 @@ class _ConnectorPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (size.isEmpty) return;
+    _paintPool.reset();
+    _pathPool.reset();
 
     final start = axis == Axis.vertical
         ? Offset(size.width / 2, 0)
@@ -193,18 +196,15 @@ class _ConnectorPainter extends CustomPainter {
         canvas,
         start,
         end,
-        Paint()
+        _paintPool.next()
           ..color = style.color.withAlpha(100)
           ..strokeWidth = style.thickness * 2.1
           ..strokeCap = style.lineCap
-          ..maskFilter = MaskFilter.blur(
-            BlurStyle.normal,
-            style.glowRadius,
-          ),
+          ..applyBlur(NeonBlur.normal(style.glowRadius)),
       );
     }
 
-    final paint = Paint()
+    final paint = _paintPool.next()
       ..strokeWidth = style.thickness
       ..strokeCap = style.lineCap;
     if (style.variant == NeonConnectorVariant.gradient) {
@@ -250,7 +250,7 @@ class _ConnectorPainter extends CustomPainter {
       canvas.drawLine(
         start,
         end,
-        Paint()
+        _paintPool.next()
           ..shader = shader
           ..strokeWidth = style.thickness * 5.8
           ..strokeCap = style.lineCap
@@ -259,7 +259,7 @@ class _ConnectorPainter extends CustomPainter {
       canvas.drawLine(
         start,
         end,
-        Paint()
+        _paintPool.next()
           ..shader = shader
           ..strokeWidth = style.thickness * 2.8
           ..strokeCap = style.lineCap
@@ -271,7 +271,7 @@ class _ConnectorPainter extends CustomPainter {
       _paintChromaticFringes(canvas, frame, strength);
     }
 
-    final mainPaint = Paint()
+    final mainPaint = _paintPool.next()
       ..strokeWidth = style.thickness
       ..strokeCap = style.lineCap;
     if (style.variant == NeonConnectorVariant.gradient) {
@@ -284,7 +284,7 @@ class _ConnectorPainter extends CustomPainter {
     canvas.drawLine(
       start,
       end,
-      Paint()
+      _paintPool.next()
         ..shader = ui.Gradient.linear(
           start,
           end,
@@ -321,7 +321,7 @@ class _ConnectorPainter extends CustomPainter {
     canvas.drawLine(
       frame.start - fringeOffset,
       frame.end - fringeOffset,
-      Paint()
+      _paintPool.next()
         ..shader = ui.Gradient.linear(
           frame.start,
           frame.end,
@@ -339,7 +339,7 @@ class _ConnectorPainter extends CustomPainter {
     canvas.drawLine(
       frame.start + fringeOffset,
       frame.end + fringeOffset,
-      Paint()
+      _paintPool.next()
         ..shader = ui.Gradient.linear(
           frame.start,
           frame.end,
@@ -410,21 +410,18 @@ class _ConnectorPainter extends CustomPainter {
       final color = wave.isEven ? style.color : style.endColor;
       canvas.drawPath(
         path,
-        Paint()
+        _paintPool.next()
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round
           ..strokeWidth = style.thickness * (1.8 - wave * 0.28)
           ..color = color.withOpacity(
             (0.16 - wave * 0.025) * strength * style.detail,
           )
-          ..maskFilter = MaskFilter.blur(
-            BlurStyle.normal,
-            math.max(1.5, style.glowRadius * 0.42),
-          ),
+          ..applyBlur(NeonBlur.normal(math.max(1.5, style.glowRadius * 0.42))),
       );
       canvas.drawPath(
         path,
-        Paint()
+        _paintPool.next()
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round
           ..strokeWidth = math.max(0.38, style.thickness * 0.24)
@@ -478,7 +475,7 @@ class _ConnectorPainter extends CustomPainter {
     canvas.drawLine(
       frame.start,
       frame.end,
-      Paint()
+      _paintPool.next()
         ..shader = ui.Gradient.linear(
           frame.start,
           frame.end,
@@ -501,14 +498,14 @@ class _ConnectorPainter extends CustomPainter {
     for (var index = 0; index < count; index++) {
       final t = (index + 0.5) / count;
       final point = frame.pointAt(t);
-      final envelope = math.sin(t * math.pi);
+      final envelope = NeonTrig.sin(t * math.pi);
       final half = style.thickness *
           (2.2 + style.crossFlare * 3.8) *
           envelope;
       canvas.drawLine(
         point - frame.normal * half,
         point + frame.normal * half,
-        Paint()
+        _paintPool.next()
           ..shader = ui.Gradient.linear(
             point - frame.normal * half,
             point + frame.normal * half,
@@ -523,7 +520,7 @@ class _ConnectorPainter extends CustomPainter {
           )
           ..strokeWidth = 0.55
           ..strokeCap = StrokeCap.round
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.6),
+          ..applyBlur(NeonBlur.normal(1.6)),
       );
     }
   }
@@ -552,17 +549,14 @@ class _ConnectorPainter extends CustomPainter {
       };
       canvas.drawPath(
         path,
-        Paint()
+        _paintPool.next()
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round
           ..strokeWidth = style.thickness * (0.62 - strand * 0.035)
           ..color = color.withOpacity(
             (0.30 - strand * 0.024) * strength * style.detail,
           )
-          ..maskFilter = MaskFilter.blur(
-            BlurStyle.normal,
-            math.max(0.8, style.glowRadius * 0.16),
-          ),
+          ..applyBlur(NeonBlur.normal(math.max(0.8, style.glowRadius * 0.16))),
       );
     }
   }
@@ -585,7 +579,7 @@ class _ConnectorPainter extends CustomPainter {
       canvas.drawLine(
         point - frame.direction * length,
         point + frame.direction * length,
-        Paint()
+        _paintPool.next()
           ..strokeWidth = 0.38
           ..strokeCap = StrokeCap.round
           ..color = (index.isEven ? style.secondaryColor : style.endColor)
@@ -621,7 +615,7 @@ class _ConnectorPainter extends CustomPainter {
     canvas.drawLine(
       from,
       to,
-      Paint()
+      _paintPool.next()
         ..shader = ui.Gradient.linear(
           from,
           to,
@@ -636,17 +630,14 @@ class _ConnectorPainter extends CustomPainter {
         )
         ..strokeWidth = style.thickness * 5.4
         ..strokeCap = StrokeCap.round
-        ..maskFilter = MaskFilter.blur(
-          BlurStyle.normal,
-          math.max(2.0, style.glowRadius * 0.72),
-        ),
+        ..applyBlur(NeonBlur.normal(math.max(2.0, style.glowRadius * 0.72))),
     );
     canvas.drawCircle(
       center,
       math.max(1.2, style.thickness * 0.78),
-      Paint()
+      _paintPool.next()
         ..color = style.coreColor.withOpacity(0.96 * strength)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.5),
+        ..applyBlur(NeonBlur.normal(1.5)),
     );
 
     if (style.crossFlare > 0) {
@@ -654,7 +645,7 @@ class _ConnectorPainter extends CustomPainter {
       canvas.drawLine(
         center - frame.normal * half,
         center + frame.normal * half,
-        Paint()
+        _paintPool.next()
           ..shader = ui.Gradient.linear(
             center - frame.normal * half,
             center + frame.normal * half,
@@ -669,7 +660,7 @@ class _ConnectorPainter extends CustomPainter {
           )
           ..strokeWidth = math.max(0.65, style.thickness * 0.42)
           ..strokeCap = StrokeCap.round
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.2),
+          ..applyBlur(NeonBlur.normal(2.2)),
       );
     }
 
@@ -690,7 +681,7 @@ class _ConnectorPainter extends CustomPainter {
     canvas.drawLine(
       start,
       end,
-      Paint()
+      _paintPool.next()
         ..shader = ui.Gradient.linear(
           start,
           end,
@@ -705,13 +696,10 @@ class _ConnectorPainter extends CustomPainter {
         )
         ..strokeWidth = style.thickness * 4.8
         ..strokeCap = StrokeCap.round
-        ..maskFilter = MaskFilter.blur(
-          BlurStyle.normal,
-          math.max(2.0, style.glowRadius * 0.85),
-        ),
+        ..applyBlur(NeonBlur.normal(math.max(2.0, style.glowRadius * 0.85))),
     );
 
-    final dashPaint = Paint()
+    final dashPaint = _paintPool.next()
       ..style = PaintingStyle.stroke
       ..strokeWidth = style.thickness
       ..strokeCap = StrokeCap.round
@@ -759,11 +747,11 @@ class _ConnectorPainter extends CustomPainter {
       final major = index % 4 == 0;
       final half = style.thickness * (major ? 2.8 : 1.55);
       final flicker = 0.55 +
-          0.45 * math.sin(index * 1.37 + _phase * math.pi * 2 * 1.2);
+          0.45 * NeonTrig.sin(index * 1.37 + _phase * math.pi * 2 * 1.2);
       canvas.drawLine(
         point - frame.normal * half,
         point + frame.normal * half,
-        Paint()
+        _paintPool.next()
           ..strokeWidth = major ? 0.72 : 0.42
           ..strokeCap = StrokeCap.round
           ..color = (major ? style.secondaryColor : style.endColor).withOpacity(
@@ -795,7 +783,7 @@ class _ConnectorPainter extends CustomPainter {
       canvas.drawLine(
         point,
         point + frame.direction * length,
-        Paint()
+        _paintPool.next()
           ..strokeWidth = 0.44
           ..color = (index.isEven ? style.color : style.secondaryColor)
               .withOpacity(0.26 * strength * style.noise * style.detail),
@@ -814,7 +802,7 @@ class _ConnectorPainter extends CustomPainter {
     canvas.drawLine(
       center - frame.normal * half,
       center + frame.normal * half,
-      Paint()
+      _paintPool.next()
         ..shader = ui.Gradient.linear(
           center - frame.normal * half,
           center + frame.normal * half,
@@ -829,12 +817,12 @@ class _ConnectorPainter extends CustomPainter {
         )
         ..strokeWidth = math.max(0.65, style.thickness * 0.46)
         ..strokeCap = StrokeCap.round
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.8),
+        ..applyBlur(NeonBlur.normal(1.8)),
     );
     canvas.drawCircle(
       center,
       math.max(0.9, style.thickness * 0.62),
-      Paint()..color = style.coreColor.withOpacity(0.82 * strength),
+      _paintPool.next()..color = style.coreColor.withOpacity(0.82 * strength),
     );
   }
 
@@ -859,7 +847,7 @@ class _ConnectorPainter extends CustomPainter {
     canvas.drawLine(
       start,
       end,
-      Paint()
+      _paintPool.next()
         ..shader = ui.Gradient.linear(
           start,
           end,
@@ -874,10 +862,7 @@ class _ConnectorPainter extends CustomPainter {
         )
         ..strokeWidth = fieldWidth
         ..strokeCap = StrokeCap.round
-        ..maskFilter = MaskFilter.blur(
-          BlurStyle.normal,
-          math.max(4.0, style.glowRadius * 1.35),
-        ),
+        ..applyBlur(NeonBlur.normal(math.max(4.0, style.glowRadius * 1.35))),
     );
 
     final strandCount = math.max(3, style.strandCount);
@@ -902,19 +887,16 @@ class _ConnectorPainter extends CustomPainter {
       };
       canvas.drawPath(
         path,
-        Paint()
+        _paintPool.next()
           ..style = PaintingStyle.stroke
           ..strokeWidth = math.max(1.1, style.thickness * 1.5)
           ..strokeCap = StrokeCap.round
           ..color = color.withOpacity(0.12 * strength * style.detail)
-          ..maskFilter = MaskFilter.blur(
-            BlurStyle.normal,
-            math.max(1.5, style.glowRadius * 0.34),
-          ),
+          ..applyBlur(NeonBlur.normal(math.max(1.5, style.glowRadius * 0.34))),
       );
       canvas.drawPath(
         path,
-        Paint()
+        _paintPool.next()
           ..style = PaintingStyle.stroke
           ..strokeWidth = math.max(0.42, style.thickness * 0.34)
           ..strokeCap = StrokeCap.round
@@ -956,8 +938,8 @@ class _ConnectorPainter extends CustomPainter {
         style.thickness * (1.55 + style.photonSpread * 3.8);
     for (var index = 0; index <= links; index++) {
       final t = index / math.max(1, links);
-      final envelope = math.sin(t * math.pi);
-      final wave = math.sin(
+      final envelope = NeonTrig.sin(t * math.pi);
+      final wave = NeonTrig.sin(
         t * math.pi * style.waveFrequency + _phaseRadians,
       );
       final offset = amplitude * envelope * (0.38 + wave.abs() * 0.62);
@@ -965,11 +947,11 @@ class _ConnectorPainter extends CustomPainter {
       final from = center - frame.normal * offset;
       final to = center + frame.normal * offset;
       final flicker = 0.58 +
-          0.42 * math.sin(index * 1.47 + _phaseRadians * 1.35).abs();
+          0.42 * NeonTrig.sin(index * 1.47 + _phaseRadians * 1.35).abs();
       canvas.drawLine(
         from,
         to,
-        Paint()
+        _paintPool.next()
           ..shader = ui.Gradient.linear(
             from,
             to,
@@ -995,11 +977,11 @@ class _ConnectorPainter extends CustomPainter {
         canvas.drawCircle(
           center,
           math.max(0.55, style.thickness * 0.34),
-          Paint()
+          _paintPool.next()
             ..color = style.coreColor.withOpacity(
               0.50 * strength * style.interference * flicker,
             )
-            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 0.8),
+            ..applyBlur(NeonBlur.normal(0.8)),
         );
       }
     }
@@ -1019,16 +1001,16 @@ class _ConnectorPainter extends CustomPainter {
     for (var index = 0; index < count; index++) {
       final t = (index + 0.5) / count;
       final point = frame.pointAt(t);
-      final interference = math.sin(
+      final interference = NeonTrig.sin(
             t * math.pi * style.waveFrequency * 2 + _phaseRadians * 1.7,
           ) *
-          math.sin(t * math.pi);
+          NeonTrig.sin(t * math.pi);
       final half = style.thickness *
           (0.7 + interference.abs() * (1.6 + style.photonSpread * 2.2));
       canvas.drawLine(
         point - frame.normal * half,
         point + frame.normal * half,
-        Paint()
+        _paintPool.next()
           ..strokeWidth = 0.34
           ..color = (index.isEven ? style.secondaryColor : style.endColor)
               .withOpacity(
@@ -1050,7 +1032,7 @@ class _ConnectorPainter extends CustomPainter {
     int packetIndex,
   ) {
     final center = frame.pointAt(packetPhase);
-    final wave = math.sin(
+    final wave = NeonTrig.sin(
       packetPhase * math.pi * style.waveFrequency + _phaseRadians,
     );
     final packetCenter = center +
@@ -1065,13 +1047,14 @@ class _ConnectorPainter extends CustomPainter {
         .clamp(0.0, frame.length)
         .toDouble();
     final trailStart = frame.start + frame.direction * trailStartDistance;
-    final trailPath = Path()
+    final controlBase = Offset.lerp(trailStart, packetCenter, 0.58)!;
+    final control = controlBase +
+        frame.normal * wave * style.thickness * 1.6;
+    final trailPath = _pathPool.next()
       ..moveTo(trailStart.dx, trailStart.dy)
       ..quadraticBezierTo(
-        Offset.lerp(trailStart, packetCenter, 0.58)!.dx +
-            frame.normal.dx * wave * style.thickness * 1.6,
-        Offset.lerp(trailStart, packetCenter, 0.58)!.dy +
-            frame.normal.dy * wave * style.thickness * 1.6,
+        control.dx,
+        control.dy,
         packetCenter.dx,
         packetCenter.dy,
       );
@@ -1082,7 +1065,7 @@ class _ConnectorPainter extends CustomPainter {
     };
     canvas.drawPath(
       trailPath,
-      Paint()
+      _paintPool.next()
         ..style = PaintingStyle.stroke
         ..strokeWidth = style.thickness * 3.2
         ..strokeCap = StrokeCap.round
@@ -1098,17 +1081,14 @@ class _ConnectorPainter extends CustomPainter {
           ],
           const <double>[0, 0.62, 1],
         )
-        ..maskFilter = MaskFilter.blur(
-          BlurStyle.normal,
-          math.max(2.0, style.glowRadius * 0.48),
-        ),
+        ..applyBlur(NeonBlur.normal(math.max(2.0, style.glowRadius * 0.48))),
     );
     canvas.drawCircle(
       packetCenter,
       math.max(1.2, style.thickness * 0.86),
-      Paint()
+      _paintPool.next()
         ..color = style.coreColor.withOpacity(0.94 * strength)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.4),
+        ..applyBlur(NeonBlur.normal(1.4)),
     );
 
     final flareHalf =
@@ -1116,7 +1096,7 @@ class _ConnectorPainter extends CustomPainter {
     canvas.drawLine(
       packetCenter - frame.normal * flareHalf,
       packetCenter + frame.normal * flareHalf,
-      Paint()
+      _paintPool.next()
         ..shader = ui.Gradient.linear(
           packetCenter - frame.normal * flareHalf,
           packetCenter + frame.normal * flareHalf,
@@ -1131,7 +1111,7 @@ class _ConnectorPainter extends CustomPainter {
         )
         ..strokeWidth = 0.72
         ..strokeCap = StrokeCap.round
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.4),
+        ..applyBlur(NeonBlur.normal(1.4)),
     );
   }
 
@@ -1165,7 +1145,7 @@ class _ConnectorPainter extends CustomPainter {
       canvas.drawLine(
         from,
         to,
-        Paint()
+        _paintPool.next()
           ..shader = ui.Gradient.linear(
             from,
             to,
@@ -1180,17 +1160,14 @@ class _ConnectorPainter extends CustomPainter {
           )
           ..strokeWidth = style.thickness * 4.4
           ..strokeCap = StrokeCap.round
-          ..maskFilter = MaskFilter.blur(
-            BlurStyle.normal,
-            math.max(2.0, style.glowRadius * 0.72),
-          ),
+          ..applyBlur(NeonBlur.normal(math.max(2.0, style.glowRadius * 0.72))),
       );
       canvas.drawCircle(
         center,
         math.max(1.1, style.thickness * 0.72),
-        Paint()
+        _paintPool.next()
           ..color = style.coreColor.withOpacity(0.90 * resolvedStrength)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.4),
+          ..applyBlur(NeonBlur.normal(1.4)),
       );
     }
 
@@ -1225,7 +1202,8 @@ class _ConnectorPainter extends CustomPainter {
       // Reuse cached Paint objects — just update color to avoid allocations.
       _particleGlowPaint
         ..color = color.withOpacity(0.12 * strength * style.detail)
-        ..maskFilter = _particleBlur;
+        ..maskFilter = null
+        ..applyBlur(_particleBlur);
       canvas.drawCircle(position, radius + 1.2, _particleGlowPaint);
       _particleDotPaint.color =
           color.withOpacity(0.66 * strength * style.detail);
@@ -1239,17 +1217,37 @@ class _ConnectorPainter extends CustomPainter {
     required double frequency,
     required double phase,
   }) {
+    const phaseBuckets = 72;
+    final phaseBucket =
+        ((phase / (math.pi * 2)) * phaseBuckets).round();
+    final key = Object.hash(
+      frame.start.dx.round(),
+      frame.start.dy.round(),
+      frame.end.dx.round(),
+      frame.end.dy.round(),
+      (amplitude * 64).round(),
+      (frequency * 64).round(),
+      phaseBucket,
+      style.quality.index,
+    );
+    final cached = _wavePathCache[key];
+    if (cached != null) return cached;
+
     final path = Path();
     final steps = switch (style.quality) {
       NeonTimelineRenderQuality.balanced => 36,
       NeonTimelineRenderQuality.high => 56,
       NeonTimelineRenderQuality.ultra => 84,
     };
+    final quantizedPhase = phaseBucket / phaseBuckets * math.pi * 2;
     for (var step = 0; step <= steps; step++) {
       final t = step / steps;
       final envelope = NeonTrig.sin(t * math.pi);
-      final displacement =
-          NeonTrig.sin(t * math.pi * frequency + phase) * amplitude * envelope;
+      final displacement = NeonTrig.sin(
+            t * math.pi * frequency + quantizedPhase,
+          ) *
+          amplitude *
+          envelope;
       final point = frame.pointAt(t) + frame.normal * displacement;
       if (step == 0) {
         path.moveTo(point.dx, point.dy);
@@ -1257,6 +1255,11 @@ class _ConnectorPainter extends CustomPainter {
         path.lineTo(point.dx, point.dy);
       }
     }
+
+    if (_wavePathCache.length >= 160) {
+      _wavePathCache.remove(_wavePathCache.keys.first);
+    }
+    _wavePathCache[key] = path;
     return path;
   }
 

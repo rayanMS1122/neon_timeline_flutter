@@ -1,41 +1,42 @@
 # Performance and stability
 
-Version 3.2.0 keeps the existing visual presets but changes how work is
-scheduled. The schedule is lazy, continuous painter work is sampled, inactive
-rows are static, scrolling temporarily suspends decorative motion, and advanced
-backdrop filters share a group.
+Version 3.3.0 keeps the existing neon geometry, colors, card variants, timeline
+layout, and gestures. The change is architectural: less work is scheduled, less
+short-lived memory is allocated, and expensive browser blur paths are avoided.
 
-## Production default
+## Production profile
 
 ```dart
 NeonScheduleTimeline<Task>(
   entries: entries,
   selectedDate: selectedDate,
-  motionFramesPerSecond: 30,
+  motionFramesPerSecond: 24,
   pauseMotionWhileScrolling: true,
   animateOnlyCurrentEntry: true,
+  maxAnimatedEntries: 1,
   addAutomaticKeepAlives: false,
+  cacheExtent: 140,
   itemBuilder: buildTask,
 )
 ```
 
 Replace `entries` with a new immutable list after inserts, deletes, or edits.
-Do not mutate the same list instance in place, because the timeline memoizes its
-normalized render plan by list identity.
+The normalized day plan is memoized by list identity. Mutating the same list in
+place defeats that cache and is also poor state-management practice.
 
 ## Battery profile
 
-The advanced shape, gradients, borders, and static neon painter stay visible.
-Only continuous motion and backdrop sampling are reduced.
+The same card shape, gradients, borders, indicator, and connector remain. Only
+continuous motion, parallax, and backdrop sampling are reduced.
 
 ```dart
 NeonScheduleTimeline<Task>(
   entries: entries,
   selectedDate: selectedDate,
-  motionFramesPerSecond: 20,
+  motionFramesPerSecond: 16,
+  maxAnimatedEntries: 1,
   pauseMotionWhileScrolling: true,
-  animateOnlyCurrentEntry: true,
-  cacheExtent: 120,
+  cacheExtent: 80,
   style: const NeonScheduleTimelineStyle(
     useBackdropFilter: false,
     enableCardParallax: false,
@@ -44,12 +45,12 @@ NeonScheduleTimeline<Task>(
 )
 ```
 
-For maximum savings, use `motionEnabled: false`.
+For a static screen, use `motionEnabled: false`.
 
 ## Hero profile
 
-Use 60 updates per second only for a short, prominent timeline. Do not combine
-it with dozens of simultaneously active entries.
+Use higher sample rates only for a short showcase. Do not combine 60 Hz with a
+long list of simultaneously active neural-core or photon-lattice effects.
 
 ```dart
 NeonTimeline.builder(
@@ -60,42 +61,42 @@ NeonTimeline.builder(
 )
 ```
 
-## Architecture changes
+## What 3.3.0 changes internally
 
-- Schedule normalization: O(n log n) sorting and O(n) interval sweep.
-- Row construction: lazy `ListView.builder`; expensive builders run only near
-  the viewport.
-- Motion: one shared controller and a sampled `Animation<double>` notifier.
-- Cards: advanced list cards are static while idle unless
-  `continuousAnimation: true` is explicitly selected.
-- Idle behavior: the clock stops with no listeners, inactive app lifecycle,
-  disabled `TickerMode`, reduced motion, and scrolling.
-- Painting: static advanced painters can be raster-cached; animated painters
-  are isolated by repaint boundaries.
-- Backdrop: grouped filters share one backdrop input layer.
-- Dragging: snapped values suppress redundant rebuilds and auto-scroll is
-  throttled.
-- Errors: asynchronous moves, slide actions, dismissals, and haptics are
-  guarded and reported rather than escaping as unhandled futures.
+- **Motion:** one-shot timers publish only the requested sample rate. They stop
+  with no listeners, while scrolling, in an inactive app, under disabled
+  `TickerMode`, or when reduced motion is requested. Standalone indicators and
+  connectors use the same sampled mechanism.
+- **Scheduling:** filtering is O(n), optional sorting is O(n log n), and overlap
+  plus gap metadata is one O(n) sweep with no prefix-array allocation.
+- **Virtualization:** `ListView.builder` constructs item content, cards, actions,
+  indicators, and connectors only near the viewport.
+- **Animation budget:** `maxAnimatedEntries` limits continuously moving schedule
+  rows. Other rows keep identical active colors and surfaces at a stable phase.
+- **Painter allocation:** bounded paint/path pools replace dozens of temporary
+  wrapper objects per frame. Liquid ribbons and connector wave geometry use
+  bounded phase caches.
+- **Web raster work:** all `MaskFilter` requests go through one cache. Gaussian
+  painter blur is skipped on Web, where animated blur can dominate CPU. Existing
+  layered translucent glow shapes still render.
+- **Interaction:** hover updates are coalesced to one frame; drag updates rebuild
+  only after the snapped minute changes; edge auto-scroll is throttled.
+- **Slide actions:** one async action cannot be submitted twice while its first
+  future is pending. Errors are routed to `onError`.
 
-## Profiling
+## Application-side rules
 
-Measure a release/profile build on the slowest supported device. Debug mode is
-not a performance benchmark.
+The package cannot make an expensive `itemBuilder` cheap. Keep row content small,
+use stable IDs, avoid rebuilding the whole page every second, and do not place
+large decoded images or nested unbounded lists inside every timeline row.
+
+Measure profile/release builds, never debug mode:
 
 ```bash
-flutter run --profile
+flutter run --profile -d chrome
+flutter run --profile -d <android-device>
 ```
 
-Use Flutter DevTools Performance view and inspect:
-
-- UI and raster frame times;
-- raster-cache behavior;
-- excessive layout or build counts;
-- many simultaneously active entries;
-- application-level rebuilds caused by state management;
-- oversized images or unrelated widgets inside `itemBuilder`.
-
-The package cannot prevent expensive application content from rebuilding. Keep
-`itemBuilder` output focused, use stable entry IDs, and update only the affected
-application state.
+In DevTools inspect UI/raster frame time, rebuild counts, memory allocation, and
+the number of active rows. A package cannot honestly promise that arbitrary app
+callbacks, repositories, plugins, or custom builders will never crash.
