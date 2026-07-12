@@ -1,6 +1,6 @@
 # Neon Timeline Flutter
 
-![Neon Timeline Showcase](assets/spectral.png)
+![Neon Timeline Showcase](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/spectral.png)
 
 Production-ready Flutter timelines and planner schedules with animated neon
 rendering, slivers, drag-to-reschedule, overlap detection, current-time markers,
@@ -8,35 +8,36 @@ and polished slide actions.
 
 ## Screenshots
 
-These previews come from the in-repo `assets/` folder and are the same visuals
-declared in `pubspec.yaml` for pub.dev.
+These previews mirror the package assets and use GitHub raw URLs so they also
+render on pub.dev.
 
-<table>
-  <tr>
-    <td><img src="assets/spectral.png" alt="Schedule showcase in the spectral theme" width="240" /></td>
-    <td><img src="assets/omniverse.png" alt="Schedule showcase in the omniverse theme" width="240" /></td>
-    <td><img src="assets/Hyperion.png" alt="Schedule showcase in the Hyperion theme" width="240" /></td>
-    <td><img src="assets/hologram.png" alt="Holographic theme showcase" width="240" /></td>
-  </tr>
-  <tr>
-    <td><img src="assets/aurora.png" alt="Aurora theme showcase" width="240" /></td>
-    <td><img src="assets/solar_flare.png" alt="Solar flare theme showcase" width="240" /></td>
-    <td><img src="assets/cryogenic.png" alt="Cryogenic theme showcase" width="240" /></td>
-    <td><img src="assets/seeded.png" alt="Custom seeded theme showcase" width="240" /></td>
-  </tr>
-  <tr>
-    <td><img src="assets/light.png" alt="Light theme showcase" width="240" /></td>
-    <td><img src="assets/midnight.png" alt="Midnight theme showcase" width="240" /></td>
-    <td><img src="assets/neon.png" alt="Neon theme showcase" width="240" /></td>
-    <td><img src="assets/neural_aurora.png" alt="Neural Aurora showcase" width="240" /></td>
-  </tr>
-  <tr>
-    <td><img src="assets/neural_ember.png" alt="Neural Ember showcase" width="240" /></td>
-    <td><img src="assets/ember.png" alt="Ember showcase" width="240" /></td>
-    <td><img src="assets/void_pules.png" alt="Void pulses showcase" width="240" /></td>
-    <td><img src="assets/Quanntum.png" alt="Quantum showcase" width="240" /></td>
-  </tr>
-</table>
+| | |
+| --- | --- |
+| ![Schedule showcase in the spectral theme][spectral] | ![Schedule showcase in the omniverse theme][omniverse] |
+| ![Schedule showcase in the Hyperion theme][hyperion] | ![Holographic theme showcase][hologram] |
+| ![Aurora theme showcase][aurora] | ![Solar flare theme showcase][solar-flare] |
+| ![Cryogenic theme showcase][cryogenic] | ![Custom seeded theme showcase][seeded] |
+| ![Light theme showcase][light] | ![Midnight theme showcase][midnight] |
+| ![Neon theme showcase][neon] | ![Neural Aurora showcase][neural-aurora] |
+| ![Neural Ember showcase][neural-ember] | ![Ember showcase][ember] |
+| ![Void pulses showcase][void-pules] | ![Quantum showcase][quanntum] |
+
+[spectral]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/spectral.png
+[omniverse]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/omniverse.png
+[hyperion]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/Hyperion.png
+[hologram]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/hologram.png
+[aurora]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/aurora.png
+[solar-flare]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/solar_flare.png
+[cryogenic]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/cryogenic.png
+[seeded]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/seeded.png
+[light]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/light.png
+[midnight]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/midnight.png
+[neon]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/neon.png
+[neural-aurora]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/neural_aurora.png
+[neural-ember]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/neural_ember.png
+[ember]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/ember.png
+[void-pules]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/void_pules.png
+[quanntum]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/Quanntum.png
 
 The package has two independent layers:
 

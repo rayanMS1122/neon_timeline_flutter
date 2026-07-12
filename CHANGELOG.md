@@ -3,6 +3,14 @@
 All notable changes to `neon_timeline_flutter` are documented here. The package
 follows semantic versioning.
 
+## 3.4.2
+
+- Reworked the README gallery to use renderable Markdown images with GitHub raw
+  URLs so pub.dev can show the screenshots directly.
+- Kept the pub.dev `screenshots:` metadata in sync with the in-repo asset set.
+- Bumped the package again so the README rendering fix can be force-published as
+  a fresh release.
+
 ## 3.4.1
 
 - Expanded the README screenshot gallery so every in-repo preview image is shown
