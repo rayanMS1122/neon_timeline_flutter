@@ -13,16 +13,28 @@ declared in `pubspec.yaml` for pub.dev.
 
 <table>
   <tr>
-    <td><img src="assets/spectral.png" alt="Schedule showcase in the spectral theme" width="320" /></td>
-    <td><img src="assets/omniverse.png" alt="Schedule showcase in the omniverse theme" width="320" /></td>
+    <td><img src="assets/spectral.png" alt="Schedule showcase in the spectral theme" width="240" /></td>
+    <td><img src="assets/omniverse.png" alt="Schedule showcase in the omniverse theme" width="240" /></td>
+    <td><img src="assets/Hyperion.png" alt="Schedule showcase in the Hyperion theme" width="240" /></td>
+    <td><img src="assets/hologram.png" alt="Holographic theme showcase" width="240" /></td>
   </tr>
   <tr>
-    <td><img src="assets/hologram.png" alt="Holographic theme showcase" width="320" /></td>
-    <td><img src="assets/seeded.png" alt="Custom seeded theme showcase" width="320" /></td>
+    <td><img src="assets/aurora.png" alt="Aurora theme showcase" width="240" /></td>
+    <td><img src="assets/solar_flare.png" alt="Solar flare theme showcase" width="240" /></td>
+    <td><img src="assets/cryogenic.png" alt="Cryogenic theme showcase" width="240" /></td>
+    <td><img src="assets/seeded.png" alt="Custom seeded theme showcase" width="240" /></td>
   </tr>
   <tr>
-    <td><img src="assets/light.png" alt="Light theme showcase" width="320" /></td>
-    <td><img src="assets/midnight.png" alt="Midnight theme showcase" width="320" /></td>
+    <td><img src="assets/light.png" alt="Light theme showcase" width="240" /></td>
+    <td><img src="assets/midnight.png" alt="Midnight theme showcase" width="240" /></td>
+    <td><img src="assets/neon.png" alt="Neon theme showcase" width="240" /></td>
+    <td><img src="assets/neural_aurora.png" alt="Neural Aurora showcase" width="240" /></td>
+  </tr>
+  <tr>
+    <td><img src="assets/neural_ember.png" alt="Neural Ember showcase" width="240" /></td>
+    <td><img src="assets/ember.png" alt="Ember showcase" width="240" /></td>
+    <td><img src="assets/void_pules.png" alt="Void pulses showcase" width="240" /></td>
+    <td><img src="assets/Quanntum.png" alt="Quantum showcase" width="240" /></td>
   </tr>
 </table>
 

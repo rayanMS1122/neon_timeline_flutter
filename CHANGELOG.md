@@ -3,6 +3,15 @@
 All notable changes to `neon_timeline_flutter` are documented here. The package
 follows semantic versioning.
 
+## 3.4.1
+
+- Expanded the README screenshot gallery so every in-repo preview image is shown
+  directly in the package landing page.
+- Added the remaining asset previews to `pubspec.yaml` screenshot metadata so
+  pub.dev can display the full gallery.
+- Bumped the package version to keep the release incremental after the published
+  3.4.0 upload.
+
 
 ## 3.4.0
 
