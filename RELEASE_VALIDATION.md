@@ -1,15 +1,20 @@
-# Release validation — 3.3.0
+# Release validation — 3.4.0
 
-Completed in this workspace:
+## Completed in this workspace
 
-- `pubspec.yaml` and `analysis_options.yaml` parsed;
-- local Dart imports and exports resolved;
-- Dart files passed a string/comment-aware structural scan;
-- no direct painter blur call remains outside `NeonBlur`;
-- source archives exclude build, `.dart_tool`, Git, IDE, and lock artifacts;
-- generated ZIP integrity checked.
+- source archive extracted into a clean release tree;
+- 44 Dart files structurally scanned;
+- zero unmatched Dart delimiters detected;
+- zero missing relative Dart imports, exports, or parts detected;
+- YAML and JSON configuration parsed successfully;
+- package diff passed whitespace/error checking;
+- source ZIP checked with `unzip -t` after generation;
+- no production application was changed;
+- no pub.dev publication or Git push was performed.
 
-Required on a machine with Flutter:
+## Mandatory local gate
+
+Run from the package root:
 
 ```bash
 flutter clean
@@ -17,10 +22,34 @@ flutter pub get
 dart format --output=none --set-exit-if-changed lib test example/lib
 flutter analyze
 flutter test
-flutter run --profile -d chrome
-flutter run --profile -d <slowest-native-device>
+
+cd example
+flutter pub get
+flutter test
+flutter build web --release
+```
+
+Then serve the release output:
+
+```bash
+cd build/web
+python -m http.server 7357
+```
+
+Run Lighthouse against `http://localhost:7357` at least three times and record
+the median. Do not publish if the analyzer, tests, release build, or package dry
+run fails:
+
+```bash
+cd ../../
 dart pub publish --dry-run
 ```
 
-Do not publish if any command fails. Compare profile traces against 3.2.1 using
-the same device, renderer, data set, and active-entry count.
+## Production integration gate
+
+Test the package in the consuming app in **profile mode** on the slowest intended
+Android/iOS device and on Web. Verify idle CPU, scrolling, day changes, dragging,
+slide/dismiss actions, app background/foreground transitions, reduced motion,
+and disposal. No package can truthfully guarantee zero crashes in arbitrary
+consumer callbacks; this release guards its own timers, listeners, and async
+operation paths.

@@ -22,6 +22,7 @@ class NeonTimelineTile extends StatelessWidget {
     this.beforeConnectorStyle,
     this.afterConnectorStyle,
     this.indicatorPosition = 0.5,
+    this.animateIndicator = true,
     this.extent,
     this.padding,
     this.contentGap,
@@ -72,6 +73,9 @@ class NeonTimelineTile extends StatelessWidget {
 
   /// Marker position within the tile's main-axis extent.
   final double indicatorPosition;
+
+  /// Whether the package-owned default indicator follows shared motion.
+  final bool animateIndicator;
 
   /// Fixed main-axis extent. Vertical tiles are content-sized when omitted.
   final double? extent;
@@ -198,7 +202,8 @@ class NeonTimelineTile extends StatelessWidget {
     final node = NeonTimelineNode(
       axis: axis,
       indicator:
-          indicator ?? NeonTimelineIndicator(status: status, animate: true),
+          indicator ??
+              NeonTimelineIndicator(status: status, animate: animateIndicator),
       showBeforeConnector: !isFirst,
       showAfterConnector: !isLast,
       beforeStyle: beforeConnectorStyle,
@@ -259,7 +264,8 @@ class NeonTimelineTile extends StatelessWidget {
     final node = NeonTimelineNode(
       axis: axis,
       indicator:
-          indicator ?? NeonTimelineIndicator(status: status, animate: true),
+          indicator ??
+              NeonTimelineIndicator(status: status, animate: animateIndicator),
       showBeforeConnector: !isFirst,
       showAfterConnector: !isLast,
       beforeStyle: beforeConnectorStyle,

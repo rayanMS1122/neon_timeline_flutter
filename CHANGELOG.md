@@ -3,10 +3,38 @@
 All notable changes to `neon_timeline_flutter` are documented here. The package
 follows semantic versioning.
 
-## 3.3.1
 
-- Hardened advanced indicator and card painters against out-of-range dynamic opacity values during animated neon effects.
-- Added explicit gradient stops for multi-color custom shaders used by the neural-core indicator path, keeping newer Flutter renderers stable.
+## 3.4.0
+
+- Added `NeonTimelinePerformanceConfig` with adaptive, battery-saver, balanced,
+  and high-quality policies. The policy controls motion budgets, particles,
+  backdrop sampling, parallax, cache extent, startup delay, and painter quality
+  without changing layout, colors, semantics, or interaction.
+- Delayed continuous motion until after first paint, paused it for inactive
+  routes, and retained the existing lifecycle, scrolling, reduced-motion, and
+  listener-aware sleep behavior.
+- Added `animatedItemIndexes` to generic, fixed, and sliver timelines so large
+  builder collections can identify animated rows without a full status scan.
+- Restricted package-owned default indicators and connector segments to the
+  selected motion budget; inactive rows retain the same visual state at a stable
+  phase.
+- Improved schedule render-plan reuse with `dataRevision`; revision-driven
+  integrations no longer copy the complete entry list merely to validate the
+  cache.
+- Coalesced day-pager pointer updates to one visual update per rendered frame.
+- Hardened slide actions with one row-level async lock, selected-action progress,
+  safe busy notifications, disabled-state semantics, and guarded error routing.
+- Added optional `NeonTimelineSurface`, `NeonTimelineHeader`,
+  `NeonTimelineBadge`, and `NeonTimelineEmptyState` presentation widgets.
+- Added focused public entrypoints: `core.dart`, `advanced.dart`, and
+  `slidable.dart`; the original package entrypoint remains compatible.
+- Rebuilt the example as a complete showcase for schedules, generic/fixed/sliver
+  timelines, all indicator/connector/card effects, adaptive performance, 500
+  lazy rows, themes, reduced motion, day paging, drag, slide, dismiss, and undo.
+- Improved the example web shell, metadata, zoom accessibility, loading state,
+  manifest, and robots file.
+- Added regression tests for performance policies, explicit animated indexes,
+  optional presentation widgets, and the complete example navigation.
 
 ## 3.3.0
 

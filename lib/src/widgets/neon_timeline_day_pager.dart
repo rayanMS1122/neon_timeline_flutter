@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
 import '../utils/neon_timeline_duration.dart';
@@ -59,7 +60,9 @@ class NeonTimelineDayPager extends StatefulWidget {
 
 class _NeonTimelineDayPagerState extends State<NeonTimelineDayPager> {
   double _dragDistance = 0;
+  double _pendingDragDelta = 0;
   bool _dragging = false;
+  bool _visualUpdateScheduled = false;
 
   double get _velocityThreshold =>
       widget.velocityThreshold.isFinite && widget.velocityThreshold >= 0
@@ -78,14 +81,32 @@ class _NeonTimelineDayPagerState extends State<NeonTimelineDayPager> {
 
   void _handleUpdate(DragUpdateDetails details) {
     if (!widget.enabled) return;
+    _pendingDragDelta += details.delta.dx;
+    if (_visualUpdateScheduled) return;
+    _visualUpdateScheduled = true;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _visualUpdateScheduled = false;
+      if (!mounted) return;
+      _commitPendingDragDelta();
+    });
+  }
+
+  void _commitPendingDragDelta() {
+    final delta = _pendingDragDelta;
+    _pendingDragDelta = 0;
+    if (delta == 0) return;
     setState(() {
       _dragging = true;
-      _dragDistance += details.delta.dx;
+      _dragDistance += delta;
     });
   }
 
   void _handleEnd(DragEndDetails details) {
     if (!widget.enabled) return;
+    if (_pendingDragDelta != 0) {
+      _dragDistance += _pendingDragDelta;
+      _pendingDragDelta = 0;
+    }
     final velocity = details.primaryVelocity ?? 0;
     final moveNext = velocity <= -_velocityThreshold ||
         _dragDistance <= -_distanceThreshold;
@@ -106,6 +127,7 @@ class _NeonTimelineDayPagerState extends State<NeonTimelineDayPager> {
 
   void _reset() {
     if (!mounted) return;
+    _pendingDragDelta = 0;
     setState(() {
       _dragDistance = 0;
       _dragging = false;

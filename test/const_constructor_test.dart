@@ -8,10 +8,14 @@ void main() {
     const theme = NeonTimelineThemeData();
     const motionScope = NeonTimelineMotionScope(child: SizedBox());
     const card = NeonTimelineCard(child: SizedBox());
+    const adaptive = NeonTimelinePerformanceConfig.adaptive();
+    const battery = NeonTimelinePerformanceConfig.batterySaver();
 
     expect(connectorStyle.animationDuration, isNot(Duration.zero));
     expect(theme.motionDuration, isNot(Duration.zero));
     expect(motionScope.duration, isNot(Duration.zero));
     expect(card.animationDuration.isNegative, isFalse);
+    expect(adaptive.profile, NeonTimelinePerformanceProfile.adaptive);
+    expect(battery.maxAnimatedEntries, 0);
   });
 }

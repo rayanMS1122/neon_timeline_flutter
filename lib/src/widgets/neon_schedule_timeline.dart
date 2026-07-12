@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import '../models/neon_schedule_entry.dart';
 import '../models/neon_timeline_types.dart';
+import '../performance/neon_timeline_performance_config.dart';
 import '../theme/neon_schedule_timeline_style.dart';
 import '../theme/neon_timeline_theme.dart';
 import 'neon_slidable_timeline.dart';
@@ -68,6 +69,8 @@ class NeonScheduleTimeline<T> extends StatefulWidget {
     this.pauseMotionWhileScrolling = true,
     this.animateOnlyCurrentEntry = true,
     this.maxAnimatedEntries = 1,
+    this.performance = const NeonTimelinePerformanceConfig.adaptive(),
+    this.dataRevision,
     this.slidableMotion = NeonSlidableMotion.scroll,
     this.slidableGroupTag,
     this.closeSlidablesOnScroll = true,
@@ -184,6 +187,14 @@ class NeonScheduleTimeline<T> extends StatefulWidget {
   /// animated focal point.
   final int maxAnimatedEntries;
 
+  /// Optional adaptive rendering policy. Pass null to use only the legacy
+  /// motion and style fields above.
+  final NeonTimelinePerformanceConfig? performance;
+
+  /// Optional application-owned revision used to skip O(n) identity checks.
+  /// Increment it whenever entry order, time, duration, status, or ids change.
+  final Object? dataRevision;
+
   /// Slide action-pane motion.
   final NeonSlidableMotion slidableMotion;
 
@@ -219,8 +230,10 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
   DateTime _now = DateTime.now();
   _SchedulePlan<T>? _cachedPlan;
   List<NeonScheduleEntry<T>>? _cachedEntrySnapshot;
+  int? _cachedEntryCount;
   DateTime? _cachedSelectedDate;
   bool? _cachedSortEntries;
+  Object? _cachedDataRevision;
 
   ScrollController get _controller =>
       widget.controller ?? (_internalController ??= ScrollController());
@@ -235,7 +248,13 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
   @override
   void didUpdateWidget(covariant NeonScheduleTimeline<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (!_sameEntryObjects(oldWidget.entries, widget.entries) ||
+    final revisionDriven =
+        oldWidget.dataRevision != null || widget.dataRevision != null;
+    final entriesChanged = revisionDriven
+        ? oldWidget.dataRevision != widget.dataRevision ||
+            oldWidget.entries.length != widget.entries.length
+        : !_sameEntryObjects(oldWidget.entries, widget.entries);
+    if (entriesChanged ||
         oldWidget.selectedDate != widget.selectedDate ||
         oldWidget.sortEntries != widget.sortEntries) {
       _invalidatePlan();
@@ -257,8 +276,10 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
   void _invalidatePlan() {
     _cachedPlan = null;
     _cachedEntrySnapshot = null;
+    _cachedEntryCount = null;
     _cachedSelectedDate = null;
     _cachedSortEntries = null;
+    _cachedDataRevision = null;
   }
 
   void _configureClock() {
@@ -294,9 +315,24 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
 
   @override
   Widget build(BuildContext context) {
-    final resolvedTheme = widget.theme ?? NeonTimelineTheme.of(context);
     final plan = _resolvePlan();
-    final animatedKeys = _resolveAnimatedKeys(plan);
+    final resolvedPerformance = widget.performance?.resolve(
+      context,
+      itemCount: plan.entryCount,
+    );
+    final baseTheme = widget.theme ?? NeonTimelineTheme.of(context);
+    final resolvedTheme =
+        resolvedPerformance?.tuneTheme(baseTheme) ?? baseTheme;
+    final resolvedStyle = resolvedPerformance == null
+        ? widget.style
+        : widget.style.copyWith(
+            useBackdropFilter: resolvedPerformance.enableBackdropBlur,
+            enableCardParallax: resolvedPerformance.enableParallax,
+          );
+    final animatedKeys = _resolveAnimatedKeys(
+      plan,
+      resolvedPerformance?.maxAnimatedEntries ?? widget.maxAnimatedEntries,
+    );
 
     Widget result;
     if (plan.entryCount == 0) {
@@ -306,27 +342,24 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
         controller: _controller,
         physics: widget.physics,
         padding: EdgeInsets.fromLTRB(
-          widget.style.horizontalPadding,
-          widget.style.topPadding,
-          widget.style.horizontalPadding,
-          widget.style.bottomPadding,
+          resolvedStyle.horizontalPadding,
+          resolvedStyle.topPadding,
+          resolvedStyle.horizontalPadding,
+          resolvedStyle.bottomPadding,
         ),
         itemCount: plan.nodes.length,
         itemBuilder: (context, index) => _buildNode(
           context,
           plan.nodes[index],
           resolvedTheme,
+          resolvedStyle,
           animatedKeys,
         ),
         findChildIndexCallback: (key) => plan.indexByKey[key],
         addAutomaticKeepAlives: widget.addAutomaticKeepAlives,
         addRepaintBoundaries: true,
         addSemanticIndexes: true,
-        cacheExtent: widget.cacheExtent == null
-            ? null
-            : (widget.cacheExtent!.isFinite
-                ? math.max(0.0, widget.cacheExtent!)
-                : null),
+        cacheExtent: _resolvedCacheExtent(resolvedPerformance),
         clipBehavior: widget.clipBehavior,
         keyboardDismissBehavior: widget.keyboardDismissBehavior,
       );
@@ -335,19 +368,35 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
     return NeonTimelineTheme(
       data: resolvedTheme,
       child: NeonTimelineMotionScope(
-        enabled: widget.motionEnabled,
+        enabled: widget.motionEnabled && animatedKeys.isNotEmpty,
         duration: resolvedTheme.motionDuration,
         phaseOffset: widget.motionPhaseOffset,
-        framesPerSecond: widget.motionFramesPerSecond,
-        pauseWhenScrolling: widget.pauseMotionWhileScrolling,
+        framesPerSecond: resolvedPerformance?.motionFramesPerSecond ??
+            widget.motionFramesPerSecond,
+        pauseWhenScrolling:
+            resolvedPerformance?.pauseMotionWhileScrolling ??
+                widget.pauseMotionWhileScrolling,
+        startupDelay: resolvedPerformance?.motionStartupDelay ??
+            const Duration(milliseconds: 120),
         child: result,
       ),
     );
   }
 
+  double? _resolvedCacheExtent(
+    NeonTimelineResolvedPerformance? performance,
+  ) {
+    final configured = widget.cacheExtent ?? performance?.cacheExtent;
+    if (configured == null || !configured.isFinite) return null;
+    return math.max(0.0, configured);
+  }
+
   _SchedulePlan<T> _resolvePlan() {
-    final entriesUnchanged =
-        _sameEntryObjects(_cachedEntrySnapshot, widget.entries);
+    final revisionDriven = widget.dataRevision != null;
+    final entriesUnchanged = revisionDriven
+        ? _cachedDataRevision == widget.dataRevision &&
+            _cachedEntryCount == widget.entries.length
+        : _sameEntryObjects(_cachedEntrySnapshot, widget.entries);
     if (_cachedPlan != null &&
         entriesUnchanged &&
         _cachedSelectedDate == widget.selectedDate &&
@@ -356,12 +405,16 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
     }
     final plan = _buildPlan();
     _cachedPlan = plan;
-    _cachedEntrySnapshot = List<NeonScheduleEntry<T>>.of(
-      widget.entries,
-      growable: false,
-    );
+    _cachedEntrySnapshot = revisionDriven
+        ? null
+        : List<NeonScheduleEntry<T>>.of(
+            widget.entries,
+            growable: false,
+          );
+    _cachedEntryCount = widget.entries.length;
     _cachedSelectedDate = widget.selectedDate;
     _cachedSortEntries = widget.sortEntries;
+    _cachedDataRevision = widget.dataRevision;
     return plan;
   }
 
@@ -533,8 +586,11 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
     );
   }
 
-  Set<Key> _resolveAnimatedKeys(_SchedulePlan<T> plan) {
-    final limit = widget.maxAnimatedEntries.clamp(0, 1000).toInt();
+  Set<Key> _resolveAnimatedKeys(
+    _SchedulePlan<T> plan,
+    int requestedLimit,
+  ) {
+    final limit = requestedLimit.clamp(0, 1000).toInt();
     if (!widget.motionEnabled || limit == 0) return const <Key>{};
 
     final current = <Key>[];
@@ -561,6 +617,7 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
     BuildContext context,
     _ScheduleNode<T> node,
     NeonTimelineThemeData theme,
+    NeonScheduleTimelineStyle style,
     Set<Key> animatedKeys,
   ) {
     if (node is _ScheduleEntryNode<T>) {
@@ -569,7 +626,7 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
       return _ScheduleEntryRow<T>(
         key: node.key,
         details: details,
-        style: widget.style,
+        style: style,
         theme: theme,
         scrollController: _controller,
         content: widget.itemBuilder(context, details),
@@ -622,7 +679,7 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
         duration: node.duration,
         containsNow: showNow,
         now: _now,
-        style: widget.style,
+        style: style,
         theme: theme,
         label: node.showLabel ? _gapLabel(context, node.duration) : null,
         nowLabel: _nowLabel(context),
@@ -631,7 +688,7 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
 
     return _ScheduleConflictBridge(
       key: (node as _ScheduleConflictNode<T>).key,
-      style: widget.style,
+      style: style,
     );
   }
 

@@ -225,8 +225,7 @@ class NeonTimelineIndicatorStyle {
       rotationSpeed: rotationSpeed ?? this.rotationSpeed,
       corona: corona ?? this.corona,
       depth: depth ?? this.depth,
-      chromaticAberration:
-          chromaticAberration ?? this.chromaticAberration,
+      chromaticAberration: chromaticAberration ?? this.chromaticAberration,
       refraction: refraction ?? this.refraction,
       scanlineOpacity: scanlineOpacity ?? this.scanlineOpacity,
       arcCount: arcCount ?? this.arcCount,
@@ -263,24 +262,21 @@ class NeonTimelineIndicatorStyle {
       intensity: lerpDouble(a.intensity, b.intensity, t)!,
       detail: lerpDouble(a.detail, b.detail, t)!,
       rayLength: lerpDouble(a.rayLength, b.rayLength, t)!,
-      particleCount:
-          lerpDouble(a.particleCount, b.particleCount, t)!.round(),
+      particleCount: lerpDouble(a.particleCount, b.particleCount, t)!.round(),
       rotationSpeed: lerpDouble(a.rotationSpeed, b.rotationSpeed, t)!,
       corona: lerpDouble(a.corona, b.corona, t)!,
       depth: lerpDouble(a.depth, b.depth, t)!,
       chromaticAberration:
           lerpDouble(a.chromaticAberration, b.chromaticAberration, t)!,
       refraction: lerpDouble(a.refraction, b.refraction, t)!,
-      scanlineOpacity:
-          lerpDouble(a.scanlineOpacity, b.scanlineOpacity, t)!,
+      scanlineOpacity: lerpDouble(a.scanlineOpacity, b.scanlineOpacity, t)!,
       arcCount: lerpDouble(a.arcCount, b.arcCount, t)!.round(),
       sparkCount: lerpDouble(a.sparkCount, b.sparkCount, t)!.round(),
       noise: lerpDouble(a.noise, b.noise, t)!,
       parallax: lerpDouble(a.parallax, b.parallax, t)!,
       eventHorizon: lerpDouble(a.eventHorizon, b.eventHorizon, t)!,
       quality: t < 0.5 ? a.quality : b.quality,
-      haloRingCount:
-          lerpDouble(a.haloRingCount, b.haloRingCount, t)!.round(),
+      haloRingCount: lerpDouble(a.haloRingCount, b.haloRingCount, t)!.round(),
       fieldLineCount:
           lerpDouble(a.fieldLineCount, b.fieldLineCount, t)!.round(),
       diffraction: lerpDouble(a.diffraction, b.diffraction, t)!,
@@ -414,7 +410,7 @@ class NeonTimelineConnectorStyle {
         assert(strandCount >= 1 && strandCount <= 8),
         assert(waveFrequency >= 1 && waveFrequency <= 16),
         assert(chromaticAberration >= 0 && chromaticAberration <= 2),
-        assert(packetCount >= 1 && packetCount <= 8),
+        assert(packetCount >= 0 && packetCount <= 8),
         assert(scanlineOpacity >= 0 && scanlineOpacity <= 1),
         assert(refraction >= 0 && refraction <= 1),
         assert(crossFlare >= 0 && crossFlare <= 1),
@@ -495,6 +491,8 @@ class NeonTimelineConnectorStyle {
   final double chromaticAberration;
 
   /// Number of moving warp or hologram packets.
+  ///
+  /// Set to `0` to disable packet animation entirely.
   final int packetCount;
 
   /// Scanline and data-tick opacity.
@@ -587,8 +585,7 @@ class NeonTimelineConnectorStyle {
       phaseOffset: phaseOffset ?? this.phaseOffset,
       strandCount: strandCount ?? this.strandCount,
       waveFrequency: waveFrequency ?? this.waveFrequency,
-      chromaticAberration:
-          chromaticAberration ?? this.chromaticAberration,
+      chromaticAberration: chromaticAberration ?? this.chromaticAberration,
       packetCount: packetCount ?? this.packetCount,
       scanlineOpacity: scanlineOpacity ?? this.scanlineOpacity,
       refraction: refraction ?? this.refraction,
@@ -633,8 +630,7 @@ class NeonTimelineConnectorStyle {
       intensity: lerpDouble(a.intensity, b.intensity, t)!,
       detail: lerpDouble(a.detail, b.detail, t)!,
       flowSpeed: lerpDouble(a.flowSpeed, b.flowSpeed, t)!,
-      particleCount:
-          lerpDouble(a.particleCount, b.particleCount, t)!.round(),
+      particleCount: lerpDouble(a.particleCount, b.particleCount, t)!.round(),
       turbulence: lerpDouble(a.turbulence, b.turbulence, t)!,
       trailCount: lerpDouble(a.trailCount, b.trailCount, t)!.round(),
       phaseOffset: lerpDouble(a.phaseOffset, b.phaseOffset, t)!,
@@ -643,8 +639,7 @@ class NeonTimelineConnectorStyle {
       chromaticAberration:
           lerpDouble(a.chromaticAberration, b.chromaticAberration, t)!,
       packetCount: lerpDouble(a.packetCount, b.packetCount, t)!.round(),
-      scanlineOpacity:
-          lerpDouble(a.scanlineOpacity, b.scanlineOpacity, t)!,
+      scanlineOpacity: lerpDouble(a.scanlineOpacity, b.scanlineOpacity, t)!,
       refraction: lerpDouble(a.refraction, b.refraction, t)!,
       crossFlare: lerpDouble(a.crossFlare, b.crossFlare, t)!,
       noise: lerpDouble(a.noise, b.noise, t)!,
@@ -652,8 +647,7 @@ class NeonTimelineConnectorStyle {
       quality: t < 0.5 ? a.quality : b.quality,
       latticeDensity:
           lerpDouble(a.latticeDensity, b.latticeDensity, t)!.round(),
-      trailPersistence:
-          lerpDouble(a.trailPersistence, b.trailPersistence, t)!,
+      trailPersistence: lerpDouble(a.trailPersistence, b.trailPersistence, t)!,
       photonSpread: lerpDouble(a.photonSpread, b.photonSpread, t)!,
       interference: lerpDouble(a.interference, b.interference, t)!,
     );

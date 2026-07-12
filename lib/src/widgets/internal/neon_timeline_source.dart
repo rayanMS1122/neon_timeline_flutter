@@ -59,6 +59,7 @@ class NeonTimelineSource {
     required NeonTimelineLayout layout,
     required NeonTimelineThemeData theme,
     required bool animate,
+    Set<int> animatedIndexes = const <int>{},
     double? itemExtent,
     double indicatorPosition = 0.5,
   }) {
@@ -100,18 +101,19 @@ class NeonTimelineSource {
         endColor: currentColor,
         phaseOffset: (index * 0.137) % 1,
         animated: baseConnectorStyle.animated &&
-            (status == NeonTimelineStatus.active ||
-                details.previousStatus == NeonTimelineStatus.active),
+            (animatedIndexes.contains(index) ||
+                animatedIndexes.contains(index - 1)),
       ),
       afterConnectorStyle: baseConnectorStyle.copyWith(
         color: currentColor,
         endColor: afterColor,
         phaseOffset: ((index + 0.5) * 0.137) % 1,
         animated: baseConnectorStyle.animated &&
-            (status == NeonTimelineStatus.active ||
-                details.nextStatus == NeonTimelineStatus.active),
+            (animatedIndexes.contains(index) ||
+                animatedIndexes.contains(index + 1)),
       ),
       indicatorPosition: indicatorPosition,
+      animateIndicator: animatedIndexes.contains(index),
       extent: itemExtent,
       semanticLabel: item?.semanticLabel ??
           semanticLabelBuilder?.call(context, details) ??

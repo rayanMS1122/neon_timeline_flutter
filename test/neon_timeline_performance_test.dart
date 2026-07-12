@@ -133,6 +133,27 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  test('tuneTheme can disable connector packets without asserting', () {
+    const resolved = NeonTimelineResolvedPerformance(
+      motionFramesPerSecond: 12,
+      maxAnimatedEntries: 0,
+      pauseMotionWhileScrolling: true,
+      enableBackdropBlur: false,
+      enableParallax: false,
+      enableParticles: false,
+      cacheExtent: 80,
+      motionStartupDelay: Duration(milliseconds: 220),
+      webGlowStrategy: NeonTimelineWebGlowStrategy.layeredContours,
+      renderQuality: NeonTimelineRenderQuality.balanced,
+      reduceMotion: false,
+    );
+
+    final tuned = resolved.tuneTheme(const NeonTimelineThemeData());
+
+    expect(tuned.indicatorStyle.particleCount, 0);
+    expect(tuned.connectorStyle.packetCount, 0);
+  });
+
   testWidgets('shared motion publishes at the configured sample rate',
       (tester) async {
     var notifications = 0;
@@ -144,8 +165,8 @@ void main() {
           pauseWhenScrolling: false,
           child: Builder(
             builder: (context) {
-              final animation = NeonTimelineMotionScope.maybeOf(context)!
-                  .animation;
+              final animation =
+                  NeonTimelineMotionScope.maybeOf(context)!.animation;
               return AnimatedBuilder(
                 animation: animation,
                 builder: (context, child) {

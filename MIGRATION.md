@@ -14,7 +14,7 @@ Replace the dependency:
 
 ```yaml
 dependencies:
-  neon_timeline_flutter: ^3.3.0
+  neon_timeline_flutter: ^3.4.0
 ```
 
 Replace the import:
@@ -26,6 +26,50 @@ import 'package:neon_timeline_flutter/neon_timeline_flutter.dart';
 Do not keep both packages unprefixed in the same library while migrating; many
 timeline concepts have similar names even though their APIs differ.
 
+
+
+## Upgrading from 3.3.x to 3.4.0
+
+Version 3.4.0 is additive. Existing timeline layouts, colors, presets, cards,
+indicators, connectors, schedule callbacks, and slide gestures remain available.
+The new adaptive performance policy becomes the schedule default and can also be
+passed to generic timelines.
+
+```dart
+NeonScheduleTimeline<Task>(
+  entries: entries,
+  selectedDate: selectedDate,
+  dataRevision: state.revision,
+  performance: const NeonTimelinePerformanceConfig.adaptive(),
+  itemBuilder: buildTask,
+)
+```
+
+For very large generic builder timelines, provide the indexes eligible for
+motion. This avoids scanning every status merely to locate one active row:
+
+```dart
+NeonTimeline.builder(
+  itemCount: items.length,
+  animatedItemIndexes: <int>[activeIndex],
+  performance: const NeonTimelinePerformanceConfig.adaptive(),
+  statusBuilder: (index) => items[index].status,
+  contentBuilder: buildItem,
+)
+```
+
+The package now offers smaller public entrypoints:
+
+```dart
+import 'package:neon_timeline_flutter/core.dart';
+import 'package:neon_timeline_flutter/advanced.dart';
+import 'package:neon_timeline_flutter/slidable.dart';
+```
+
+The original all-in-one import remains supported. New presentation widgets
+(`NeonTimelineSurface`, `NeonTimelineHeader`, `NeonTimelineBadge`, and
+`NeonTimelineEmptyState`) are optional and do not wrap existing timelines
+automatically.
 
 
 ## Upgrading from 3.2.x to 3.3.0

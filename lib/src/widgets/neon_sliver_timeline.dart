@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/neon_timeline_item.dart';
 import '../models/neon_timeline_types.dart';
+import '../performance/neon_timeline_performance_config.dart';
 import '../theme/neon_timeline_theme.dart';
 import 'internal/neon_timeline_source.dart';
 import 'neon_timeline_motion.dart';
@@ -23,6 +24,10 @@ class NeonSliverTimeline extends StatelessWidget {
     this.motionPhaseOffset = 0,
     this.motionFramesPerSecond = 24,
     this.pauseMotionWhileScrolling = true,
+    this.maxAnimatedItems = 1,
+    this.animateOnlyActiveItems = true,
+    this.animatedItemIndexes,
+    this.performance,
     this.emptyBuilder,
     this.findChildIndexCallback,
     this.addAutomaticKeepAlives = true,
@@ -33,6 +38,7 @@ class NeonSliverTimeline extends StatelessWidget {
         assert(indicatorPosition >= 0 && indicatorPosition <= 1),
         assert(motionPhaseOffset >= 0 && motionPhaseOffset <= 1),
         assert(motionFramesPerSecond >= 1 && motionFramesPerSecond <= 120),
+        assert(maxAnimatedItems >= 0),
         _source = NeonTimelineSource.items(items);
 
   /// Creates a lazily built sliver timeline.
@@ -56,6 +62,10 @@ class NeonSliverTimeline extends StatelessWidget {
     this.motionPhaseOffset = 0,
     this.motionFramesPerSecond = 24,
     this.pauseMotionWhileScrolling = true,
+    this.maxAnimatedItems = 1,
+    this.animateOnlyActiveItems = true,
+    this.animatedItemIndexes,
+    this.performance,
     this.emptyBuilder,
     this.findChildIndexCallback,
     this.addAutomaticKeepAlives = true,
@@ -67,6 +77,7 @@ class NeonSliverTimeline extends StatelessWidget {
         assert(indicatorPosition >= 0 && indicatorPosition <= 1),
         assert(motionPhaseOffset >= 0 && motionPhaseOffset <= 1),
         assert(motionFramesPerSecond >= 1 && motionFramesPerSecond <= 120),
+        assert(maxAnimatedItems >= 0),
         _source = NeonTimelineSource.builder(
           itemCount: itemCount,
           contentBuilder: contentBuilder,
@@ -114,6 +125,20 @@ class NeonSliverTimeline extends StatelessWidget {
   /// Whether painter motion pauses while a descendant scrollable moves.
   final bool pauseMotionWhileScrolling;
 
+  /// Maximum number of items allowed to repaint continuously.
+  final int maxAnimatedItems;
+
+  /// Whether only active items are eligible for continuous motion.
+  final bool animateOnlyActiveItems;
+
+  /// Optional application-provided animated indexes. Supplying this avoids a
+  /// full status scan for very large builder timelines. Invalid indexes are
+  /// ignored and [maxAnimatedItems] is still enforced.
+  final Iterable<int>? animatedItemIndexes;
+
+  /// Optional adaptive rendering policy.
+  final NeonTimelinePerformanceConfig? performance;
+
   /// Optional box child shown through `SliverToBoxAdapter` when empty.
   final WidgetBuilder? emptyBuilder;
 
@@ -129,9 +154,46 @@ class NeonSliverTimeline extends StatelessWidget {
   /// Whether lazy children should receive semantic indexes automatically.
   final bool addSemanticIndexes;
 
+  Set<int> _resolveAnimatedIndexes(int requestedLimit) {
+    if (!motionEnabled || requestedLimit <= 0 || _source.length == 0) {
+      return const <int>{};
+    }
+    final limit = requestedLimit.clamp(0, _source.length).toInt();
+    final indexes = <int>{};
+    final providedIndexes = animatedItemIndexes;
+    if (providedIndexes != null) {
+      for (final index in providedIndexes) {
+        if (index < 0 || index >= _source.length) continue;
+        if (!animateOnlyActiveItems ||
+            _source.statusAt(index) == NeonTimelineStatus.active) {
+          indexes.add(index);
+          if (indexes.length >= limit) break;
+        }
+      }
+      return indexes;
+    }
+    for (var index = 0; index < _source.length; index++) {
+      final status = _source.statusAt(index);
+      if (!animateOnlyActiveItems || status == NeonTimelineStatus.active) {
+        indexes.add(index);
+        if (indexes.length >= limit) break;
+      }
+    }
+    return indexes;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final resolvedTheme = theme ?? NeonTimelineTheme.of(context);
+    final baseTheme = theme ?? NeonTimelineTheme.of(context);
+    final resolvedPerformance = performance?.resolve(
+      context,
+      itemCount: _source.length,
+    );
+    final resolvedTheme =
+        resolvedPerformance?.tuneTheme(baseTheme) ?? baseTheme;
+    final animatedIndexes = _resolveAnimatedIndexes(
+      resolvedPerformance?.maxAnimatedEntries ?? maxAnimatedItems,
+    );
     Widget sliver;
     if (_source.length == 0) {
       sliver = SliverToBoxAdapter(
@@ -155,6 +217,7 @@ class NeonSliverTimeline extends StatelessWidget {
             layout: layout,
             theme: resolvedTheme,
             animate: animate,
+            animatedIndexes: animatedIndexes,
             itemExtent: resolvedItemExtent,
             indicatorPosition: indicatorPosition,
           );
@@ -175,11 +238,16 @@ class NeonSliverTimeline extends StatelessWidget {
     return NeonTimelineTheme(
       data: resolvedTheme,
       child: NeonTimelineMotionScope(
-        enabled: motionEnabled,
+        enabled: motionEnabled && animatedIndexes.isNotEmpty,
         duration: resolvedTheme.motionDuration,
         phaseOffset: motionPhaseOffset,
-        framesPerSecond: motionFramesPerSecond,
-        pauseWhenScrolling: pauseMotionWhileScrolling,
+        framesPerSecond: resolvedPerformance?.motionFramesPerSecond ??
+            motionFramesPerSecond,
+        pauseWhenScrolling:
+            resolvedPerformance?.pauseMotionWhileScrolling ??
+                pauseMotionWhileScrolling,
+        startupDelay: resolvedPerformance?.motionStartupDelay ??
+            const Duration(milliseconds: 120),
         child: sliver,
       ),
     );

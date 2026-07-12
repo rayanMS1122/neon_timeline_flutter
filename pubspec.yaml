@@ -2,9 +2,10 @@ name: neon_timeline_flutter
 description: >-
   Production-ready Flutter timelines and schedules with neon rendering,
   drag-to-reschedule, overlap logic, slidable actions, slivers, and accessibility.
-version: 3.3.1
+version: 3.4.0
 homepage: https://github.com/rayanMS1122/neon_timeline_flutter
 repository: https://github.com/rayanMS1122/neon_timeline_flutter
+issue_tracker: https://github.com/rayanMS1122/neon_timeline_flutter/issues
 
 topics:
   - timeline
@@ -12,6 +13,28 @@ topics:
   - animation
   - slidable
   - widgets
+
+screenshots:
+  - description: 'Schedule timeline hero with drag-to-reschedule, overlap cards, and day paging in the spectral theme.'
+    path: assets/spectral.png
+  - description: 'Schedule shell preview with bottom navigation and layered neon cards in the omniverse theme.'
+    path: assets/omniverse.png
+  - description: 'Hyperion preset showing the same planner layout with a darker, high-contrast palette.'
+    path: assets/Hyperion.png
+  - description: 'Holographic theme preview with segmented cards and bright indicator rings.'
+    path: assets/hologram.png
+  - description: 'Aurora preset using a cool green-blue palette for the same schedule workflow.'
+    path: assets/aurora.png
+  - description: 'Solar Flare preset with warm orange-magenta tones and the same planner interactions.'
+    path: assets/solar_flare.png
+  - description: 'Cryogenic preset with an icy blue palette and dark glass cards.'
+    path: assets/cryogenic.png
+  - description: 'Seeded theme preview for custom fromSeed color schemes.'
+    path: assets/seeded.png
+  - description: 'Light theme preview showing the package on a bright surface.'
+    path: assets/light.png
+  - description: 'Midnight theme preview showing the package on a calm low-contrast dark surface.'
+    path: assets/midnight.png
 
 environment:
   sdk: '>=3.4.0 <4.0.0'

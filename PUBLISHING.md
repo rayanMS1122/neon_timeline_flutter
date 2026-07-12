@@ -8,6 +8,8 @@
 - Replace or confirm the copyright holder in `LICENSE`.
 - Add real `repository`, `issue_tracker`, and `homepage` fields to
   `pubspec.yaml` after the repository exists. Do not publish fake URLs.
+- Keep the README screenshot gallery and the `screenshots:` entries in
+  `pubspec.yaml` pointed at the same in-repo image files under `assets/`.
 
 ## 2. Validate locally
 

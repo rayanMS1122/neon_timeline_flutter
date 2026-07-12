@@ -110,8 +110,8 @@ class _NeonTimelineConnectorState extends State<NeonTimelineConnector> {
     return RepaintBoundary(
       child: CustomPaint(
         isComplex: style.effect != NeonConnectorEffect.classic,
-        willChange: style.animated &&
-            animation is! AlwaysStoppedAnimation<double>,
+        willChange:
+            style.animated && animation is! AlwaysStoppedAnimation<double>,
         painter: _ConnectorPainter(
           axis: widget.axis,
           style: style,
@@ -231,8 +231,7 @@ class _ConnectorPainter extends CustomPainter {
   }) {
     final frame = _BeamFrame.from(start, end);
     if (frame == null) return;
-    final strength =
-        (style.intensity * baseOpacity).clamp(0.0, 1.0).toDouble();
+    final strength = (style.intensity * baseOpacity).clamp(0.0, 1.0).toDouble();
     final shader = ui.Gradient.linear(
       start,
       end,
@@ -395,17 +394,15 @@ class _ConnectorPainter extends CustomPainter {
   ) {
     if (style.turbulence <= 0 || style.detail <= 0.05) return;
     final waveCount = style.detail > 0.72 ? 3 : 2;
-    final amplitude = math.max(0.8, style.thickness * 1.45) *
-        style.turbulence *
-        style.detail;
+    final amplitude =
+        math.max(0.8, style.thickness * 1.45) * style.turbulence * style.detail;
 
     for (var wave = 0; wave < waveCount; wave++) {
       final path = _wavePath(
         frame,
         amplitude: amplitude * (1 - wave * 0.14),
         frequency: style.waveFrequency * (0.72 + wave * 0.18),
-        phase: _phase * math.pi * 2 * (wave.isEven ? 1.0 : -0.72) +
-            wave * 1.8,
+        phase: _phase * math.pi * 2 * (wave.isEven ? 1.0 : -0.72) + wave * 1.8,
       );
       final color = wave.isEven ? style.color : style.endColor;
       canvas.drawPath(
@@ -452,7 +449,7 @@ class _ConnectorPainter extends CustomPainter {
     _paintBraidedStrands(canvas, frame, strength);
     _paintRefractionShimmer(canvas, frame, strength);
 
-    if (style.animated) {
+    if (style.animated && style.packetCount > 0) {
       for (var packet = 0; packet < style.packetCount; packet++) {
         final packetPhase = (_phase + packet / style.packetCount) % 1.0;
         _paintWarpPacket(
@@ -499,9 +496,7 @@ class _ConnectorPainter extends CustomPainter {
       final t = (index + 0.5) / count;
       final point = frame.pointAt(t);
       final envelope = NeonTrig.sin(t * math.pi);
-      final half = style.thickness *
-          (2.2 + style.crossFlare * 3.8) *
-          envelope;
+      final half = style.thickness * (2.2 + style.crossFlare * 3.8) * envelope;
       canvas.drawLine(
         point - frame.normal * half,
         point + frame.normal * half,
@@ -530,8 +525,8 @@ class _ConnectorPainter extends CustomPainter {
     _BeamFrame frame,
     double strength,
   ) {
-    final amplitude = math.max(0.9, style.thickness * 1.65) *
-        (0.45 + style.turbulence * 0.9);
+    final amplitude =
+        math.max(0.9, style.thickness * 1.65) * (0.45 + style.turbulence * 0.9);
     for (var strand = 0; strand < style.strandCount; strand++) {
       final offsetPhase = strand / style.strandCount * math.pi * 2;
       final direction = strand.isEven ? 1.0 : -1.0;
@@ -601,8 +596,8 @@ class _ConnectorPainter extends CustomPainter {
       frame.length * style.pulseWidth,
       math.max(26.0, style.thickness * 28),
     );
-    final centerDistance = phase * (frame.length + packetLength) -
-        packetLength / 2;
+    final centerDistance =
+        phase * (frame.length + packetLength) - packetLength / 2;
     final startDistance =
         (centerDistance - packetLength / 2).clamp(0.0, frame.length).toDouble();
     final endDistance =
@@ -721,7 +716,7 @@ class _ConnectorPainter extends CustomPainter {
     _paintHologramTicks(canvas, frame, strength);
     _paintHologramNoise(canvas, frame, strength);
 
-    if (style.animated) {
+    if (style.animated && style.packetCount > 0) {
       for (var packet = 0; packet < style.packetCount; packet++) {
         final packetPhase = (_phase + packet / style.packetCount) % 1.0;
         _paintHologramPacket(
@@ -746,8 +741,8 @@ class _ConnectorPainter extends CustomPainter {
       final point = frame.pointAt(t);
       final major = index % 4 == 0;
       final half = style.thickness * (major ? 2.8 : 1.55);
-      final flicker = 0.55 +
-          0.45 * NeonTrig.sin(index * 1.37 + _phase * math.pi * 2 * 1.2);
+      final flicker =
+          0.55 + 0.45 * NeonTrig.sin(index * 1.37 + _phase * math.pi * 2 * 1.2);
       canvas.drawLine(
         point - frame.normal * half,
         point + frame.normal * half,
@@ -826,7 +821,6 @@ class _ConnectorPainter extends CustomPainter {
     );
   }
 
-
   void _paintPhotonLatticeConnector(
     Canvas canvas,
     Offset start,
@@ -867,9 +861,8 @@ class _ConnectorPainter extends CustomPainter {
 
     final strandCount = math.max(3, style.strandCount);
     for (var strand = 0; strand < strandCount; strand++) {
-      final normalized = strandCount <= 1
-          ? 0.0
-          : strand / (strandCount - 1) * 2 - 1;
+      final normalized =
+          strandCount <= 1 ? 0.0 : strand / (strandCount - 1) * 2 - 1;
       final amplitude = style.thickness *
           (1.1 + style.photonSpread * 3.6) *
           (0.35 + normalized.abs() * 0.65);
@@ -907,7 +900,7 @@ class _ConnectorPainter extends CustomPainter {
     _paintPhotonCrossLinks(canvas, frame, strength);
     _paintPhotonInterference(canvas, frame, strength);
 
-    if (style.animated) {
+    if (style.animated && style.packetCount > 0) {
       for (var packet = 0; packet < style.packetCount; packet++) {
         final packetPhase = (_phase + packet / style.packetCount) % 1.0;
         _paintPhotonPacket(
@@ -934,8 +927,7 @@ class _ConnectorPainter extends CustomPainter {
       style.latticeDensity +
           (style.quality == NeonTimelineRenderQuality.ultra ? 3 : 0),
     );
-    final amplitude =
-        style.thickness * (1.55 + style.photonSpread * 3.8);
+    final amplitude = style.thickness * (1.55 + style.photonSpread * 3.8);
     for (var index = 0; index <= links; index++) {
       final t = index / math.max(1, links);
       final envelope = NeonTrig.sin(t * math.pi);
@@ -946,8 +938,8 @@ class _ConnectorPainter extends CustomPainter {
       final center = frame.pointAt(t);
       final from = center - frame.normal * offset;
       final to = center + frame.normal * offset;
-      final flicker = 0.58 +
-          0.42 * NeonTrig.sin(index * 1.47 + _phaseRadians * 1.35).abs();
+      final flicker =
+          0.58 + 0.42 * NeonTrig.sin(index * 1.47 + _phaseRadians * 1.35).abs();
       canvas.drawLine(
         from,
         to,
@@ -1048,8 +1040,7 @@ class _ConnectorPainter extends CustomPainter {
         .toDouble();
     final trailStart = frame.start + frame.direction * trailStartDistance;
     final controlBase = Offset.lerp(trailStart, packetCenter, 0.58)!;
-    final control = controlBase +
-        frame.normal * wave * style.thickness * 1.6;
+    final control = controlBase + frame.normal * wave * style.thickness * 1.6;
     final trailPath = _pathPool.next()
       ..moveTo(trailStart.dx, trailStart.dy)
       ..quadraticBezierTo(
@@ -1091,8 +1082,7 @@ class _ConnectorPainter extends CustomPainter {
         ..applyBlur(NeonBlur.normal(1.4)),
     );
 
-    final flareHalf =
-        style.thickness * (2.2 + style.crossFlare * 4.5);
+    final flareHalf = style.thickness * (2.2 + style.crossFlare * 4.5);
     canvas.drawLine(
       packetCenter - frame.normal * flareHalf,
       packetCenter + frame.normal * flareHalf,
@@ -1190,9 +1180,8 @@ class _ConnectorPainter extends CustomPainter {
             localPhase * math.pi * 6 + index * 1.71,
           ) *
           math.max(0.8, style.thickness * (0.62 + style.turbulence));
-      final position = frame.start +
-          frame.direction * distance +
-          frame.normal * wobble;
+      final position =
+          frame.start + frame.direction * distance + frame.normal * wobble;
       final color = switch (index % 3) {
         0 => style.color,
         1 => style.secondaryColor,
@@ -1218,8 +1207,7 @@ class _ConnectorPainter extends CustomPainter {
     required double phase,
   }) {
     const phaseBuckets = 72;
-    final phaseBucket =
-        ((phase / (math.pi * 2)) * phaseBuckets).round();
+    final phaseBucket = ((phase / (math.pi * 2)) * phaseBuckets).round();
     final key = Object.hash(
       frame.start.dx.round(),
       frame.start.dy.round(),

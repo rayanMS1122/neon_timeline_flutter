@@ -83,6 +83,8 @@ The existing Cubit callbacks can remain unchanged:
 NeonScheduleTimeline<Task>(
   entries: mapTasks(tasks),
   selectedDate: state.selectedDate,
+  dataRevision: state.revision,
+  performance: const NeonTimelinePerformanceConfig.adaptive(),
   itemBuilder: (context, details) {
     final task = details.entry.value;
     return YourExistingTaskContent(task: task);
@@ -155,6 +157,28 @@ neon surface while the app retains its internal icon/text composition.
 
 The package provides overridable label builders. The app should continue to
 provide its translated action, gap, conflict, current-time, and time strings.
+
+
+## Production performance settings
+
+Expose a monotonically increasing revision from the Cubit state and increment it
+when task timing, duration, order, status, or ids change. Passing that revision
+lets the package reuse its normalized schedule plan through unrelated page
+rebuilds.
+
+```dart
+NeonScheduleTimeline<Task>(
+  entries: mappedEntries,
+  selectedDate: state.selectedDate,
+  dataRevision: state.revision,
+  performance: const NeonTimelinePerformanceConfig.adaptive(),
+  itemBuilder: buildTaskContent,
+)
+```
+
+Do not start with `highQuality()` in the production day view. Use it only on a
+short showcase after profile testing. The adaptive profile preserves the same
+layout and colors while limiting continuous animation and expensive web blur.
 
 ## Recommended rollout
 

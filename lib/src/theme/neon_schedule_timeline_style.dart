@@ -158,6 +158,73 @@ class NeonScheduleTimelineStyle {
   /// Accent used by overlap warnings.
   final Color conflictColor;
 
+  /// Returns a copy with selected values replaced.
+  NeonScheduleTimelineStyle copyWith({
+    double? pixelsPerMinute,
+    double? minimumEntryExtent,
+    double? maximumEntryExtent,
+    double? timeColumnWidth,
+    double? railLaneExtent,
+    double? contentGap,
+    double? horizontalPadding,
+    double? topPadding,
+    double? bottomPadding,
+    double? minimumGapExtent,
+    double? maximumGapExtent,
+    double? gapScale,
+    int? snapMinutes,
+    double? autoScrollEdge,
+    double? autoScrollStep,
+    double? dragScale,
+    double? dragOpacity,
+    double? overlapIndent,
+    NeonTimelineCardVariant? cardVariant,
+    BorderRadius? cardBorderRadius,
+    EdgeInsetsGeometry? cardPadding,
+    double? cardBlurSigma,
+    bool? useBackdropFilter,
+    bool? enableCardParallax,
+    bool? showGapLabels,
+    bool? showDurationRail,
+    bool? keepEntriesInsideDay,
+    bool? animateLayout,
+    Color? nowColor,
+    Color? conflictColor,
+  }) {
+    return NeonScheduleTimelineStyle(
+      pixelsPerMinute: pixelsPerMinute ?? this.pixelsPerMinute,
+      minimumEntryExtent: minimumEntryExtent ?? this.minimumEntryExtent,
+      maximumEntryExtent: maximumEntryExtent ?? this.maximumEntryExtent,
+      timeColumnWidth: timeColumnWidth ?? this.timeColumnWidth,
+      railLaneExtent: railLaneExtent ?? this.railLaneExtent,
+      contentGap: contentGap ?? this.contentGap,
+      horizontalPadding: horizontalPadding ?? this.horizontalPadding,
+      topPadding: topPadding ?? this.topPadding,
+      bottomPadding: bottomPadding ?? this.bottomPadding,
+      minimumGapExtent: minimumGapExtent ?? this.minimumGapExtent,
+      maximumGapExtent: maximumGapExtent ?? this.maximumGapExtent,
+      gapScale: gapScale ?? this.gapScale,
+      snapMinutes: snapMinutes ?? this.snapMinutes,
+      autoScrollEdge: autoScrollEdge ?? this.autoScrollEdge,
+      autoScrollStep: autoScrollStep ?? this.autoScrollStep,
+      dragScale: dragScale ?? this.dragScale,
+      dragOpacity: dragOpacity ?? this.dragOpacity,
+      overlapIndent: overlapIndent ?? this.overlapIndent,
+      cardVariant: cardVariant ?? this.cardVariant,
+      cardBorderRadius: cardBorderRadius ?? this.cardBorderRadius,
+      cardPadding: cardPadding ?? this.cardPadding,
+      cardBlurSigma: cardBlurSigma ?? this.cardBlurSigma,
+      useBackdropFilter: useBackdropFilter ?? this.useBackdropFilter,
+      enableCardParallax: enableCardParallax ?? this.enableCardParallax,
+      showGapLabels: showGapLabels ?? this.showGapLabels,
+      showDurationRail: showDurationRail ?? this.showDurationRail,
+      keepEntriesInsideDay: keepEntriesInsideDay ?? this.keepEntriesInsideDay,
+      animateLayout: animateLayout ?? this.animateLayout,
+      nowColor: nowColor ?? this.nowColor,
+      conflictColor: conflictColor ?? this.conflictColor,
+    );
+  }
+
   /// Runtime-safe pixels-per-minute value.
   ///
   /// Constructor assertions catch invalid values in debug mode. This fallback

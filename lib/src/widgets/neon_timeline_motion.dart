@@ -23,6 +23,8 @@ class NeonTimelineMotionScope extends StatefulWidget {
     this.pauseWhenScrolling = true,
     this.scrollResumeDelay = const Duration(milliseconds: 120),
     this.pauseWhenAppInactive = true,
+    this.pauseWhenRouteInactive = true,
+    this.startupDelay = const Duration(milliseconds: 120),
     this.groupBackdropFilters = true,
     super.key,
   })  : assert(phaseOffset >= 0 && phaseOffset <= 1),
@@ -52,6 +54,15 @@ class NeonTimelineMotionScope extends StatefulWidget {
   /// Whether motion pauses when the application is not resumed.
   final bool pauseWhenAppInactive;
 
+  /// Whether motion pauses while the containing route is not current.
+  final bool pauseWhenRouteInactive;
+
+  /// Delay after the first rendered frame before continuous motion starts.
+  ///
+  /// This prevents expensive effects from competing with startup and first
+  /// content paint. A zero duration starts immediately after the first frame.
+  final Duration startupDelay;
+
   /// Whether advanced card backdrop filters share one backdrop input layer.
   final bool groupBackdropFilters;
 
@@ -74,12 +85,15 @@ class _NeonTimelineMotionScopeState extends State<NeonTimelineMotionScope>
   late final _SampledAnimation _sampledAnimation;
   Timer? _tickTimer;
   Timer? _resumeTimer;
+  Timer? _startupTimer;
   ValueNotifier<bool>? _ancestorScrollingNotifier;
 
   bool _scrolling = false;
   bool _appIsActive = true;
   bool _reduceMotion = false;
   bool _tickerEnabled = true;
+  bool _routeIsCurrent = true;
+  bool _startupReady = false;
   bool _disposing = false;
   double _phase = 0;
 
@@ -92,6 +106,11 @@ class _NeonTimelineMotionScopeState extends State<NeonTimelineMotionScope>
   Duration get _effectiveResumeDelay => neonNonNegativeDuration(
         widget.scrollResumeDelay,
         debugLabel: 'NeonTimelineMotionScope.scrollResumeDelay',
+      );
+
+  Duration get _effectiveStartupDelay => neonNonNegativeDuration(
+        widget.startupDelay,
+        debugLabel: 'NeonTimelineMotionScope.startupDelay',
       );
 
   int get _effectiveFramesPerSecond =>
@@ -112,9 +131,11 @@ class _NeonTimelineMotionScopeState extends State<NeonTimelineMotionScope>
     return mounted &&
         !_disposing &&
         widget.enabled &&
+        _startupReady &&
         _sampledAnimation.hasConsumers &&
         !_reduceMotion &&
         _tickerEnabled &&
+        (!widget.pauseWhenRouteInactive || _routeIsCurrent) &&
         (!widget.pauseWhenScrolling || !_scrolling) &&
         (!widget.pauseWhenAppInactive || _appIsActive);
   }
@@ -132,6 +153,10 @@ class _NeonTimelineMotionScopeState extends State<NeonTimelineMotionScope>
       status: AnimationStatus.dismissed,
       onListenerStateChanged: _sync,
     );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _disposing) return;
+      _scheduleStartup();
+    });
   }
 
   @override
@@ -139,6 +164,7 @@ class _NeonTimelineMotionScopeState extends State<NeonTimelineMotionScope>
     super.didChangeDependencies();
     _reduceMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     _tickerEnabled = TickerMode.of(context);
+    _routeIsCurrent = ModalRoute.of(context)?.isCurrent ?? true;
     _attachAncestorScrollable();
     _sync();
   }
@@ -166,6 +192,10 @@ class _NeonTimelineMotionScopeState extends State<NeonTimelineMotionScope>
         AnimationStatus.dismissed,
         isAnimating: false,
       );
+    }
+
+    if (oldWidget.startupDelay != widget.startupDelay && !_startupReady) {
+      _scheduleStartup();
     }
 
     _sync();
@@ -200,6 +230,22 @@ class _NeonTimelineMotionScopeState extends State<NeonTimelineMotionScope>
     } else {
       _scheduleResumeAfterScroll();
     }
+  }
+
+  void _scheduleStartup() {
+    _startupTimer?.cancel();
+    final delay = _effectiveStartupDelay;
+    if (delay == Duration.zero) {
+      _startupReady = true;
+      _sync();
+      return;
+    }
+    _startupTimer = Timer(delay, () {
+      _startupTimer = null;
+      if (!mounted || _disposing) return;
+      _startupReady = true;
+      _sync();
+    });
   }
 
   void _scheduleTick() {
@@ -299,6 +345,7 @@ class _NeonTimelineMotionScopeState extends State<NeonTimelineMotionScope>
     WidgetsBinding.instance.removeObserver(this);
     _tickTimer?.cancel();
     _resumeTimer?.cancel();
+    _startupTimer?.cancel();
     _ancestorScrollingNotifier?.removeListener(_handleAncestorScrollChanged);
     _sampledAnimation.dispose();
     super.dispose();

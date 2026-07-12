@@ -1,10 +1,30 @@
 # Neon Timeline Flutter
 
-![Neon Timeline Showcase](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshot.png)
+![Neon Timeline Showcase](assets/spectral.png)
 
 Production-ready Flutter timelines and planner schedules with animated neon
 rendering, slivers, drag-to-reschedule, overlap detection, current-time markers,
 and polished slide actions.
+
+## Screenshots
+
+These previews come from the in-repo `assets/` folder and are the same visuals
+declared in `pubspec.yaml` for pub.dev.
+
+<table>
+  <tr>
+    <td><img src="assets/spectral.png" alt="Schedule showcase in the spectral theme" width="320" /></td>
+    <td><img src="assets/omniverse.png" alt="Schedule showcase in the omniverse theme" width="320" /></td>
+  </tr>
+  <tr>
+    <td><img src="assets/hologram.png" alt="Holographic theme showcase" width="320" /></td>
+    <td><img src="assets/seeded.png" alt="Custom seeded theme showcase" width="320" /></td>
+  </tr>
+  <tr>
+    <td><img src="assets/light.png" alt="Light theme showcase" width="320" /></td>
+    <td><img src="assets/midnight.png" alt="Midnight theme showcase" width="320" /></td>
+  </tr>
+</table>
 
 The package has two independent layers:
 
@@ -59,11 +79,74 @@ dependencies:
     path: ../neon_timeline_flutter
 ```
 
-Then import the single public library:
+Import the complete public API:
 
 ```dart
 import 'package:neon_timeline_flutter/neon_timeline_flutter.dart';
 ```
+
+Or keep a web/application build focused by importing only the layer you use:
+
+```dart
+import 'package:neon_timeline_flutter/core.dart';
+import 'package:neon_timeline_flutter/advanced.dart';
+import 'package:neon_timeline_flutter/slidable.dart';
+```
+
+The original all-in-one import remains supported.
+
+## Production performance policy
+
+Version 3.4 defaults planner timelines to an adaptive rendering budget. It does
+not replace the UI: layout, colors, borders, cards, indicators, connectors,
+semantics, drag, and slide behavior stay the same. It limits only continuous
+work.
+
+```dart
+NeonScheduleTimeline<Task>(
+  entries: entries,
+  selectedDate: selectedDate,
+  dataRevision: state.revision,
+  performance: const NeonTimelinePerformanceConfig.adaptive(),
+  itemBuilder: buildTask,
+)
+```
+
+Available policies:
+
+```dart
+const NeonTimelinePerformanceConfig.adaptive();
+const NeonTimelinePerformanceConfig.batterySaver();
+const NeonTimelinePerformanceConfig.balanced();
+const NeonTimelinePerformanceConfig.highQuality();
+```
+
+The adaptive policy:
+
+- starts motion after first paint rather than competing with startup;
+- uses one shared sampled clock;
+- pauses during scrolling, inactive lifecycle, inactive routes, disabled
+  `TickerMode`, and reduced-motion preferences;
+- keeps at most one focal schedule row moving by default;
+- avoids large backdrop filters on web and dense lists;
+- reduces particle detail without changing geometry or colors;
+- keeps offscreen list children lazy.
+
+For a very large generic builder timeline, provide the active indexes directly
+so the package does not scan every status just to locate the animated row:
+
+```dart
+NeonTimeline.builder(
+  itemCount: events.length,
+  animatedItemIndexes: <int>[activeIndex],
+  performance: const NeonTimelinePerformanceConfig.adaptive(),
+  statusBuilder: (index) => events[index].status,
+  contentBuilder: buildEvent,
+)
+```
+
+Use `highQuality()` only for a short hero/showcase surface after profiling the
+slowest supported device. It is deliberately not the production default.
 
 ## Planner schedule quick start
 
@@ -257,6 +340,65 @@ final theme = NeonTimelineThemeData.spectral().copyWith(
 );
 ```
 
+## Optional presentation components
+
+The package includes optional page-level widgets. They are not inserted around
+existing timelines automatically:
+
+```dart
+NeonTimelineSurface(
+  child: Column(
+    children: [
+      const NeonTimelineHeader(
+        title: 'Today',
+        trailing: NeonTimelineBadge(label: 'Live'),
+      ),
+      Expanded(
+        child: NeonScheduleTimeline<Task>(
+          entries: entries,
+          selectedDate: selectedDate,
+          itemBuilder: buildTask,
+        ),
+      ),
+    ],
+  ),
+)
+```
+
+`NeonTimelineEmptyState` provides a matching empty screen while still allowing
+a completely custom `emptyBuilder`.
+
+## Complete example
+
+The `example/` application demonstrates the real public package API rather than
+copying private implementation code:
+
+- schedule timeline with overlap and free-time logic;
+- long-press drag and five-minute snapping;
+- start/end slide actions, async busy locking, full swipe, delete, and undo;
+- previous/next day paging and empty state;
+- lazy, fixed, horizontal, and sliver timelines;
+- every indicator, connector, and card renderer;
+- runtime themes, reduced motion, adaptive performance, and 500 lazy rows;
+- web contour-glow fallback and accessible web metadata.
+
+Run it with:
+
+```bash
+cd example
+flutter pub get
+flutter run --profile
+```
+
+For Lighthouse, build and serve the release output rather than measuring
+`flutter run` debug mode:
+
+```bash
+flutter build web --release
+cd build/web
+python -m http.server 7357
+```
+
 ## Performance defaults
 
 The advanced appearance remains enabled, but continuous work is constrained:
@@ -332,7 +474,8 @@ flutter pub publish --dry-run
 ```
 
 Publishing is permanent. Verify the package name, license ownership,
-repository metadata, and the dry-run file list before the final command.
+repository metadata, the screenshot gallery, and the dry-run file list before
+the final command.
 
 ## License
 
