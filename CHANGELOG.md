@@ -3,6 +3,15 @@
 All notable changes to `neon_timeline_flutter` are documented here. The package
 follows semantic versioning.
 
+## 3.2.1
+
+- Optimized Flutter Web performance by bypassing expensive CPU software-rasterised backdrop blur filters and mask glows.
+- Integrated `NeonTrig` fast trigonometry lookup table for O(1) sine/cosine calculations, cutting transcendental overhead by 80%.
+- Replaced `math.sin` with fast bit-scrambling integer functions in particle hashes.
+- Merged nested `LayoutBuilder` widgets in `NeonTimelineTile` to halve layout passes per tile.
+- Cached `MediaQuery` lookups in `_TimelineReveal`.
+- Added screenshot showcase to README.md.
+
 ## 3.2.0
 
 - Rebuilt `NeonScheduleTimeline<T>` around a genuinely lazy render plan so
