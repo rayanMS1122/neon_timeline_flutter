@@ -17,6 +17,9 @@ model, database, state-management library, or backend.
   routing.
 - Previous/next day buttons and `NeonTimelineDayPager` swipe navigation.
 - Package empty state and add-demo-task action.
+- Switchable compact planner and manual `NeonTimelineCard` presentation.
+- Gap and conflict labels through the supported schedule builders.
+- Demo repository actions for completing, moving, deleting, and restoring tasks.
 
 ### Timelines
 

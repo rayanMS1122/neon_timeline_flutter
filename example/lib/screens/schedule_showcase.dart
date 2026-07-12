@@ -17,6 +17,7 @@ class ScheduleShowcase extends StatefulWidget {
 class _ScheduleShowcaseState extends State<ScheduleShowcase> {
   late final DemoTaskRepository _repository;
   DateTime _selectedDate = DateTime(2026, 7, 11);
+  bool _compactPlanner = true;
 
   @override
   void initState() {
@@ -57,11 +58,41 @@ class _ScheduleShowcaseState extends State<ScheduleShowcase> {
             ],
           ),
         ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: <Widget>[
+              ChoiceChip(
+                label: const Text('Compact planner'),
+                selected: _compactPlanner,
+                onSelected: (_) => setState(() => _compactPlanner = true),
+              ),
+              ChoiceChip(
+                label: const Text('Original package UI'),
+                selected: !_compactPlanner,
+                onSelected: (_) => setState(() => _compactPlanner = false),
+              ),
+            ],
+          ),
+        ),
         Expanded(
           child: AnimatedBuilder(
             animation: _repository,
             builder: (context, _) {
               final entries = _repository.entriesFor(_selectedDate);
+              final scheduleStyle = _compactPlanner
+                  ? const NeonScheduleTimelineStyle(
+                      showDurationRail: true,
+                      overlapIndent: 12,
+                      cardVariant: NeonTimelineCardVariant.liquidCrystal,
+                    )
+                  : const NeonScheduleTimelineStyle(
+                      showDurationRail: false,
+                      overlapIndent: 0,
+                      cardVariant: NeonTimelineCardVariant.glass,
+                    );
               return NeonTimelineDayPager(
                 selectedDate: _selectedDate,
                 onDateChanged: (value) =>
@@ -72,6 +103,7 @@ class _ScheduleShowcaseState extends State<ScheduleShowcase> {
                   selectedDate: _selectedDate,
                   now: DateTime(2026, 7, 11, 10, 42),
                   performance: widget.performance,
+                  style: scheduleStyle,
                   slidableGroupTag: 'schedule-showcase',
                   emptyBuilder: (context) => NeonTimelineEmptyState(
                     title: 'No entries for ${_formatDate(_selectedDate)}',
@@ -83,12 +115,27 @@ class _ScheduleShowcaseState extends State<ScheduleShowcase> {
                       label: const Text('Add demo task'),
                     ),
                   ),
+                  useDefaultCard: !_compactPlanner,
                   itemBuilder: (context, details) {
-                    return DemoTaskCardContent(
-                      task: details.entry.value,
+                    final task = details.entry.value;
+                    final content = DemoTaskCardContent(
+                      task: task,
                       details: details,
                     );
+                    if (_compactPlanner) {
+                      return content;
+                    }
+                    return NeonTimelineCard(
+                      variant: NeonTimelineCardVariant.glass,
+                      accentColor: task.color,
+                      semanticLabel: details.entry.semanticLabel,
+                      child: content,
+                    );
                   },
+                  gapLabelBuilder: (context, gap) =>
+                      '${gap.inMinutes} min available',
+                  conflictLabelBuilder: (context, details) =>
+                      'Conflict: ${details.entry.value.title}',
                   onEntryTap: (context, details) {
                     _message('Opened ${details.entry.value.title}');
                   },

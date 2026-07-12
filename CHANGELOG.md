@@ -3,6 +3,13 @@
 All notable changes to `neon_timeline_flutter` are documented here. The package
 follows semantic versioning.
 
+## 3.4.3
+
+- Fixed the `example/lib/screens/schedule_showcase.dart` demo so it matches the
+  current `NeonScheduleTimeline` API and builds again.
+- Replaced the removed schedule-showcase-only helper constructors and builders
+  with the supported `gapLabelBuilder` and `conflictLabelBuilder` hooks.
+
 ## 3.4.2
 
 - Reworked the README gallery to use renderable Markdown images with GitHub raw

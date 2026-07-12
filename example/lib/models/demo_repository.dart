@@ -32,11 +32,17 @@ class DemoTaskRepository extends ChangeNotifier {
     _changed();
   }
 
-  Future<void> complete(String id) async {
+  Future<void> complete(String id) => setCompleted(id, true);
+
+  Future<void> setCompleted(String id, bool completed) async {
     await _simulateStorage();
     final task = _tasks[id];
     if (task == null) return;
-    _tasks[id] = task.copyWith(status: NeonTimelineStatus.completed);
+    _tasks[id] = task.copyWith(
+      status: completed
+          ? NeonTimelineStatus.completed
+          : NeonTimelineStatus.pending,
+    );
     _changed();
   }
 
