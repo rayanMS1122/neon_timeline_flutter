@@ -2,7 +2,7 @@ name: neon_timeline_flutter
 description: >-
   Adaptive Flutter timelines and a compact mobile-first day planner with stable
   drag, resize, overlap handling, diagnostics, and preserved legacy APIs.
-version: 16.0.0
+version: 16.0.1
 homepage: https://github.com/rayanMS1122/neon_timeline_flutter
 repository: https://github.com/rayanMS1122/neon_timeline_flutter
 issue_tracker: https://github.com/rayanMS1122/neon_timeline_flutter/issues

@@ -448,3 +448,6 @@ follows semantic versioning.
 
 - Initial public timeline, sliver, theme, connector, indicator, card, semantics,
   and motion APIs.
+## 16.0.1
+
+- Fix pub.dev README gallery images by using absolute GitHub-hosted URLs.

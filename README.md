@@ -13,53 +13,53 @@ package-relative paths, so the complete gallery is also rendered on pub.dev.
 
 | v16 Compact Mobile | v15 Ultra Planner | v14 Friendly UI |
 | :---: | :---: | :---: |
-| ![v16 compact mobile planner](assets/screenshots/v16/home.png) | ![v15 ultra planner](assets/screenshots/v15/home.png) | ![v14 friendly timeline UI](assets/screenshots/v14/home.png) |
+| ![v16 compact mobile planner](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/v16/home.png) | ![v15 ultra planner](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/v15/home.png) | ![v14 friendly timeline UI](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/v14/home.png) |
 
 | v13 Workspace Shell | v12 Neon Design System | v11 Accessible History |
 | :---: | :---: | :---: |
-| ![v13 multi-panel workspace](assets/screenshots/v13/home.png) | ![v12 neon design system](assets/screenshots/v12/home.png) | ![v11 accessible timeline with undo and redo](assets/screenshots/v11/home.png) |
+| ![v13 multi-panel workspace](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/v13/home.png) | ![v12 neon design system](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/v12/home.png) | ![v11 accessible timeline with undo and redo](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/v11/home.png) |
 
 | v10 Delight Snapping | v9 Zoom & Virtualization | v8 Drag & Resize |
 | :---: | :---: | :---: |
-| ![v10 magnetic snapping timeline](assets/screenshots/v10/home.png) | ![v9 zoomable virtualized timeline](assets/screenshots/v9/home.png) | ![v8 drag and resize timeline](assets/screenshots/v8/home.png) |
+| ![v10 magnetic snapping timeline](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/v10/home.png) | ![v9 zoomable virtualized timeline](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/v9/home.png) | ![v8 drag and resize timeline](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/v8/home.png) |
 
 | v7 Structured UI | v6 Planning Engine | v5 Command Center |
 | :---: | :---: | :---: |
-| ![v7 structured timeline UI](assets/screenshots/v7/home.png) | ![v6 planning engine](assets/screenshots/v6/home.png) | ![v5 command center board](assets/screenshots/v5/board.png) |
+| ![v7 structured timeline UI](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/v7/home.png) | ![v6 planning engine](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/v6/home.png) | ![v5 command center board](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/v5/board.png) |
 
 ### V4 Enterprise Views
 
 | Agenda | Day | Planner |
 | :---: | :---: | :---: |
-| ![v4 agenda view](assets/screenshots/v4/agenda.png) | ![v4 day view](assets/screenshots/v4/day.png) | ![v4 planner view](assets/screenshots/v4/planner.png) |
+| ![v4 agenda view](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/v4/agenda.png) | ![v4 day view](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/v4/day.png) | ![v4 planner view](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/v4/planner.png) |
 
 | Resources | Roadmap | Studio |
 | :---: | :---: | :---: |
-| ![v4 resource view](assets/screenshots/v4/resources.png) | ![v4 roadmap view](assets/screenshots/v4/roadmap.png) | ![v4 studio view](assets/screenshots/v4/studio.png) |
+| ![v4 resource view](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/v4/resources.png) | ![v4 roadmap view](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/v4/roadmap.png) | ![v4 studio view](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/v4/studio.png) |
 
 ### V5 Productivity Views
 
 | Board | Focus | Matrix | Scenarios |
 | :---: | :---: | :---: | :---: |
-| ![v5 board view](assets/screenshots/v5/board.png) | ![v5 focus view](assets/screenshots/v5/focus.png) | ![v5 matrix view](assets/screenshots/v5/matrix.png) | ![v5 scenarios view](assets/screenshots/v5/scenarios.png) |
+| ![v5 board view](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/v5/board.png) | ![v5 focus view](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/v5/focus.png) | ![v5 matrix view](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/v5/matrix.png) | ![v5 scenarios view](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/v5/scenarios.png) |
 
 ### Theme Gallery
 
 | Aurora | Cryogenic | Ember | Hologram |
 | :---: | :---: | :---: | :---: |
-| ![Aurora theme](assets/screenshots/themes/aurora.png) | ![Cryogenic theme](assets/screenshots/themes/cryogenic.png) | ![Ember theme](assets/screenshots/themes/ember.png) | ![Hologram theme](assets/screenshots/themes/hologram.png) |
+| ![Aurora theme](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/themes/aurora.png) | ![Cryogenic theme](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/themes/cryogenic.png) | ![Ember theme](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/themes/ember.png) | ![Hologram theme](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/themes/hologram.png) |
 
 | Hyperion | Light | Midnight | Neon |
 | :---: | :---: | :---: | :---: |
-| ![Hyperion theme](assets/screenshots/themes/hyperion.png) | ![Light theme](assets/screenshots/themes/light.png) | ![Midnight theme](assets/screenshots/themes/midnight.png) | ![Neon theme](assets/screenshots/themes/neon.png) |
+| ![Hyperion theme](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/themes/hyperion.png) | ![Light theme](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/themes/light.png) | ![Midnight theme](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/themes/midnight.png) | ![Neon theme](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/themes/neon.png) |
 
 | Neural Aurora | Neural Ember | Omniverse |
 | :---: | :---: | :---: |
-| ![Neural Aurora theme](assets/screenshots/themes/neural_aurora.png) | ![Neural Ember theme](assets/screenshots/themes/neural_ember.png) | ![Omniverse theme](assets/screenshots/themes/omniverse.png) |
+| ![Neural Aurora theme](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/themes/neural_aurora.png) | ![Neural Ember theme](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/themes/neural_ember.png) | ![Omniverse theme](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/themes/omniverse.png) |
 
 | Seeded | Solar Flare | Spectral |
 | :---: | :---: | :---: |
-| ![Seeded theme](assets/screenshots/themes/seeded.png) | ![Solar Flare theme](assets/screenshots/themes/solar_flare.png) | ![Spectral theme](assets/screenshots/themes/spectral.png) |
+| ![Seeded theme](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/themes/seeded.png) | ![Solar Flare theme](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/themes/solar_flare.png) | ![Spectral theme](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/screenshots/themes/spectral.png) |
 
 ---
 
