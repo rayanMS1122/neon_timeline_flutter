@@ -59,8 +59,8 @@ class NeonTimelineCard extends StatefulWidget {
     this.onTap,
     this.semanticLabel,
     super.key,
-  })  : assert(blurSigma >= 0),
-        assert(intensity >= 0 && intensity <= 2);
+  }) : assert(blurSigma >= 0),
+       assert(intensity >= 0 && intensity <= 2);
 
   /// Card contents.
   final Widget child;
@@ -171,7 +171,8 @@ class _NeonTimelineCardState extends State<NeonTimelineCard> {
     final accent = widget.accentColor ?? theme.primaryColor;
     final secondary = widget.secondaryAccentColor ?? theme.secondaryColor;
     final motion = NeonTimelineMotionScope.maybeOf(context);
-    final wantsMotion = widget.animate &&
+    final wantsMotion =
+        widget.animate &&
         _advanced &&
         (widget.continuousAnimation || _hovered || _focused || _pressed);
     final motionAnimation = wantsMotion && motion?.enabled == true
@@ -199,12 +200,7 @@ class _NeonTimelineCardState extends State<NeonTimelineCard> {
         Widget decorated = AnimatedContainer(
           duration: transitionDuration,
           curve: Curves.easeOutCubic,
-          decoration: _decoration(
-            theme,
-            accent,
-            secondary,
-            interaction,
-          ),
+          decoration: _decoration(theme, accent, secondary, interaction),
           child: cardChild,
         );
 
@@ -275,10 +271,12 @@ class _NeonTimelineCardState extends State<NeonTimelineCard> {
       );
     }
 
-    final tiltX =
-        widget.enableParallax && _advanced ? -_pointer.dy * 0.016 : 0.0;
-    final tiltY =
-        widget.enableParallax && _advanced ? _pointer.dx * 0.020 : 0.0;
+    final tiltX = widget.enableParallax && _advanced
+        ? -_pointer.dy * 0.016
+        : 0.0;
+    final tiltY = widget.enableParallax && _advanced
+        ? _pointer.dx * 0.020
+        : 0.0;
     final transform = Matrix4.identity()
       ..setEntry(3, 2, 0.001)
       ..rotateX(tiltX)
@@ -300,11 +298,11 @@ class _NeonTimelineCardState extends State<NeonTimelineCard> {
     final blurSigma = widget.blurSigma.isFinite
         ? math.max(0.0, widget.blurSigma)
         : 0.0;
-    if (!kIsWeb && widget.useBackdropFilter && _usesBackdropBlur && blurSigma > 0) {
-      final filter = ui.ImageFilter.blur(
-        sigmaX: blurSigma,
-        sigmaY: blurSigma,
-      );
+    if (!kIsWeb &&
+        widget.useBackdropFilter &&
+        _usesBackdropBlur &&
+        blurSigma > 0) {
+      final filter = ui.ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma);
       card = BackdropGroup.of(context) == null
           ? BackdropFilter(filter: filter, child: card)
           : BackdropFilter.grouped(filter: filter, child: card);
@@ -344,122 +342,122 @@ class _NeonTimelineCardState extends State<NeonTimelineCard> {
     );
     return switch (widget.variant) {
       NeonTimelineCardVariant.glass => BoxDecoration(
-          color: theme.surfaceColor.withAlpha(205),
-          borderRadius: widget.borderRadius,
-          border: border,
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: accent.withAlpha(38 + alphaBoost),
-              blurRadius: 24 + interaction * 8,
-              spreadRadius: -6,
-            ),
-          ],
-        ),
+        color: theme.surfaceColor.withAlpha(205),
+        borderRadius: widget.borderRadius,
+        border: border,
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: accent.withAlpha(38 + alphaBoost),
+            blurRadius: 24 + interaction * 8,
+            spreadRadius: -6,
+          ),
+        ],
+      ),
       NeonTimelineCardVariant.solid => BoxDecoration(
-          color: theme.surfaceColor,
-          borderRadius: widget.borderRadius,
-          border: border,
-        ),
+        color: theme.surfaceColor,
+        borderRadius: widget.borderRadius,
+        border: border,
+      ),
       NeonTimelineCardVariant.outlined => BoxDecoration(
-          color: Colors.transparent,
-          borderRadius: widget.borderRadius,
-          border: border,
-        ),
+        color: Colors.transparent,
+        borderRadius: widget.borderRadius,
+        border: border,
+      ),
       NeonTimelineCardVariant.gradient => BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: <Color>[
-              accent.withAlpha(100 + alphaBoost),
-              secondary.withAlpha(55 + alphaBoost ~/ 2),
-              theme.surfaceColor.withAlpha(235),
-            ],
-          ),
-          borderRadius: widget.borderRadius,
-          border: border,
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: accent.withAlpha(32 + alphaBoost),
-              blurRadius: 20 + interaction * 8,
-              spreadRadius: -5,
-            ),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: <Color>[
+            accent.withAlpha(100 + alphaBoost),
+            secondary.withAlpha(55 + alphaBoost ~/ 2),
+            theme.surfaceColor.withAlpha(235),
           ],
         ),
+        borderRadius: widget.borderRadius,
+        border: border,
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: accent.withAlpha(32 + alphaBoost),
+            blurRadius: 20 + interaction * 8,
+            spreadRadius: -5,
+          ),
+        ],
+      ),
       NeonTimelineCardVariant.prismatic => BoxDecoration(
-          gradient: LinearGradient(
-            begin: const Alignment(-0.9, -0.8),
-            end: const Alignment(0.9, 0.8),
-            colors: <Color>[
-              Color.lerp(theme.surfaceColor, accent, 0.12)!.withAlpha(230),
-              theme.surfaceColor.withAlpha(214),
-              Color.lerp(theme.surfaceColor, secondary, 0.10)!.withAlpha(226),
-            ],
-            stops: const <double>[0, 0.52, 1],
-          ),
-          borderRadius: widget.borderRadius,
-          border: Border.all(
-            color: Colors.white.withAlpha(48 + alphaBoost),
-            width: 0.8,
-          ),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: accent.withAlpha(34 + alphaBoost),
-              blurRadius: 28 + interaction * 10,
-              spreadRadius: -7,
-            ),
-            BoxShadow(
-              color: secondary.withAlpha(22 + alphaBoost ~/ 2),
-              blurRadius: 18,
-              offset: const Offset(8, 8),
-              spreadRadius: -10,
-            ),
+        gradient: LinearGradient(
+          begin: const Alignment(-0.9, -0.8),
+          end: const Alignment(0.9, 0.8),
+          colors: <Color>[
+            Color.lerp(theme.surfaceColor, accent, 0.12)!.withAlpha(230),
+            theme.surfaceColor.withAlpha(214),
+            Color.lerp(theme.surfaceColor, secondary, 0.10)!.withAlpha(226),
           ],
+          stops: const <double>[0, 0.52, 1],
         ),
+        borderRadius: widget.borderRadius,
+        border: Border.all(
+          color: Colors.white.withAlpha(48 + alphaBoost),
+          width: 0.8,
+        ),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: accent.withAlpha(34 + alphaBoost),
+            blurRadius: 28 + interaction * 10,
+            spreadRadius: -7,
+          ),
+          BoxShadow(
+            color: secondary.withAlpha(22 + alphaBoost ~/ 2),
+            blurRadius: 18,
+            offset: const Offset(8, 8),
+            spreadRadius: -10,
+          ),
+        ],
+      ),
       NeonTimelineCardVariant.holographic => BoxDecoration(
-          color: Color.lerp(theme.surfaceColor, accent, 0.05)!.withAlpha(196),
-          borderRadius: widget.borderRadius,
-          border: Border.all(
-            color: accent.withAlpha(92 + alphaBoost),
-            width: 0.8,
-          ),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: accent.withAlpha(28 + alphaBoost),
-              blurRadius: 22 + interaction * 8,
-              spreadRadius: -8,
-            ),
-          ],
+        color: Color.lerp(theme.surfaceColor, accent, 0.05)!.withAlpha(196),
+        borderRadius: widget.borderRadius,
+        border: Border.all(
+          color: accent.withAlpha(92 + alphaBoost),
+          width: 0.8,
         ),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: accent.withAlpha(28 + alphaBoost),
+            blurRadius: 22 + interaction * 8,
+            spreadRadius: -8,
+          ),
+        ],
+      ),
       NeonTimelineCardVariant.liquidCrystal => BoxDecoration(
-          gradient: LinearGradient(
-            begin: const Alignment(-0.95, -0.9),
-            end: const Alignment(0.95, 0.9),
-            colors: <Color>[
-              Color.lerp(theme.surfaceColor, accent, 0.16)!.withAlpha(224),
-              theme.surfaceColor.withAlpha(205),
-              Color.lerp(theme.surfaceColor, secondary, 0.14)!.withAlpha(218),
-            ],
-            stops: const <double>[0, 0.48, 1],
-          ),
-          borderRadius: widget.borderRadius,
-          border: Border.all(
-            color: Colors.white.withAlpha(54 + alphaBoost),
-            width: 0.9,
-          ),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: accent.withAlpha(42 + alphaBoost),
-              blurRadius: 34 + interaction * 12,
-              spreadRadius: -10,
-            ),
-            BoxShadow(
-              color: secondary.withAlpha(24 + alphaBoost ~/ 2),
-              blurRadius: 28,
-              offset: const Offset(-8, 10),
-              spreadRadius: -12,
-            ),
+        gradient: LinearGradient(
+          begin: const Alignment(-0.95, -0.9),
+          end: const Alignment(0.95, 0.9),
+          colors: <Color>[
+            Color.lerp(theme.surfaceColor, accent, 0.16)!.withAlpha(224),
+            theme.surfaceColor.withAlpha(205),
+            Color.lerp(theme.surfaceColor, secondary, 0.14)!.withAlpha(218),
           ],
+          stops: const <double>[0, 0.48, 1],
         ),
+        borderRadius: widget.borderRadius,
+        border: Border.all(
+          color: Colors.white.withAlpha(54 + alphaBoost),
+          width: 0.9,
+        ),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: accent.withAlpha(42 + alphaBoost),
+            blurRadius: 34 + interaction * 12,
+            spreadRadius: -10,
+          ),
+          BoxShadow(
+            color: secondary.withAlpha(24 + alphaBoost ~/ 2),
+            blurRadius: 28,
+            offset: const Offset(-8, 10),
+            spreadRadius: -12,
+          ),
+        ],
+      ),
     };
   }
 }
@@ -527,17 +525,10 @@ class _CardFxPainter extends CustomPainter {
     }
   }
 
-  void _paintPrismatic(
-    Canvas canvas,
-    Rect rect,
-    RRect rrect,
-    double strength,
-  ) {
-    final center = rect.center +
-        Offset(
-          pointer.dx * rect.width * 0.14,
-          pointer.dy * rect.height * 0.14,
-        );
+  void _paintPrismatic(Canvas canvas, Rect rect, RRect rrect, double strength) {
+    final center =
+        rect.center +
+        Offset(pointer.dx * rect.width * 0.14, pointer.dy * rect.height * 0.14);
     canvas.save();
     canvas.clipRRect(rrect);
     canvas.drawCircle(
@@ -548,9 +539,9 @@ class _CardFxPainter extends CustomPainter {
           center,
           math.max(rect.width, rect.height) * 0.56,
           <Color>[
-            Colors.white.withOpacity(0.10 * strength),
-            accent.withOpacity(0.055 * strength),
-            secondary.withOpacity(0.025 * strength),
+            Colors.white.withValues(alpha: 0.10 * strength),
+            accent.withValues(alpha: 0.055 * strength),
+            secondary.withValues(alpha: 0.025 * strength),
             Colors.transparent,
           ],
           const <double>[0, 0.24, 0.58, 1],
@@ -571,8 +562,8 @@ class _CardFxPainter extends CustomPainter {
         ..shader = LinearGradient(
           colors: <Color>[
             Colors.transparent,
-            Colors.white.withOpacity(0.075 * strength),
-            accent.withOpacity(0.055 * strength),
+            Colors.white.withValues(alpha: 0.075 * strength),
+            accent.withValues(alpha: 0.055 * strength),
             Colors.transparent,
           ],
           stops: const <double>[0, 0.38, 0.62, 1],
@@ -588,11 +579,11 @@ class _CardFxPainter extends CustomPainter {
         ..strokeWidth = 1.0
         ..shader = SweepGradient(
           colors: <Color>[
-            Colors.white.withOpacity(0.62 * strength),
-            accent.withOpacity(0.72 * strength),
-            secondary.withOpacity(0.62 * strength),
-            Colors.white.withOpacity(0.28 * strength),
-            Colors.white.withOpacity(0.62 * strength),
+            Colors.white.withValues(alpha: 0.62 * strength),
+            accent.withValues(alpha: 0.72 * strength),
+            secondary.withValues(alpha: 0.62 * strength),
+            Colors.white.withValues(alpha: 0.28 * strength),
+            Colors.white.withValues(alpha: 0.62 * strength),
           ],
         ).createShader(rect),
     );
@@ -620,7 +611,7 @@ class _CardFxPainter extends CustomPainter {
       ..maskFilter = null
       ..strokeWidth = 0.45
       ..strokeCap = StrokeCap.butt
-      ..color = accent.withOpacity(0.030 * strength);
+      ..color = accent.withValues(alpha: 0.030 * strength);
     canvas.drawPath(_scanlinePath, _strokePaint);
 
     // A second sparse shimmer pass preserves the moving holographic texture
@@ -635,7 +626,7 @@ class _CardFxPainter extends CustomPainter {
           ..lineTo(rect.right, yy);
       }
     }
-    _strokePaint.color = accent.withOpacity(0.025 * strength);
+    _strokePaint.color = accent.withValues(alpha: 0.025 * strength);
     canvas.drawPath(_scanlinePath, _strokePaint);
     canvas.restore();
 
@@ -651,7 +642,7 @@ class _CardFxPainter extends CustomPainter {
     _strokePaint
       ..strokeWidth = 1.05
       ..strokeCap = StrokeCap.round
-      ..color = accent.withOpacity(0.42 * strength);
+      ..color = accent.withValues(alpha: 0.42 * strength);
     canvas.drawPath(primaryBrackets, _strokePaint);
 
     final secondaryBrackets = Path()
@@ -665,7 +656,7 @@ class _CardFxPainter extends CustomPainter {
       ..lineTo(rect.right, rect.bottom - 16);
     _strokePaint
       ..strokeWidth = 0.75
-      ..color = secondary.withOpacity(0.42 * strength);
+      ..color = secondary.withValues(alpha: 0.42 * strength);
     canvas.drawPath(secondaryBrackets, _strokePaint);
   }
 
@@ -678,11 +669,9 @@ class _CardFxPainter extends CustomPainter {
     canvas.save();
     canvas.clipRRect(rrect);
 
-    final pointerCenter = rect.center +
-        Offset(
-          pointer.dx * rect.width * 0.18,
-          pointer.dy * rect.height * 0.20,
-        );
+    final pointerCenter =
+        rect.center +
+        Offset(pointer.dx * rect.width * 0.18, pointer.dy * rect.height * 0.20);
     _fillPaint
       ..style = PaintingStyle.fill
       ..maskFilter = null
@@ -690,9 +679,9 @@ class _CardFxPainter extends CustomPainter {
         pointerCenter,
         math.max(rect.width, rect.height) * 0.52,
         <Color>[
-          Colors.white.withOpacity(0.11 * strength),
-          accent.withOpacity(0.07 * strength),
-          secondary.withOpacity(0.035 * strength),
+          Colors.white.withValues(alpha: 0.11 * strength),
+          accent.withValues(alpha: 0.07 * strength),
+          secondary.withValues(alpha: 0.035 * strength),
           Colors.transparent,
         ],
         const <double>[0, 0.22, 0.58, 1],
@@ -739,11 +728,9 @@ class _CardFxPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 5.5 + ribbon * 0.45
         ..strokeCap = StrokeCap.round
-        ..color = ribbonColor.withOpacity(0.035 * strength)
+        ..color = ribbonColor.withValues(alpha: 0.035 * strength)
         ..maskFilter = null
-        ..applyBlur(
-          NeonBlur.normal(6),
-        );
+        ..applyBlur(NeonBlur.normal(6));
       canvas.drawPath(paths[ribbon], _glowPaint);
 
       _strokePaint
@@ -752,7 +739,7 @@ class _CardFxPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 0.42 + (ribbon % 2) * 0.18
         ..strokeCap = StrokeCap.round
-        ..color = ribbonColor.withOpacity(0.16 * strength);
+        ..color = ribbonColor.withValues(alpha: 0.16 * strength);
       canvas.drawPath(paths[ribbon], _strokePaint);
     }
 
@@ -760,9 +747,11 @@ class _CardFxPainter extends CustomPainter {
     final spacing = math.max(14.0, rect.width / 18);
     final shift = phase * spacing;
     _verticalGridPath.reset();
-    for (double x = rect.left - spacing;
-        x <= rect.right + spacing;
-        x += spacing) {
+    for (
+      double x = rect.left - spacing;
+      x <= rect.right + spacing;
+      x += spacing
+    ) {
       final xx = x + shift % spacing;
       _verticalGridPath
         ..moveTo(xx, rect.top)
@@ -773,7 +762,7 @@ class _CardFxPainter extends CustomPainter {
       ..maskFilter = null
       ..strokeCap = StrokeCap.butt
       ..strokeWidth = 0.35
-      ..color = accent.withOpacity(gridOpacity);
+      ..color = accent.withValues(alpha: gridOpacity);
     canvas.drawPath(_verticalGridPath, _strokePaint);
 
     _horizontalGridPath.reset();
@@ -784,7 +773,7 @@ class _CardFxPainter extends CustomPainter {
     }
     _strokePaint
       ..strokeWidth = 0.3
-      ..color = secondary.withOpacity(gridOpacity * 0.7);
+      ..color = secondary.withValues(alpha: gridOpacity * 0.7);
     canvas.drawPath(_horizontalGridPath, _strokePaint);
     canvas.restore();
 
@@ -800,11 +789,11 @@ class _CardFxPainter extends CustomPainter {
       ..maskFilter = null
       ..shader = SweepGradient(
         colors: <Color>[
-          Colors.white.withOpacity(0.68 * strength),
-          accent.withOpacity(0.82 * strength),
-          secondary.withOpacity(0.76 * strength),
-          Colors.white.withOpacity(0.30 * strength),
-          Colors.white.withOpacity(0.68 * strength),
+          Colors.white.withValues(alpha: 0.68 * strength),
+          accent.withValues(alpha: 0.82 * strength),
+          secondary.withValues(alpha: 0.76 * strength),
+          Colors.white.withValues(alpha: 0.30 * strength),
+          Colors.white.withValues(alpha: 0.68 * strength),
         ],
         stops: const <double>[0, 0.24, 0.56, 0.82, 1],
       ).createShader(rect);
@@ -821,13 +810,15 @@ class _CardFxPainter extends CustomPainter {
     const steps = 48;
     return List<Path>.generate(ribbonCount, (ribbon) {
       final path = Path();
-      final yBase = rect.top +
+      final yBase =
+          rect.top +
           (ribbon + 0.5) / ribbonCount * rect.height +
           NeonTrig.sinTurns(phase + ribbon / (math.pi * 2)) * 4;
       for (var step = 0; step <= steps; step++) {
         final t = step / steps;
         final x = rect.left + t * rect.width;
-        final wave = NeonTrig.sin(
+        final wave =
+            NeonTrig.sin(
               t * math.pi * (2.2 + ribbon * 0.17) +
                   phase * math.pi * 2 * (ribbon.isEven ? 0.7 : -0.5) +
                   ribbon,

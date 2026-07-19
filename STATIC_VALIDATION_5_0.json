@@ -1,0 +1,18 @@
+{
+  "package_version": "5.0.0",
+  "dart_files": 118,
+  "lib_dart_files": 73,
+  "test_files": 21,
+  "v5_source_files": 10,
+  "root_export_graph_files": 69,
+  "v5_exported_files": 10,
+  "yaml": {
+    "pubspec.yaml": "ok",
+    "example/pubspec.yaml": "ok",
+    "analysis_options.yaml": "ok",
+    "example/analysis_options.yaml": "ok"
+  },
+  "generated_artifacts": [],
+  "issues": [],
+  "status": "pass"
+}

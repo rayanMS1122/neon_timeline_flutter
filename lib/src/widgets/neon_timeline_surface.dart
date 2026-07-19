@@ -29,7 +29,8 @@ class NeonTimelineSurface extends StatelessWidget {
     final theme = NeonTimelineTheme.of(context);
     final primary = primaryColor ?? theme.primaryColor;
     final secondary = secondaryColor ?? theme.secondaryColor;
-    final background = backgroundColor ??
+    final background =
+        backgroundColor ??
         (Theme.of(context).brightness == Brightness.dark
             ? const Color(0xFF08070E)
             : const Color(0xFFF7F4FB));
@@ -42,8 +43,8 @@ class NeonTimelineSurface extends StatelessWidget {
                 center: const Alignment(-0.65, -0.85),
                 radius: 1.45,
                 colors: <Color>[
-                  primary.withOpacity(0.14),
-                  secondary.withOpacity(0.055),
+                  primary.withValues(alpha: 0.14),
+                  secondary.withValues(alpha: 0.055),
                   background,
                 ],
                 stops: const <double>[0, 0.48, 1],
@@ -79,10 +80,7 @@ class NeonTimelineHeader extends StatelessWidget {
       padding: padding,
       child: Row(
         children: <Widget>[
-          if (leading != null) ...<Widget>[
-            leading!,
-            const SizedBox(width: 12),
-          ],
+          if (leading != null) ...<Widget>[leading!, const SizedBox(width: 12)],
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,9 +91,9 @@ class NeonTimelineHeader extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.5,
-                      ),
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.5,
+                  ),
                 ),
                 if (subtitle != null) ...<Widget>[
                   const SizedBox(height: 3),
@@ -104,8 +102,8 @@ class NeonTimelineHeader extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: colors.onSurface.withOpacity(0.58),
-                        ),
+                      color: colors.onSurface.withValues(alpha: 0.58),
+                    ),
                   ),
                 ],
               ],
@@ -144,12 +142,12 @@ class NeonTimelineBadge extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: accent.withOpacity(0.11),
+          color: accent.withValues(alpha: 0.11),
           borderRadius: BorderRadius.circular(100),
-          border: Border.all(color: accent.withOpacity(0.32)),
+          border: Border.all(color: accent.withValues(alpha: 0.32)),
           boxShadow: <BoxShadow>[
             BoxShadow(
-              color: accent.withOpacity(0.16),
+              color: accent.withValues(alpha: 0.16),
               blurRadius: 14,
               spreadRadius: -5,
             ),
@@ -209,9 +207,9 @@ class NeonTimelineEmptyState extends StatelessWidget {
                 height: 58,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: theme.primaryColor.withOpacity(0.10),
+                  color: theme.primaryColor.withValues(alpha: 0.10),
                   border: Border.all(
-                    color: theme.primaryColor.withOpacity(0.28),
+                    color: theme.primaryColor.withValues(alpha: 0.28),
                   ),
                 ),
                 child: Icon(icon, color: theme.primaryColor, size: 28),
@@ -220,20 +218,19 @@ class NeonTimelineEmptyState extends StatelessWidget {
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w900,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
               ),
               const SizedBox(height: 7),
               Text(
                 message,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withOpacity(0.58),
-                    ),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.58),
+                ),
               ),
               if (action != null) ...<Widget>[
                 const SizedBox(height: 18),

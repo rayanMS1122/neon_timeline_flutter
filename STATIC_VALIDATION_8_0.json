@@ -1,0 +1,84 @@
+{
+  "package_version": "8.0.0",
+  "example_version": "8.0.0",
+  "dart_files": 166,
+  "root_test_files": 35,
+  "example_test_files": 1,
+  "v8_source_files": 9,
+  "changed_files": 37,
+  "insertions": 5313,
+  "deletions": 223,
+  "relative_import_or_delimiter_or_yaml_issues": [],
+  "generated_artifacts": [],
+  "duplicate_public_exports": [],
+  "missing_v8_symbols_from_structured_planner": [],
+  "entrypoints": {
+    "advanced.dart": {
+      "public_type_symbols": 35,
+      "duplicate_symbols": 0
+    },
+    "core.dart": {
+      "public_type_symbols": 208,
+      "duplicate_symbols": 0
+    },
+    "neon_legacy.dart": {
+      "public_type_symbols": 224,
+      "duplicate_symbols": 0
+    },
+    "neon_timeline_flutter.dart": {
+      "public_type_symbols": 268,
+      "duplicate_symbols": 0
+    },
+    "slidable.dart": {
+      "public_type_symbols": 6,
+      "duplicate_symbols": 0
+    },
+    "structured_planner.dart": {
+      "public_type_symbols": 131,
+      "duplicate_symbols": 0
+    },
+    "timeline_core.dart": {
+      "public_type_symbols": 95,
+      "duplicate_symbols": 0
+    },
+    "timeline_diagnostics.dart": {
+      "public_type_symbols": 2,
+      "duplicate_symbols": 0
+    },
+    "timeline_extensions.dart": {
+      "public_type_symbols": 2,
+      "duplicate_symbols": 0
+    },
+    "timeline_interactions.dart": {
+      "public_type_symbols": 3,
+      "duplicate_symbols": 0
+    },
+    "timeline_themes.dart": {
+      "public_type_symbols": 6,
+      "duplicate_symbols": 0
+    },
+    "timeline_v5.dart": {
+      "public_type_symbols": 167,
+      "duplicate_symbols": 0
+    },
+    "timeline_v6.dart": {
+      "public_type_symbols": 68,
+      "duplicate_symbols": 0
+    },
+    "timeline_v7.dart": {
+      "public_type_symbols": 92,
+      "duplicate_symbols": 0
+    },
+    "timeline_views.dart": {
+      "public_type_symbols": 64,
+      "duplicate_symbols": 0
+    },
+    "timeline_v8.dart": {
+      "public_type_symbols": 131,
+      "duplicate_symbols": 0
+    }
+  },
+  "flutter_sdk_available": false,
+  "dart_sdk_available": false,
+  "runtime_checks_executed": false
+}

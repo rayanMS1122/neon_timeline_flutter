@@ -1,0 +1,35 @@
+{
+  "package_version": "7.0.0",
+  "dart_files": 151,
+  "test_files": 33,
+  "v7_source_files": 4,
+  "public_api": {
+    "neon_timeline_flutter.dart": {
+      "exported_files": 84,
+      "public_declarations": 223,
+      "collisions": {}
+    },
+    "structured_planner.dart": {
+      "exported_files": 25,
+      "public_declarations": 88,
+      "collisions": {}
+    },
+    "timeline_v7.dart": {
+      "exported_files": 24,
+      "public_declarations": 88,
+      "collisions": {}
+    }
+  },
+  "checks": [
+    "balanced Dart delimiters (lexical scan)",
+    "relative imports and exports exist",
+    "root and example pubspec YAML parse",
+    "no .git, .dart_tool, or build directories",
+    "Flutter 3.22 compatibility guard for v7 Color API",
+    "v7 showcase is the example entry point",
+    "public export collision scan",
+    "release shell script syntax"
+  ],
+  "issues": [],
+  "flutter_toolchain_executed": false
+}

@@ -13,3 +13,8 @@ export 'src/widgets/neon_sliver_timeline.dart';
 export 'src/widgets/neon_timeline.dart';
 export 'src/widgets/neon_timeline_day_pager.dart';
 export 'src/widgets/neon_timeline_surface.dart';
+
+// Neutral 4.x core APIs. Existing Neon exports above remain compatible.
+export 'timeline_core.dart';
+export 'timeline_themes.dart';
+export 'timeline_views.dart';

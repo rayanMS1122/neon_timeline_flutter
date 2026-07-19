@@ -9,18 +9,15 @@ import '../theme/neon_timeline_theme.dart';
 enum NeonSlidableMotion { behind, drawer, scroll, stretch }
 
 /// Async-capable callback used by a slide action.
-typedef NeonTimelineActionCallback = FutureOr<void> Function(
-  BuildContext context,
-);
+typedef NeonTimelineActionCallback =
+    FutureOr<void> Function(BuildContext context);
 
 /// Async-capable full-swipe callback.
 typedef NeonTimelineDismissCallback = FutureOr<void> Function();
 
 /// Receives an asynchronous slide-action or dismissal failure.
-typedef NeonTimelineAsyncErrorCallback = void Function(
-  Object error,
-  StackTrace stackTrace,
-);
+typedef NeonTimelineAsyncErrorCallback =
+    void Function(Object error, StackTrace stackTrace);
 
 /// Immutable action description for [NeonSlidableTimeline].
 @immutable
@@ -86,10 +83,10 @@ class NeonSlidableTimeline extends StatefulWidget {
     this.onBusyChanged,
     this.dragDismissible = true,
     super.key,
-  })  : assert(startExtentRatio > 0 && startExtentRatio <= 1),
-        assert(endExtentRatio > 0 && endExtentRatio <= 1),
-        assert(openThreshold >= 0 && openThreshold <= 1),
-        assert(closeThreshold >= 0 && closeThreshold <= 1);
+  }) : assert(startExtentRatio > 0 && startExtentRatio <= 1),
+       assert(endExtentRatio > 0 && endExtentRatio <= 1),
+       assert(openThreshold >= 0 && openThreshold <= 1),
+       assert(closeThreshold >= 0 && closeThreshold <= 1);
 
   final Widget child;
   final Key? slidableKey;
@@ -111,8 +108,7 @@ class NeonSlidableTimeline extends StatefulWidget {
   final bool dragDismissible;
 
   @override
-  State<NeonSlidableTimeline> createState() =>
-      _NeonSlidableTimelineState();
+  State<NeonSlidableTimeline> createState() => _NeonSlidableTimelineState();
 }
 
 class _NeonSlidableTimelineState extends State<NeonSlidableTimeline> {
@@ -148,7 +144,6 @@ class _NeonSlidableTimelineState extends State<NeonSlidableTimeline> {
     }
   }
 
-
   void _notifyBusyChanged(bool value) {
     final callback = widget.onBusyChanged;
     if (callback == null) return;
@@ -166,24 +161,28 @@ class _NeonSlidableTimelineState extends State<NeonSlidableTimeline> {
         handler(error, stackTrace);
         return;
       } catch (handlerError, handlerStackTrace) {
-        FlutterError.reportError(FlutterErrorDetails(
-          exception: handlerError,
-          stack: handlerStackTrace,
-          library: 'neon_timeline_flutter',
-          context: ErrorDescription('while reporting a slidable error'),
-          informationCollector: () sync* {
-            yield ErrorDescription('Original error: $error');
-          },
-        ));
+        FlutterError.reportError(
+          FlutterErrorDetails(
+            exception: handlerError,
+            stack: handlerStackTrace,
+            library: 'neon_timeline_flutter',
+            context: ErrorDescription('while reporting a slidable error'),
+            informationCollector: () sync* {
+              yield ErrorDescription('Original error: $error');
+            },
+          ),
+        );
         return;
       }
     }
-    FlutterError.reportError(FlutterErrorDetails(
-      exception: error,
-      stack: stackTrace,
-      library: 'neon_timeline_flutter',
-      context: ErrorDescription('while running a slidable timeline action'),
-    ));
+    FlutterError.reportError(
+      FlutterErrorDetails(
+        exception: error,
+        stack: stackTrace,
+        library: 'neon_timeline_flutter',
+        context: ErrorDescription('while running a slidable timeline action'),
+      ),
+    );
   }
 
   @override
@@ -235,8 +234,7 @@ class _NeonSlidableTimelineState extends State<NeonSlidableTimeline> {
       extentRatio: safeExtentRatio,
       openThreshold: safeOpenThreshold,
       closeThreshold: safeCloseThreshold,
-      dragDismissible:
-          widget.dragDismissible && onDismissed != null && !_busy,
+      dragDismissible: widget.dragDismissible && onDismissed != null && !_busy,
       dismissible: onDismissed == null
           ? null
           : DismissiblePane(
@@ -298,7 +296,8 @@ class _NeonSlidableAction extends StatelessWidget {
     final color = action.color;
     final enabled = action.enabled && !blocked;
 
-    Widget content = action.child ??
+    Widget content =
+        action.child ??
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
           child: Column(
@@ -314,11 +313,7 @@ class _NeonSlidableAction extends StatelessWidget {
                   ),
                 )
               else
-                Icon(
-                  action.icon,
-                  color: action.foregroundColor,
-                  size: 22,
-                ),
+                Icon(action.icon, color: action.foregroundColor, size: 22),
               const SizedBox(height: 5),
               Text(
                 action.label,
@@ -361,16 +356,19 @@ class _NeonSlidableAction extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: <Color>[
-                    color.withOpacity(0.96),
-                    Color.lerp(color, timelineTheme.surfaceColor, 0.28)!
-                        .withOpacity(0.98),
+                    color.withValues(alpha: 0.96),
+                    Color.lerp(
+                      color,
+                      timelineTheme.surfaceColor,
+                      0.28,
+                    )!.withValues(alpha: 0.98),
                   ],
                 ),
                 borderRadius: borderRadius,
-                border: Border.all(color: Colors.white.withOpacity(0.13)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.13)),
                 boxShadow: <BoxShadow>[
                   BoxShadow(
-                    color: color.withOpacity(0.30),
+                    color: color.withValues(alpha: 0.30),
                     blurRadius: 22,
                     spreadRadius: -8,
                   ),

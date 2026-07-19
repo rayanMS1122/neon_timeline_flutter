@@ -1,60 +1,19 @@
-# neon_timeline_flutter complete example
+# Neon Timeline Flutter example gallery
 
-This application is a self-contained showcase for the public package API. It
-uses an in-memory repository and does not depend on an application-specific
-model, database, state-management library, or backend.
+This application is the visual catalog for every maintained package generation from v4 through v16. It is designed for both interactive API verification and clean README screenshots.
 
-## Showcase screens
+## What changed
 
-### Schedule
+Every showcase opens inside a shared preview shell with:
 
-- `NeonScheduleTimeline<DemoTask>` with an application-owned model.
-- Chronological normalization, gaps, nested overlap metadata, conflict bridges,
-  current-time marker, and active state.
-- Long-press drag-to-reschedule with package snapping and edge auto-scroll.
-- Start and end slide actions.
-- Full-swipe delete, asynchronous operation locking, SnackBar undo, and error
-  routing.
-- Previous/next day buttons and `NeonTimelineDayPager` swipe navigation.
-- Package empty state and add-demo-task action.
-- Switchable compact planner and manual `NeonTimelineCard` presentation.
-- Gap and conflict labels through the supported schedule builders.
-- Demo repository actions for completing, moving, deleting, and restoring tasks.
+- Mobile, Tablet, and Desktop logical viewports.
+- Automatic fit-to-window scaling, so large workspaces are not clipped.
+- Presentation mode for clean screenshots.
+- A consistent dark preview stage and device frame.
+- Version-specific accent colors and searchable catalog cards.
+- Mouse, touch, trackpad, and stylus scrolling support.
 
-### Timelines
-
-- Lazy `NeonTimeline.builder`.
-- Horizontal timeline.
-- `NeonFixedTimeline.builder`.
-- `NeonSliverTimeline.builder` inside a `CustomScrollView`.
-- Status, semantics, keys, opposite content, and item activation.
-
-### Effects
-
-- Every `NeonIndicatorEffect`.
-- Every `NeonConnectorEffect`.
-- Every `NeonTimelineCardVariant`.
-- `NeonTimelineNode` in vertical and horizontal configurations.
-- One selected animated preview at a time; other previews keep the same visual
-  renderer at a stable phase.
-
-### Performance
-
-- 20, 100, or 500 lazily built rows.
-- Explicit active index to avoid a full status scan.
-- Adaptive rendering summary: motion rate, animated row budget, glow strategy,
-  and cache behavior.
-- No automatic keep-alive for offscreen rows.
-
-## Global controls
-
-Open the tune button in the app bar to switch:
-
-- Every built-in theme preset: Neon, Spectral, Quantum, Hyperion, Omniverse,
-  Neural Aurora, Neural Ember, Holographic, Solar Flare, Cryogenic, Void Pulse,
-  Aurora, Ember, Midnight, Light, plus a `fromSeed` theme.
-- Adaptive, Battery Saver, Balanced, and High Quality performance profiles.
-- Simulated operating-system reduced-motion preference.
+The underlying examples remain real interactive widgets. The preview shell only controls the viewport and framing.
 
 ## Run
 
@@ -63,24 +22,19 @@ flutter pub get
 flutter run
 ```
 
-Measure animation and scrolling in profile mode:
+For web screenshots:
 
 ```bash
-flutter run --profile
+flutter run -d chrome
 ```
 
-Build the production web application:
+## Screenshot assets
 
-```bash
-flutter build web --release
-cd build/web
-python -m http.server 7357
-```
+Use the folder structure in `../assets/screenshots/`. Every version has its own folder, recommended viewport, and canonical PNG file name. The machine-readable list is stored in `../assets/screenshots/manifest.json`.
 
-Run Lighthouse against the static release server, not against a debug
-`flutter run` session.
+See `../SCREENSHOT_GUIDE.md` for the complete capture workflow.
 
-## Tests
+## Validate
 
 From the package root:
 
@@ -88,6 +42,3 @@ From the package root:
 flutter analyze
 flutter test
 ```
-
-The example tests verify the planner screen, all navigation destinations, and
-the global performance/accessibility controls.

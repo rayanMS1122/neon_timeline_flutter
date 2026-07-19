@@ -37,8 +37,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('async slide action cannot run twice concurrently',
-      (tester) async {
+  testWidgets('async slide action cannot run twice concurrently', (
+    tester,
+  ) async {
     final gate = Completer<void>();
     var calls = 0;
 
@@ -80,8 +81,9 @@ void main() {
 
     await tester.tap(find.text('Archive'));
     await tester.pump();
-    await tester.tap(find.text('Delete'));
-    await tester.tap(find.text('Archive'));
+    // The busy overlay intentionally blocks both follow-up actions.
+    await tester.tap(find.text('Delete'), warnIfMissed: false);
+    await tester.tap(find.text('Archive'), warnIfMissed: false);
     expect(calls, 1);
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
@@ -91,8 +93,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('async action errors are routed to the public callback',
-      (tester) async {
+  testWidgets('async action errors are routed to the public callback', (
+    tester,
+  ) async {
     Object? reported;
 
     await tester.pumpWidget(
@@ -131,14 +134,10 @@ void main() {
 Widget _host(Widget child) {
   return MaterialApp(
     theme: ThemeData.dark().copyWith(
-      extensions: <ThemeExtension<dynamic>>[
-        NeonTimelineThemeData.spectral(),
-      ],
+      extensions: <ThemeExtension<dynamic>>[NeonTimelineThemeData.spectral()],
     ),
     home: Scaffold(
-      body: Center(
-        child: SizedBox(width: 340, height: 84, child: child),
-      ),
+      body: Center(child: SizedBox(width: 340, height: 84, child: child)),
     ),
   );
 }

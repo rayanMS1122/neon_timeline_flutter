@@ -34,11 +34,11 @@ class NeonTimelineThemeData extends ThemeExtension<NeonTimelineThemeData> {
     this.animationDuration = const Duration(milliseconds: 360),
     this.animationCurve = Curves.easeOutCubic,
     this.motionDuration = const Duration(milliseconds: 4200),
-  })  : assert(contentGap >= 0),
-        assert(nodeLaneExtent > 0),
-        assert(verticalMinExtent > 0),
-        assert(horizontalItemExtent > 0),
-        assert(adaptiveBreakpoint >= 0);
+  }) : assert(contentGap >= 0),
+       assert(nodeLaneExtent > 0),
+       assert(verticalMinExtent > 0),
+       assert(horizontalItemExtent > 0),
+       assert(adaptiveBreakpoint >= 0);
 
   /// High-emphasis accent and active-state color.
   final Color primaryColor;
@@ -527,17 +527,17 @@ class NeonTimelineThemeData extends ThemeExtension<NeonTimelineThemeData> {
       secondaryColor: const Color(0xFFFF4D9D),
       surfaceColor: const Color(0xFF150B0D),
       indicatorStyle: NeonTimelineThemeData.hyperion().indicatorStyle.copyWith(
-            color: const Color(0xFFFF9C45),
-            glowColor: const Color(0xFFFF5F37),
-            secondaryColor: const Color(0xFFFFE17A),
-            tertiaryColor: const Color(0xFFFF4EB3),
-            interiorColor: const Color(0xFF180908),
-          ),
+        color: const Color(0xFFFF9C45),
+        glowColor: const Color(0xFFFF5F37),
+        secondaryColor: const Color(0xFFFFE17A),
+        tertiaryColor: const Color(0xFFFF4EB3),
+        interiorColor: const Color(0xFF180908),
+      ),
       connectorStyle: NeonTimelineThemeData.hyperion().connectorStyle.copyWith(
-            color: const Color(0xFFFFB153),
-            endColor: const Color(0xFFFF4DAA),
-            secondaryColor: const Color(0xFFFFE477),
-          ),
+        color: const Color(0xFFFFB153),
+        endColor: const Color(0xFFFF4DAA),
+        secondaryColor: const Color(0xFFFFE477),
+      ),
     );
   }
 
@@ -548,20 +548,20 @@ class NeonTimelineThemeData extends ThemeExtension<NeonTimelineThemeData> {
       secondaryColor: const Color(0xFF698CFF),
       surfaceColor: const Color(0xFF06101A),
       indicatorStyle: NeonTimelineThemeData.hyperion().indicatorStyle.copyWith(
-            color: const Color(0xFFB5F5FF),
-            glowColor: const Color(0xFF4BCFFF),
-            secondaryColor: const Color(0xFFFFFFFF),
-            tertiaryColor: const Color(0xFF718CFF),
-            interiorColor: const Color(0xFF06121E),
-            intensity: 1.12,
-            rotationSpeed: 0.78,
-          ),
+        color: const Color(0xFFB5F5FF),
+        glowColor: const Color(0xFF4BCFFF),
+        secondaryColor: const Color(0xFFFFFFFF),
+        tertiaryColor: const Color(0xFF718CFF),
+        interiorColor: const Color(0xFF06121E),
+        intensity: 1.12,
+        rotationSpeed: 0.78,
+      ),
       connectorStyle: NeonTimelineThemeData.hyperion().connectorStyle.copyWith(
-            color: const Color(0xFF9AEFFF),
-            endColor: const Color(0xFF667CFF),
-            secondaryColor: const Color(0xFFFFFFFF),
-            flowSpeed: 0.78,
-          ),
+        color: const Color(0xFF9AEFFF),
+        endColor: const Color(0xFF667CFF),
+        secondaryColor: const Color(0xFFFFFFFF),
+        flowSpeed: 0.78,
+      ),
       motionDuration: const Duration(milliseconds: 5600),
     );
   }
@@ -573,19 +573,19 @@ class NeonTimelineThemeData extends ThemeExtension<NeonTimelineThemeData> {
       secondaryColor: const Color(0xFFFF4FD8),
       surfaceColor: const Color(0xFF050508),
       indicatorStyle: NeonTimelineThemeData.hyperion().indicatorStyle.copyWith(
-            color: const Color(0xFF9B62FF),
-            glowColor: const Color(0xFF7A38FF),
-            secondaryColor: const Color(0xFFFF53DD),
-            tertiaryColor: const Color(0xFF5D7CFF),
-            interiorColor: const Color(0xFF020205),
-            eventHorizon: 1,
-            scanlineOpacity: 0.08,
-          ),
+        color: const Color(0xFF9B62FF),
+        glowColor: const Color(0xFF7A38FF),
+        secondaryColor: const Color(0xFFFF53DD),
+        tertiaryColor: const Color(0xFF5D7CFF),
+        interiorColor: const Color(0xFF020205),
+        eventHorizon: 1,
+        scanlineOpacity: 0.08,
+      ),
       connectorStyle: NeonTimelineThemeData.hyperion().connectorStyle.copyWith(
-            color: const Color(0xFFB66BFF),
-            endColor: const Color(0xFFFF4FD8),
-            secondaryColor: const Color(0xFF5D7CFF),
-          ),
+        color: const Color(0xFFB66BFF),
+        endColor: const Color(0xFFFF4FD8),
+        secondaryColor: const Color(0xFF5D7CFF),
+      ),
     );
   }
 
@@ -834,10 +834,7 @@ class NeonTimelineThemeData extends ThemeExtension<NeonTimelineThemeData> {
   }
 
   @override
-  NeonTimelineThemeData lerp(
-    covariant NeonTimelineThemeData? other,
-    double t,
-  ) {
+  NeonTimelineThemeData lerp(covariant NeonTimelineThemeData? other, double t) {
     if (other == null) return this;
     return NeonTimelineThemeData(
       primaryColor: Color.lerp(primaryColor, other.primaryColor, t)!,
@@ -861,12 +858,21 @@ class NeonTimelineThemeData extends ThemeExtension<NeonTimelineThemeData> {
       tilePadding: EdgeInsets.lerp(tilePadding, other.tilePadding, t)!,
       contentGap: lerpDouble(contentGap, other.contentGap, t)!,
       nodeLaneExtent: lerpDouble(nodeLaneExtent, other.nodeLaneExtent, t)!,
-      verticalMinExtent:
-          lerpDouble(verticalMinExtent, other.verticalMinExtent, t)!,
-      horizontalItemExtent:
-          lerpDouble(horizontalItemExtent, other.horizontalItemExtent, t)!,
-      adaptiveBreakpoint:
-          lerpDouble(adaptiveBreakpoint, other.adaptiveBreakpoint, t)!,
+      verticalMinExtent: lerpDouble(
+        verticalMinExtent,
+        other.verticalMinExtent,
+        t,
+      )!,
+      horizontalItemExtent: lerpDouble(
+        horizontalItemExtent,
+        other.horizontalItemExtent,
+        t,
+      )!,
+      adaptiveBreakpoint: lerpDouble(
+        adaptiveBreakpoint,
+        other.adaptiveBreakpoint,
+        t,
+      )!,
       animationDuration: t < 0.5 ? animationDuration : other.animationDuration,
       animationCurve: t < 0.5 ? animationCurve : other.animationCurve,
       motionDuration: Duration(
@@ -874,8 +880,7 @@ class NeonTimelineThemeData extends ThemeExtension<NeonTimelineThemeData> {
           motionDuration.inMicroseconds,
           other.motionDuration.inMicroseconds,
           t,
-        )!
-            .round(),
+        )!.round(),
       ),
     );
   }
@@ -907,26 +912,26 @@ class NeonTimelineThemeData extends ThemeExtension<NeonTimelineThemeData> {
 
   @override
   int get hashCode => Object.hash(
-        primaryColor,
-        secondaryColor,
-        surfaceColor,
-        textColor,
-        mutedColor,
-        completedColor,
-        errorColor,
-        disabledColor,
-        indicatorStyle,
-        connectorStyle,
-        tilePadding,
-        contentGap,
-        nodeLaneExtent,
-        verticalMinExtent,
-        horizontalItemExtent,
-        adaptiveBreakpoint,
-        animationDuration,
-        animationCurve,
-        motionDuration,
-      );
+    primaryColor,
+    secondaryColor,
+    surfaceColor,
+    textColor,
+    mutedColor,
+    completedColor,
+    errorColor,
+    disabledColor,
+    indicatorStyle,
+    connectorStyle,
+    tilePadding,
+    contentGap,
+    nodeLaneExtent,
+    verticalMinExtent,
+    horizontalItemExtent,
+    adaptiveBreakpoint,
+    animationDuration,
+    animationCurve,
+    motionDuration,
+  );
 }
 
 /// Applies [NeonTimelineThemeData] to a subtree.
@@ -943,8 +948,8 @@ class NeonTimelineTheme extends InheritedTheme {
 
   /// Returns the closest local or app-level timeline theme.
   static NeonTimelineThemeData of(BuildContext context) {
-    final inherited =
-        context.dependOnInheritedWidgetOfExactType<NeonTimelineTheme>();
+    final inherited = context
+        .dependOnInheritedWidgetOfExactType<NeonTimelineTheme>();
     if (inherited != null) return inherited.data;
 
     final materialTheme = Theme.of(context);

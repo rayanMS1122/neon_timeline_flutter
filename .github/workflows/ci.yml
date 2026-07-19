@@ -7,6 +7,7 @@ on:
 
 jobs:
   validate:
+    name: Analyze, test, build, and package
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -14,22 +15,68 @@ jobs:
         with:
           channel: stable
           cache: true
+      - name: Reject tracked generated release artifacts
+        run: |
+          if git ls-files | grep -E '(^|/)(build|\.dart_tool)/|\.iml$'; then
+            echo 'Tracked generated artifacts are present in the source tree.' >&2
+            exit 1
+          fi
       - name: Resolve package dependencies
         run: flutter pub get
       - name: Check formatting
-        run: dart format --output=none --set-exit-if-changed lib test example/lib
+        run: dart format --output=none --set-exit-if-changed lib test example/lib example/test benchmark tool
       - name: Analyze package
         run: flutter analyze
-      - name: Test package
-        run: flutter test
+      - name: Test package with coverage
+        run: flutter test --coverage
+      - name: Run deterministic engine benchmark harness
+        run: dart run benchmark/timeline_engine_benchmark.dart
+      - name: Run compact planner benchmark harness
+        run: dart run benchmark/v16_planner_viewport_benchmark.dart
       - name: Resolve example dependencies
         working-directory: example
         run: flutter pub get
+      - name: Analyze example
+        working-directory: example
+        run: flutter analyze
       - name: Test example
         working-directory: example
         run: flutter test
+      - name: Build example Android release
+        working-directory: example
+        run: flutter build apk --release
       - name: Build example web release
         working-directory: example
         run: flutter build web --release
       - name: Validate pub.dev archive
         run: flutter pub publish --dry-run
+
+  platform-compatibility:
+    name: Stable on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+
+  minimum-flutter:
+    name: Minimum Flutter 3.44.0
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.0'
+          cache: true
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test

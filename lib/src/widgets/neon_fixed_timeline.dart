@@ -36,12 +36,12 @@ class NeonFixedTimeline extends StatelessWidget {
     this.verticalDirection = VerticalDirection.down,
     this.clipBehavior = Clip.none,
     super.key,
-  })  : assert(itemExtent == null || itemExtent > 0),
-        assert(indicatorPosition >= 0 && indicatorPosition <= 1),
-        assert(motionPhaseOffset >= 0 && motionPhaseOffset <= 1),
-        assert(motionFramesPerSecond >= 1 && motionFramesPerSecond <= 120),
-        assert(maxAnimatedItems >= 0),
-        _source = NeonTimelineSource.items(items);
+  }) : assert(itemExtent == null || itemExtent > 0),
+       assert(indicatorPosition >= 0 && indicatorPosition <= 1),
+       assert(motionPhaseOffset >= 0 && motionPhaseOffset <= 1),
+       assert(motionFramesPerSecond >= 1 && motionFramesPerSecond <= 120),
+       assert(maxAnimatedItems >= 0),
+       _source = NeonTimelineSource.items(items);
 
   /// Creates a fixed timeline from indexed builders.
   NeonFixedTimeline.builder({
@@ -75,23 +75,23 @@ class NeonFixedTimeline extends StatelessWidget {
     this.verticalDirection = VerticalDirection.down,
     this.clipBehavior = Clip.none,
     super.key,
-  })  : assert(itemCount >= 0),
-        assert(itemExtent == null || itemExtent > 0),
-        assert(indicatorPosition >= 0 && indicatorPosition <= 1),
-        assert(motionPhaseOffset >= 0 && motionPhaseOffset <= 1),
-        assert(motionFramesPerSecond >= 1 && motionFramesPerSecond <= 120),
-        assert(maxAnimatedItems >= 0),
-        _source = NeonTimelineSource.builder(
-          itemCount: itemCount,
-          contentBuilder: contentBuilder,
-          oppositeContentBuilder: oppositeContentBuilder,
-          indicatorBuilder: indicatorBuilder,
-          statusBuilder: statusBuilder,
-          semanticLabelBuilder: semanticLabelBuilder,
-          onItemTap: onItemTap,
-          connectorStyleBuilder: connectorStyleBuilder,
-          keyBuilder: keyBuilder,
-        );
+  }) : assert(itemCount >= 0),
+       assert(itemExtent == null || itemExtent > 0),
+       assert(indicatorPosition >= 0 && indicatorPosition <= 1),
+       assert(motionPhaseOffset >= 0 && motionPhaseOffset <= 1),
+       assert(motionFramesPerSecond >= 1 && motionFramesPerSecond <= 120),
+       assert(maxAnimatedItems >= 0),
+       _source = NeonTimelineSource.builder(
+         itemCount: itemCount,
+         contentBuilder: contentBuilder,
+         oppositeContentBuilder: oppositeContentBuilder,
+         indicatorBuilder: indicatorBuilder,
+         statusBuilder: statusBuilder,
+         semanticLabelBuilder: semanticLabelBuilder,
+         onItemTap: onItemTap,
+         connectorStyleBuilder: connectorStyleBuilder,
+         keyBuilder: keyBuilder,
+       );
 
   final NeonTimelineSource _source;
 
@@ -205,13 +205,14 @@ class NeonFixedTimeline extends StatelessWidget {
       result = emptyBuilder?.call(context) ?? const SizedBox.shrink();
     } else {
       final configuredItemExtent = itemExtent;
-      final resolvedItemExtent = configuredItemExtent != null &&
+      final resolvedItemExtent =
+          configuredItemExtent != null &&
               configuredItemExtent.isFinite &&
               configuredItemExtent > 0
           ? configuredItemExtent
           : (axis == Axis.horizontal
-              ? resolvedTheme.horizontalItemExtent
-              : null);
+                ? resolvedTheme.horizontalItemExtent
+                : null);
       result = Flex(
         direction: axis,
         mainAxisSize: mainAxisSize,
@@ -242,12 +243,13 @@ class NeonFixedTimeline extends StatelessWidget {
         enabled: motionEnabled && animatedIndexes.isNotEmpty,
         duration: resolvedTheme.motionDuration,
         phaseOffset: motionPhaseOffset,
-        framesPerSecond: resolvedPerformance?.motionFramesPerSecond ??
-            motionFramesPerSecond,
+        framesPerSecond:
+            resolvedPerformance?.motionFramesPerSecond ?? motionFramesPerSecond,
         pauseWhenScrolling:
             resolvedPerformance?.pauseMotionWhileScrolling ??
-                pauseMotionWhileScrolling,
-        startupDelay: resolvedPerformance?.motionStartupDelay ??
+            pauseMotionWhileScrolling,
+        startupDelay:
+            resolvedPerformance?.motionStartupDelay ??
             const Duration(milliseconds: 120),
         child: result,
       ),

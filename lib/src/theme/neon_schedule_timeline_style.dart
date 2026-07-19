@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/neon_timeline_card.dart';
@@ -31,10 +30,7 @@ class NeonScheduleTimelineStyle {
     this.overlapIndent = 10,
     this.cardVariant = NeonTimelineCardVariant.liquidCrystal,
     this.cardBorderRadius = const BorderRadius.all(Radius.circular(22)),
-    this.cardPadding = const EdgeInsets.symmetric(
-      horizontal: 16,
-      vertical: 13,
-    ),
+    this.cardPadding = const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
     this.cardBlurSigma = 12,
     this.useBackdropFilter = true,
     this.enableCardParallax = true,
@@ -44,25 +40,25 @@ class NeonScheduleTimelineStyle {
     this.animateLayout = true,
     this.nowColor = const Color(0xFFFF4F9D),
     this.conflictColor = const Color(0xFFFF5D73),
-  })  : assert(pixelsPerMinute > 0),
-        assert(minimumEntryExtent > 0),
-        assert(maximumEntryExtent >= minimumEntryExtent),
-        assert(timeColumnWidth >= 0),
-        assert(railLaneExtent > 0),
-        assert(contentGap >= 0),
-        assert(horizontalPadding >= 0),
-        assert(topPadding >= 0),
-        assert(bottomPadding >= 0),
-        assert(minimumGapExtent >= 0),
-        assert(maximumGapExtent >= minimumGapExtent),
-        assert(gapScale >= 0),
-        assert(snapMinutes > 0),
-        assert(autoScrollEdge >= 0),
-        assert(autoScrollStep >= 0),
-        assert(dragScale > 0),
-        assert(dragOpacity >= 0 && dragOpacity <= 1),
-        assert(overlapIndent >= 0),
-        assert(cardBlurSigma >= 0);
+  }) : assert(pixelsPerMinute > 0),
+       assert(minimumEntryExtent > 0),
+       assert(maximumEntryExtent >= minimumEntryExtent),
+       assert(timeColumnWidth >= 0),
+       assert(railLaneExtent > 0),
+       assert(contentGap >= 0),
+       assert(horizontalPadding >= 0),
+       assert(topPadding >= 0),
+       assert(bottomPadding >= 0),
+       assert(minimumGapExtent >= 0),
+       assert(maximumGapExtent >= minimumGapExtent),
+       assert(gapScale >= 0),
+       assert(snapMinutes > 0),
+       assert(autoScrollEdge >= 0),
+       assert(autoScrollStep >= 0),
+       assert(dragScale > 0),
+       assert(dragOpacity >= 0 && dragOpacity <= 1),
+       assert(overlapIndent >= 0),
+       assert(cardBlurSigma >= 0);
 
   /// Vertical pixels represented by one minute.
   final double pixelsPerMinute;
@@ -240,9 +236,8 @@ class NeonScheduleTimelineStyle {
       dragScale.isFinite && dragScale > 0 ? dragScale : 1.025;
 
   /// Runtime-safe drag opacity.
-  double get resolvedDragOpacity => dragOpacity.isFinite
-      ? dragOpacity.clamp(0.0, 1.0).toDouble()
-      : 0.86;
+  double get resolvedDragOpacity =>
+      dragOpacity.isFinite ? dragOpacity.clamp(0.0, 1.0).toDouble() : 0.86;
 
   /// Runtime-safe auto-scroll edge.
   double get resolvedAutoScrollEdge =>
@@ -262,11 +257,10 @@ class NeonScheduleTimelineStyle {
     final minimum = minimumEntryExtent.isFinite && minimumEntryExtent > 0
         ? minimumEntryExtent
         : 64.0;
-    final configuredMaximum =
-        maximumEntryExtent.isFinite ? maximumEntryExtent : 260.0;
-    final maximum = configuredMaximum >= minimum
-        ? configuredMaximum
-        : minimum;
+    final configuredMaximum = maximumEntryExtent.isFinite
+        ? maximumEntryExtent
+        : 260.0;
+    final maximum = configuredMaximum >= minimum ? configuredMaximum : minimum;
     return (minutes * resolvedPixelsPerMinute)
         .clamp(minimum, maximum)
         .toDouble();
@@ -278,11 +272,10 @@ class NeonScheduleTimelineStyle {
     final minimum = minimumGapExtent.isFinite && minimumGapExtent >= 0
         ? minimumGapExtent
         : 18.0;
-    final configuredMaximum =
-        maximumGapExtent.isFinite ? maximumGapExtent : 150.0;
-    final maximum = configuredMaximum >= minimum
-        ? configuredMaximum
-        : minimum;
+    final configuredMaximum = maximumGapExtent.isFinite
+        ? maximumGapExtent
+        : 150.0;
+    final maximum = configuredMaximum >= minimum ? configuredMaximum : minimum;
     final scale = gapScale.isFinite && gapScale >= 0 ? gapScale : 0.72;
     return (gap.inMinutes * resolvedPixelsPerMinute * scale)
         .clamp(minimum, maximum)

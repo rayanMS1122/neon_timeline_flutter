@@ -170,28 +170,20 @@ class NeonTimelineItemDetails {
 }
 
 /// Builds content for a specific timeline item.
-typedef NeonTimelineContentBuilder = Widget Function(
-  BuildContext context,
-  NeonTimelineItemDetails details,
-);
+typedef NeonTimelineContentBuilder =
+    Widget Function(BuildContext context, NeonTimelineItemDetails details);
 
 /// Resolves the state of an indexed timeline item.
 typedef NeonTimelineStatusBuilder = NeonTimelineStatus Function(int index);
 
 /// Builds an optional semantic description for an item.
-typedef NeonTimelineSemanticLabelBuilder = String? Function(
-  BuildContext context,
-  NeonTimelineItemDetails details,
-);
+typedef NeonTimelineSemanticLabelBuilder =
+    String? Function(BuildContext context, NeonTimelineItemDetails details);
 
 /// Handles activation of an indexed item.
-typedef NeonTimelineItemCallback = void Function(
-  BuildContext context,
-  NeonTimelineItemDetails details,
-);
+typedef NeonTimelineItemCallback =
+    void Function(BuildContext context, NeonTimelineItemDetails details);
 
 /// Resolves a stable key for an indexed item.
-typedef NeonTimelineKeyBuilder = Key? Function(
-  BuildContext context,
-  NeonTimelineItemDetails details,
-);
+typedef NeonTimelineKeyBuilder =
+    Key? Function(BuildContext context, NeonTimelineItemDetails details);

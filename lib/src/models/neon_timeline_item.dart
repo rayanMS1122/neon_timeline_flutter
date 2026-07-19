@@ -44,7 +44,8 @@ class NeonTimelineItem {
 }
 
 /// Resolves connector styling for an indexed timeline item.
-typedef NeonTimelineConnectorStyleBuilder = NeonTimelineConnectorStyle Function(
-  BuildContext context,
-  NeonTimelineItemDetails details,
-);
+typedef NeonTimelineConnectorStyleBuilder =
+    NeonTimelineConnectorStyle Function(
+      BuildContext context,
+      NeonTimelineItemDetails details,
+    );

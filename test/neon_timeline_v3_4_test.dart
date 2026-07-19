@@ -3,8 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:neon_timeline_flutter/neon_timeline_flutter.dart';
 
 void main() {
-  testWidgets('battery saver resolves to a static low-cost budget',
-      (tester) async {
+  testWidgets('battery saver resolves to a static low-cost budget', (
+    tester,
+  ) async {
     NeonTimelineResolvedPerformance? resolved;
 
     await tester.pumpWidget(
@@ -27,8 +28,9 @@ void main() {
     expect(resolved!.enableParticles, isFalse);
   });
 
-  testWidgets('reduced motion overrides explicit expensive settings',
-      (tester) async {
+  testWidgets('reduced motion overrides explicit expensive settings', (
+    tester,
+  ) async {
     NeonTimelineResolvedPerformance? resolved;
 
     await tester.pumpWidget(
@@ -59,8 +61,9 @@ void main() {
     expect(resolved!.enableParticles, isFalse);
   });
 
-  testWidgets('explicit animated indexes avoid animating other active rows',
-      (tester) async {
+  testWidgets('explicit animated indexes avoid animating other active rows', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       _host(
         NeonTimeline.builder(
@@ -76,9 +79,7 @@ void main() {
     await tester.pump();
 
     final indicators = tester
-        .widgetList<NeonTimelineIndicator>(
-          find.byType(NeonTimelineIndicator),
-        )
+        .widgetList<NeonTimelineIndicator>(find.byType(NeonTimelineIndicator))
         .toList(growable: false);
     expect(indicators, hasLength(4));
     expect(indicators.where((indicator) => indicator.animate), hasLength(1));
@@ -86,8 +87,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('optional presentation widgets remain independently usable',
-      (tester) async {
+  testWidgets('optional presentation widgets remain independently usable', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       _host(
         const NeonTimelineSurface(
@@ -119,12 +121,8 @@ void main() {
 Widget _host(Widget child) {
   return MaterialApp(
     theme: ThemeData.dark().copyWith(
-      extensions: <ThemeExtension<dynamic>>[
-        NeonTimelineThemeData.spectral(),
-      ],
+      extensions: <ThemeExtension<dynamic>>[NeonTimelineThemeData.spectral()],
     ),
-    home: Scaffold(
-      body: SizedBox(width: 430, height: 720, child: child),
-    ),
+    home: Scaffold(body: SizedBox(width: 430, height: 720, child: child)),
   );
 }

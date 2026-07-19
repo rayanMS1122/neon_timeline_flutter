@@ -13,11 +13,7 @@ enum NeonTimelinePerformanceProfile {
 }
 
 /// Web strategy used for large glow surfaces.
-enum NeonTimelineWebGlowStrategy {
-  adaptive,
-  layeredContours,
-  nativeBlur,
-}
+enum NeonTimelineWebGlowStrategy { adaptive, layeredContours, nativeBlur }
 
 /// Public performance policy shared by generic and planner timelines.
 ///
@@ -37,54 +33,56 @@ class NeonTimelinePerformanceConfig {
     this.motionStartupDelay,
     this.webGlowStrategy = NeonTimelineWebGlowStrategy.adaptive,
     this.renderQuality,
-  })  : assert(motionFramesPerSecond == null ||
-            (motionFramesPerSecond >= 1 && motionFramesPerSecond <= 120)),
-        assert(maxAnimatedEntries == null || maxAnimatedEntries >= 0),
-        assert(cacheExtent == null || cacheExtent >= 0);
+  }) : assert(
+         motionFramesPerSecond == null ||
+             (motionFramesPerSecond >= 1 && motionFramesPerSecond <= 120),
+       ),
+       assert(maxAnimatedEntries == null || maxAnimatedEntries >= 0),
+       assert(cacheExtent == null || cacheExtent >= 0);
 
   const NeonTimelinePerformanceConfig.adaptive()
-      : this(profile: NeonTimelinePerformanceProfile.adaptive);
+    : this(profile: NeonTimelinePerformanceProfile.adaptive);
 
   const NeonTimelinePerformanceConfig.batterySaver()
-      : this(
-          profile: NeonTimelinePerformanceProfile.batterySaver,
-          motionFramesPerSecond: 12,
-          maxAnimatedEntries: 0,
-          pauseMotionWhileScrolling: true,
-          enableBackdropBlur: false,
-          enableParallax: false,
-          enableParticles: false,
-          cacheExtent: 80,
-          motionStartupDelay: const Duration(milliseconds: 220),
-          webGlowStrategy: NeonTimelineWebGlowStrategy.layeredContours,
-          renderQuality: NeonTimelineRenderQuality.balanced,
-        );
+    : this(
+        profile: NeonTimelinePerformanceProfile.batterySaver,
+        motionFramesPerSecond: 12,
+        maxAnimatedEntries: 0,
+        pauseMotionWhileScrolling: true,
+        enableBackdropBlur: false,
+        enableParallax: false,
+        enableParticles: false,
+        cacheExtent: 80,
+        motionStartupDelay: const Duration(milliseconds: 220),
+        webGlowStrategy: NeonTimelineWebGlowStrategy.layeredContours,
+        renderQuality: NeonTimelineRenderQuality.balanced,
+      );
 
   const NeonTimelinePerformanceConfig.balanced()
-      : this(
-          profile: NeonTimelinePerformanceProfile.balanced,
-          motionFramesPerSecond: 24,
-          maxAnimatedEntries: 1,
-          pauseMotionWhileScrolling: true,
-          enableBackdropBlur: false,
-          cacheExtent: 160,
-          motionStartupDelay: const Duration(milliseconds: 120),
-          webGlowStrategy: NeonTimelineWebGlowStrategy.layeredContours,
-          renderQuality: NeonTimelineRenderQuality.balanced,
-        );
+    : this(
+        profile: NeonTimelinePerformanceProfile.balanced,
+        motionFramesPerSecond: 24,
+        maxAnimatedEntries: 1,
+        pauseMotionWhileScrolling: true,
+        enableBackdropBlur: false,
+        cacheExtent: 160,
+        motionStartupDelay: const Duration(milliseconds: 120),
+        webGlowStrategy: NeonTimelineWebGlowStrategy.layeredContours,
+        renderQuality: NeonTimelineRenderQuality.balanced,
+      );
 
   const NeonTimelinePerformanceConfig.highQuality()
-      : this(
-          profile: NeonTimelinePerformanceProfile.highQuality,
-          motionFramesPerSecond: 60,
-          maxAnimatedEntries: 4,
-          pauseMotionWhileScrolling: false,
-          enableParticles: true,
-          cacheExtent: 320,
-          motionStartupDelay: const Duration(milliseconds: 40),
-          webGlowStrategy: NeonTimelineWebGlowStrategy.adaptive,
-          renderQuality: NeonTimelineRenderQuality.ultra,
-        );
+    : this(
+        profile: NeonTimelinePerformanceProfile.highQuality,
+        motionFramesPerSecond: 60,
+        maxAnimatedEntries: 4,
+        pauseMotionWhileScrolling: false,
+        enableParticles: true,
+        cacheExtent: 320,
+        motionStartupDelay: const Duration(milliseconds: 40),
+        webGlowStrategy: NeonTimelineWebGlowStrategy.adaptive,
+        renderQuality: NeonTimelineRenderQuality.ultra,
+      );
 
   final NeonTimelinePerformanceProfile profile;
   final int? motionFramesPerSecond;
@@ -183,8 +181,9 @@ class NeonTimelinePerformanceConfig {
       particles = false;
     }
 
-    final resolvedBackdrop =
-        reduceMotion ? false : (enableBackdropBlur ?? backdrop);
+    final resolvedBackdrop = reduceMotion
+        ? false
+        : (enableBackdropBlur ?? backdrop);
     return NeonTimelineResolvedPerformance(
       motionFramesPerSecond: reduceMotion
           ? 1
@@ -266,9 +265,6 @@ class NeonTimelineResolvedPerformance {
       packetCount: enableParticles ? theme.connectorStyle.packetCount : 0,
       noise: enableParticles ? theme.connectorStyle.noise : 0,
     );
-    return theme.copyWith(
-      indicatorStyle: indicator,
-      connectorStyle: connector,
-    );
+    return theme.copyWith(indicatorStyle: indicator, connectorStyle: connector);
   }
 }

@@ -3,9 +3,9 @@
   "short_name": "Neon Timeline",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#08070E",
-  "theme_color": "#08070E",
-  "description": "Interactive showcase for neon_timeline_flutter.",
+  "background_color": "#070B14",
+  "theme_color": "#070B14",
+  "description": "Responsive version gallery for every maintained neon_timeline_flutter generation.",
   "orientation": "any",
   "prefer_related_applications": false,
   "icons": [

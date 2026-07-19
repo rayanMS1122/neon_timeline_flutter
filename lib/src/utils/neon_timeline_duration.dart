@@ -21,9 +21,6 @@ Duration neonNonNegativeDuration(
   Duration value, {
   String debugLabel = 'duration',
 }) {
-  assert(
-    value.inMicroseconds >= 0,
-    '$debugLabel must not be negative.',
-  );
+  assert(value.inMicroseconds >= 0, '$debugLabel must not be negative.');
   return value.inMicroseconds >= 0 ? value : Duration.zero;
 }

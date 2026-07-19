@@ -10,15 +10,15 @@ import '../neon_timeline_tile.dart';
 @immutable
 class NeonTimelineSource {
   const NeonTimelineSource.items(this.items)
-      : itemCount = null,
-        contentBuilder = null,
-        oppositeContentBuilder = null,
-        indicatorBuilder = null,
-        statusBuilder = null,
-        semanticLabelBuilder = null,
-        onItemTap = null,
-        connectorStyleBuilder = null,
-        keyBuilder = null;
+    : itemCount = null,
+      contentBuilder = null,
+      oppositeContentBuilder = null,
+      indicatorBuilder = null,
+      statusBuilder = null,
+      semanticLabelBuilder = null,
+      onItemTap = null,
+      connectorStyleBuilder = null,
+      keyBuilder = null;
 
   const NeonTimelineSource.builder({
     required int this.itemCount,
@@ -30,8 +30,8 @@ class NeonTimelineSource {
     this.onItemTap,
     this.connectorStyleBuilder,
     this.keyBuilder,
-  })  : assert(itemCount >= 0),
-        items = null;
+  }) : assert(itemCount >= 0),
+       items = null;
 
   final List<NeonTimelineItem>? items;
   final int? itemCount;
@@ -75,19 +75,19 @@ class NeonTimelineSource {
       nextStatus: index == length - 1 ? null : statusAt(index + 1),
     );
     final item = items?[index];
-    final baseConnectorStyle = item?.connectorStyle ??
+    final baseConnectorStyle =
+        item?.connectorStyle ??
         connectorStyleBuilder?.call(context, details) ??
         theme.connectorStyle;
     final currentColor = theme.colorForStatus(status);
-    final beforeColor = theme.colorForStatus(
-      details.previousStatus ?? status,
-    );
+    final beforeColor = theme.colorForStatus(details.previousStatus ?? status);
     final afterColor = theme.colorForStatus(details.nextStatus ?? status);
 
     final itemKey = _resolveKey(context, details, item);
     final tile = NeonTimelineTile(
       content: item?.content ?? contentBuilder!(context, details),
-      oppositeContent: item?.oppositeContent ??
+      oppositeContent:
+          item?.oppositeContent ??
           oppositeContentBuilder?.call(context, details),
       indicator: item?.indicator ?? indicatorBuilder?.call(context, details),
       axis: axis,
@@ -100,7 +100,8 @@ class NeonTimelineSource {
         color: beforeColor,
         endColor: currentColor,
         phaseOffset: (index * 0.137) % 1,
-        animated: baseConnectorStyle.animated &&
+        animated:
+            baseConnectorStyle.animated &&
             (animatedIndexes.contains(index) ||
                 animatedIndexes.contains(index - 1)),
       ),
@@ -108,18 +109,21 @@ class NeonTimelineSource {
         color: currentColor,
         endColor: afterColor,
         phaseOffset: ((index + 0.5) * 0.137) % 1,
-        animated: baseConnectorStyle.animated &&
+        animated:
+            baseConnectorStyle.animated &&
             (animatedIndexes.contains(index) ||
                 animatedIndexes.contains(index + 1)),
       ),
       indicatorPosition: indicatorPosition,
       animateIndicator: animatedIndexes.contains(index),
       extent: itemExtent,
-      semanticLabel: item?.semanticLabel ??
+      semanticLabel:
+          item?.semanticLabel ??
           semanticLabelBuilder?.call(context, details) ??
           _defaultSemanticLabel(details),
       semanticIndex: index,
-      onTap: item?.onTap ??
+      onTap:
+          item?.onTap ??
           (onItemTap == null ? null : () => onItemTap!(context, details)),
     );
     return KeyedSubtree(
@@ -174,8 +178,7 @@ class _TimelineRevealState extends State<_TimelineReveal> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _reduceMotion =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    _reduceMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
   }
 
   @override

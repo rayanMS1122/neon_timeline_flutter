@@ -31,18 +31,13 @@ class _NeonTimelineConnectorState extends State<NeonTimelineConnector> {
   NeonTimelineMotionClock? _localClock;
   NeonTimelineMotionData? _sharedMotion;
 
-  NeonTimelineMotionClock _ensureLocalClock(
-    NeonTimelineConnectorStyle style,
-  ) {
+  NeonTimelineMotionClock _ensureLocalClock(NeonTimelineConnectorStyle style) {
     final clock = _localClock ??= NeonTimelineMotionClock(
       duration: style.animationDuration,
       framesPerSecond: 24,
       initialValue: 0.28,
     );
-    clock.configure(
-      duration: style.animationDuration,
-      framesPerSecond: 24,
-    );
+    clock.configure(duration: style.animationDuration, framesPerSecond: 24);
     return clock;
   }
 
@@ -83,9 +78,10 @@ class _NeonTimelineConnectorState extends State<NeonTimelineConnector> {
     );
     final reduceMotion =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-    final tickerEnabled = TickerMode.of(context);
+    final tickerEnabled = TickerMode.valuesOf(context).enabled;
     final advanced = style.effect != NeonConnectorEffect.classic;
-    final shouldAnimate = advanced &&
+    final shouldAnimate =
+        advanced &&
         style.animated &&
         !reduceMotion &&
         tickerEnabled &&
@@ -209,8 +205,9 @@ class _ConnectorPainter extends CustomPainter {
       ..strokeCap = style.lineCap;
     if (style.variant == NeonConnectorVariant.gradient) {
       paint.shader = LinearGradient(
-        begin:
-            axis == Axis.vertical ? Alignment.topCenter : Alignment.centerLeft,
+        begin: axis == Axis.vertical
+            ? Alignment.topCenter
+            : Alignment.centerLeft,
         end: axis == Axis.vertical
             ? Alignment.bottomCenter
             : Alignment.centerRight,
@@ -236,11 +233,11 @@ class _ConnectorPainter extends CustomPainter {
       start,
       end,
       <Color>[
-        style.color.withOpacity(0.18 * strength),
-        style.color.withOpacity(0.82 * strength),
-        style.coreColor.withOpacity(0.98 * strength),
-        style.endColor.withOpacity(0.86 * strength),
-        style.endColor.withOpacity(0.16 * strength),
+        style.color.withValues(alpha: 0.18 * strength),
+        style.color.withValues(alpha: 0.82 * strength),
+        style.coreColor.withValues(alpha: 0.98 * strength),
+        style.endColor.withValues(alpha: 0.86 * strength),
+        style.endColor.withValues(alpha: 0.16 * strength),
       ],
       const <double>[0, 0.30, 0.50, 0.70, 1],
     );
@@ -276,7 +273,7 @@ class _ConnectorPainter extends CustomPainter {
     if (style.variant == NeonConnectorVariant.gradient) {
       mainPaint.shader = shader;
     } else {
-      mainPaint.color = style.color.withOpacity(0.92 * strength);
+      mainPaint.color = style.color.withValues(alpha: 0.92 * strength);
     }
     _paintLine(canvas, start, end, mainPaint);
 
@@ -289,9 +286,9 @@ class _ConnectorPainter extends CustomPainter {
           end,
           <Color>[
             Colors.transparent,
-            style.coreColor.withOpacity(0.38 * strength),
-            style.coreColor.withOpacity(0.92 * strength),
-            style.coreColor.withOpacity(0.34 * strength),
+            style.coreColor.withValues(alpha: 0.38 * strength),
+            style.coreColor.withValues(alpha: 0.92 * strength),
+            style.coreColor.withValues(alpha: 0.34 * strength),
             Colors.transparent,
           ],
           const <double>[0, 0.34, 0.50, 0.66, 1],
@@ -301,11 +298,7 @@ class _ConnectorPainter extends CustomPainter {
     );
 
     if (style.animated && paintFlow) {
-      _paintEnergyFlow(
-        canvas,
-        frame,
-        strength,
-      );
+      _paintEnergyFlow(canvas, frame, strength);
     }
   }
 
@@ -314,7 +307,8 @@ class _ConnectorPainter extends CustomPainter {
     _BeamFrame frame,
     double strength,
   ) {
-    final shift = math.max(0.45, style.thickness * 0.34) *
+    final shift =
+        math.max(0.45, style.thickness * 0.34) *
         (0.65 + style.chromaticAberration * 0.7);
     final fringeOffset = frame.normal * shift;
     canvas.drawLine(
@@ -325,9 +319,9 @@ class _ConnectorPainter extends CustomPainter {
           frame.start,
           frame.end,
           <Color>[
-            style.secondaryColor.withOpacity(0.06),
-            style.color.withOpacity(0.42 * strength * style.detail),
-            style.coreColor.withOpacity(0.72 * strength * style.detail),
+            style.secondaryColor.withValues(alpha: 0.06),
+            style.color.withValues(alpha: 0.42 * strength * style.detail),
+            style.coreColor.withValues(alpha: 0.72 * strength * style.detail),
             Colors.transparent,
           ],
           const <double>[0, 0.34, 0.52, 1],
@@ -344,9 +338,9 @@ class _ConnectorPainter extends CustomPainter {
           frame.end,
           <Color>[
             Colors.transparent,
-            style.coreColor.withOpacity(0.58 * strength * style.detail),
-            style.endColor.withOpacity(0.48 * strength * style.detail),
-            style.endColor.withOpacity(0.04),
+            style.coreColor.withValues(alpha: 0.58 * strength * style.detail),
+            style.endColor.withValues(alpha: 0.48 * strength * style.detail),
+            style.endColor.withValues(alpha: 0.04),
           ],
           const <double>[0, 0.45, 0.68, 1],
         )
@@ -355,17 +349,8 @@ class _ConnectorPainter extends CustomPainter {
     );
   }
 
-  void _paintPlasmaConnector(
-    Canvas canvas,
-    Offset start,
-    Offset end,
-  ) {
-    _paintEnergyConnector(
-      canvas,
-      start,
-      end,
-      paintFlow: false,
-    );
+  void _paintPlasmaConnector(Canvas canvas, Offset start, Offset end) {
+    _paintEnergyConnector(canvas, start, end, paintFlow: false);
 
     final frame = _BeamFrame.from(start, end);
     if (frame == null) return;
@@ -387,11 +372,7 @@ class _ConnectorPainter extends CustomPainter {
     }
   }
 
-  void _paintPlasmaSheath(
-    Canvas canvas,
-    _BeamFrame frame,
-    double strength,
-  ) {
+  void _paintPlasmaSheath(Canvas canvas, _BeamFrame frame, double strength) {
     if (style.turbulence <= 0 || style.detail <= 0.05) return;
     final waveCount = style.detail > 0.72 ? 3 : 2;
     final amplitude =
@@ -411,8 +392,8 @@ class _ConnectorPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round
           ..strokeWidth = style.thickness * (1.8 - wave * 0.28)
-          ..color = color.withOpacity(
-            (0.16 - wave * 0.025) * strength * style.detail,
+          ..color = color.withValues(
+            alpha: (0.16 - wave * 0.025) * strength * style.detail,
           )
           ..applyBlur(NeonBlur.normal(math.max(1.5, style.glowRadius * 0.42))),
       );
@@ -422,18 +403,14 @@ class _ConnectorPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round
           ..strokeWidth = math.max(0.38, style.thickness * 0.24)
-          ..color = color.withOpacity(
-            (0.34 - wave * 0.055) * strength * style.detail,
+          ..color = color.withValues(
+            alpha: (0.34 - wave * 0.055) * strength * style.detail,
           ),
       );
     }
   }
 
-  void _paintWarpConnector(
-    Canvas canvas,
-    Offset start,
-    Offset end,
-  ) {
+  void _paintWarpConnector(Canvas canvas, Offset start, Offset end) {
     _paintEnergyConnector(
       canvas,
       start,
@@ -463,11 +440,7 @@ class _ConnectorPainter extends CustomPainter {
     }
   }
 
-  void _paintWarpField(
-    Canvas canvas,
-    _BeamFrame frame,
-    double strength,
-  ) {
+  void _paintWarpField(Canvas canvas, _BeamFrame frame, double strength) {
     final fieldWidth = style.thickness * (7 + style.refraction * 5);
     canvas.drawLine(
       frame.start,
@@ -478,9 +451,9 @@ class _ConnectorPainter extends CustomPainter {
           frame.end,
           <Color>[
             Colors.transparent,
-            style.secondaryColor.withOpacity(0.08 * strength),
-            style.color.withOpacity(0.11 * strength),
-            style.endColor.withOpacity(0.08 * strength),
+            style.secondaryColor.withValues(alpha: 0.08 * strength),
+            style.color.withValues(alpha: 0.11 * strength),
+            style.endColor.withValues(alpha: 0.08 * strength),
             Colors.transparent,
           ],
           const <double>[0, 0.22, 0.50, 0.78, 1],
@@ -506,9 +479,9 @@ class _ConnectorPainter extends CustomPainter {
             point + frame.normal * half,
             <Color>[
               Colors.transparent,
-              style.secondaryColor.withOpacity(0.12 * strength),
-              style.coreColor.withOpacity(0.32 * strength),
-              style.tertiaryFallback.withOpacity(0.12 * strength),
+              style.secondaryColor.withValues(alpha: 0.12 * strength),
+              style.coreColor.withValues(alpha: 0.32 * strength),
+              style.tertiaryFallback.withValues(alpha: 0.12 * strength),
               Colors.transparent,
             ],
             const <double>[0, 0.35, 0.5, 0.65, 1],
@@ -520,11 +493,7 @@ class _ConnectorPainter extends CustomPainter {
     }
   }
 
-  void _paintBraidedStrands(
-    Canvas canvas,
-    _BeamFrame frame,
-    double strength,
-  ) {
+  void _paintBraidedStrands(Canvas canvas, _BeamFrame frame, double strength) {
     final amplitude =
         math.max(0.9, style.thickness * 1.65) * (0.45 + style.turbulence * 0.9);
     for (var strand = 0; strand < style.strandCount; strand++) {
@@ -534,7 +503,8 @@ class _ConnectorPainter extends CustomPainter {
         frame,
         amplitude: amplitude * (0.72 + (strand % 3) * 0.12),
         frequency: style.waveFrequency * (0.82 + (strand % 2) * 0.18),
-        phase: offsetPhase +
+        phase:
+            offsetPhase +
             _phase * math.pi * 2 * direction * (0.54 + strand * 0.05),
       );
       final color = switch (strand % 3) {
@@ -548,8 +518,8 @@ class _ConnectorPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round
           ..strokeWidth = style.thickness * (0.62 - strand * 0.035)
-          ..color = color.withOpacity(
-            (0.30 - strand * 0.024) * strength * style.detail,
+          ..color = color.withValues(
+            alpha: (0.30 - strand * 0.024) * strength * style.detail,
           )
           ..applyBlur(NeonBlur.normal(math.max(0.8, style.glowRadius * 0.16))),
       );
@@ -566,7 +536,8 @@ class _ConnectorPainter extends CustomPainter {
     for (var index = 0; index < count; index++) {
       final t = index / math.max(1, count - 1);
       final seed = index * 71 + (_phase * 30).floor();
-      final offset = (_hash01(seed) * 2 - 1) *
+      final offset =
+          (_hash01(seed) * 2 - 1) *
           style.thickness *
           (1.4 + style.refraction * 1.8);
       final point = frame.pointAt(t) + frame.normal * offset;
@@ -578,9 +549,9 @@ class _ConnectorPainter extends CustomPainter {
           ..strokeWidth = 0.38
           ..strokeCap = StrokeCap.round
           ..color = (index.isEven ? style.secondaryColor : style.endColor)
-              .withOpacity(
-            0.16 * strength * style.detail * style.refraction,
-          ),
+              .withValues(
+                alpha: 0.16 * strength * style.detail * style.refraction,
+              ),
       );
     }
   }
@@ -598,10 +569,12 @@ class _ConnectorPainter extends CustomPainter {
     );
     final centerDistance =
         phase * (frame.length + packetLength) - packetLength / 2;
-    final startDistance =
-        (centerDistance - packetLength / 2).clamp(0.0, frame.length).toDouble();
-    final endDistance =
-        (centerDistance + packetLength / 2).clamp(0.0, frame.length).toDouble();
+    final startDistance = (centerDistance - packetLength / 2)
+        .clamp(0.0, frame.length)
+        .toDouble();
+    final endDistance = (centerDistance + packetLength / 2)
+        .clamp(0.0, frame.length)
+        .toDouble();
     if (endDistance <= startDistance) return;
 
     final from = frame.start + frame.direction * startDistance;
@@ -616,9 +589,9 @@ class _ConnectorPainter extends CustomPainter {
           to,
           <Color>[
             Colors.transparent,
-            style.secondaryColor.withOpacity(0.48 * strength),
-            style.coreColor.withOpacity(1.0 * strength),
-            style.endColor.withOpacity(0.48 * strength),
+            style.secondaryColor.withValues(alpha: 0.48 * strength),
+            style.coreColor.withValues(alpha: 1.0 * strength),
+            style.endColor.withValues(alpha: 0.48 * strength),
             Colors.transparent,
           ],
           const <double>[0, 0.25, 0.5, 0.75, 1],
@@ -631,7 +604,7 @@ class _ConnectorPainter extends CustomPainter {
       center,
       math.max(1.2, style.thickness * 0.78),
       _paintPool.next()
-        ..color = style.coreColor.withOpacity(0.96 * strength)
+        ..color = style.coreColor.withValues(alpha: 0.96 * strength)
         ..applyBlur(NeonBlur.normal(1.5)),
     );
 
@@ -646,9 +619,9 @@ class _ConnectorPainter extends CustomPainter {
             center + frame.normal * half,
             <Color>[
               Colors.transparent,
-              style.secondaryColor.withOpacity(0.34 * strength),
-              style.coreColor.withOpacity(0.90 * strength),
-              style.endColor.withOpacity(0.34 * strength),
+              style.secondaryColor.withValues(alpha: 0.34 * strength),
+              style.coreColor.withValues(alpha: 0.90 * strength),
+              style.endColor.withValues(alpha: 0.34 * strength),
               Colors.transparent,
             ],
             const <double>[0, 0.36, 0.5, 0.64, 1],
@@ -664,11 +637,7 @@ class _ConnectorPainter extends CustomPainter {
     }
   }
 
-  void _paintHologramConnector(
-    Canvas canvas,
-    Offset start,
-    Offset end,
-  ) {
+  void _paintHologramConnector(Canvas canvas, Offset start, Offset end) {
     final frame = _BeamFrame.from(start, end);
     if (frame == null) return;
     final strength = style.intensity.clamp(0.0, 1.0).toDouble();
@@ -681,11 +650,11 @@ class _ConnectorPainter extends CustomPainter {
           start,
           end,
           <Color>[
-            style.color.withOpacity(0.06 * strength),
-            style.color.withOpacity(0.22 * strength),
-            style.coreColor.withOpacity(0.34 * strength),
-            style.endColor.withOpacity(0.22 * strength),
-            style.endColor.withOpacity(0.06 * strength),
+            style.color.withValues(alpha: 0.06 * strength),
+            style.color.withValues(alpha: 0.22 * strength),
+            style.coreColor.withValues(alpha: 0.34 * strength),
+            style.endColor.withValues(alpha: 0.22 * strength),
+            style.endColor.withValues(alpha: 0.06 * strength),
           ],
           const <double>[0, 0.24, 0.5, 0.76, 1],
         )
@@ -729,11 +698,7 @@ class _ConnectorPainter extends CustomPainter {
     }
   }
 
-  void _paintHologramTicks(
-    Canvas canvas,
-    _BeamFrame frame,
-    double strength,
-  ) {
+  void _paintHologramTicks(Canvas canvas, _BeamFrame frame, double strength) {
     if (style.scanlineOpacity <= 0 || style.detail <= 0.05) return;
     final count = math.max(8, (frame.length / 10).floor());
     for (var index = 0; index <= count; index++) {
@@ -749,8 +714,9 @@ class _ConnectorPainter extends CustomPainter {
         _paintPool.next()
           ..strokeWidth = major ? 0.72 : 0.42
           ..strokeCap = StrokeCap.round
-          ..color = (major ? style.secondaryColor : style.endColor).withOpacity(
-            style.scanlineOpacity *
+          ..color = (major ? style.secondaryColor : style.endColor).withValues(
+            alpha:
+                style.scanlineOpacity *
                 (major ? 0.48 : 0.24) *
                 flicker *
                 strength *
@@ -760,17 +726,14 @@ class _ConnectorPainter extends CustomPainter {
     }
   }
 
-  void _paintHologramNoise(
-    Canvas canvas,
-    _BeamFrame frame,
-    double strength,
-  ) {
+  void _paintHologramNoise(Canvas canvas, _BeamFrame frame, double strength) {
     if (style.noise <= 0 || style.detail <= 0.2) return;
     final count = math.max(8, style.particleCount * 2);
     for (var index = 0; index < count; index++) {
       final seed = index * 101 + (_phase * 80).floor();
       final t = _hash01(seed);
-      final offset = (_hash01(seed + 17) * 2 - 1) *
+      final offset =
+          (_hash01(seed + 17) * 2 - 1) *
           style.thickness *
           (2 + style.refraction * 2);
       final point = frame.pointAt(t) + frame.normal * offset;
@@ -781,7 +744,7 @@ class _ConnectorPainter extends CustomPainter {
         _paintPool.next()
           ..strokeWidth = 0.44
           ..color = (index.isEven ? style.color : style.secondaryColor)
-              .withOpacity(0.26 * strength * style.noise * style.detail),
+              .withValues(alpha: 0.26 * strength * style.noise * style.detail),
       );
     }
   }
@@ -803,9 +766,9 @@ class _ConnectorPainter extends CustomPainter {
           center + frame.normal * half,
           <Color>[
             Colors.transparent,
-            style.secondaryColor.withOpacity(0.42 * strength),
-            style.coreColor.withOpacity(0.92 * strength),
-            style.endColor.withOpacity(0.42 * strength),
+            style.secondaryColor.withValues(alpha: 0.42 * strength),
+            style.coreColor.withValues(alpha: 0.92 * strength),
+            style.endColor.withValues(alpha: 0.42 * strength),
             Colors.transparent,
           ],
           const <double>[0, 0.35, 0.5, 0.65, 1],
@@ -817,15 +780,12 @@ class _ConnectorPainter extends CustomPainter {
     canvas.drawCircle(
       center,
       math.max(0.9, style.thickness * 0.62),
-      _paintPool.next()..color = style.coreColor.withOpacity(0.82 * strength),
+      _paintPool.next()
+        ..color = style.coreColor.withValues(alpha: 0.82 * strength),
     );
   }
 
-  void _paintPhotonLatticeConnector(
-    Canvas canvas,
-    Offset start,
-    Offset end,
-  ) {
+  void _paintPhotonLatticeConnector(Canvas canvas, Offset start, Offset end) {
     _paintEnergyConnector(
       canvas,
       start,
@@ -847,9 +807,9 @@ class _ConnectorPainter extends CustomPainter {
           end,
           <Color>[
             Colors.transparent,
-            style.secondaryColor.withOpacity(0.08 * strength),
-            style.color.withOpacity(0.15 * strength),
-            style.endColor.withOpacity(0.08 * strength),
+            style.secondaryColor.withValues(alpha: 0.08 * strength),
+            style.color.withValues(alpha: 0.15 * strength),
+            style.endColor.withValues(alpha: 0.08 * strength),
             Colors.transparent,
           ],
           const <double>[0, 0.22, 0.5, 0.78, 1],
@@ -861,9 +821,11 @@ class _ConnectorPainter extends CustomPainter {
 
     final strandCount = math.max(3, style.strandCount);
     for (var strand = 0; strand < strandCount; strand++) {
-      final normalized =
-          strandCount <= 1 ? 0.0 : strand / (strandCount - 1) * 2 - 1;
-      final amplitude = style.thickness *
+      final normalized = strandCount <= 1
+          ? 0.0
+          : strand / (strandCount - 1) * 2 - 1;
+      final amplitude =
+          style.thickness *
           (1.1 + style.photonSpread * 3.6) *
           (0.35 + normalized.abs() * 0.65);
       final direction = strand.isEven ? 1.0 : -1.0;
@@ -884,7 +846,7 @@ class _ConnectorPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeWidth = math.max(1.1, style.thickness * 1.5)
           ..strokeCap = StrokeCap.round
-          ..color = color.withOpacity(0.12 * strength * style.detail)
+          ..color = color.withValues(alpha: 0.12 * strength * style.detail)
           ..applyBlur(NeonBlur.normal(math.max(1.5, style.glowRadius * 0.34))),
       );
       canvas.drawPath(
@@ -893,7 +855,7 @@ class _ConnectorPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeWidth = math.max(0.42, style.thickness * 0.34)
           ..strokeCap = StrokeCap.round
-          ..color = color.withOpacity(0.62 * strength * style.detail),
+          ..color = color.withValues(alpha: 0.62 * strength * style.detail),
       );
     }
 
@@ -948,17 +910,17 @@ class _ConnectorPainter extends CustomPainter {
             from,
             to,
             <Color>[
-              style.secondaryColor.withOpacity(0.0),
-              style.secondaryColor.withOpacity(
-                0.22 * strength * style.interference * flicker,
+              style.secondaryColor.withValues(alpha: 0.0),
+              style.secondaryColor.withValues(
+                alpha: 0.22 * strength * style.interference * flicker,
               ),
-              style.coreColor.withOpacity(
-                0.58 * strength * style.interference * flicker,
+              style.coreColor.withValues(
+                alpha: 0.58 * strength * style.interference * flicker,
               ),
-              style.endColor.withOpacity(
-                0.22 * strength * style.interference * flicker,
+              style.endColor.withValues(
+                alpha: 0.22 * strength * style.interference * flicker,
               ),
-              style.endColor.withOpacity(0.0),
+              style.endColor.withValues(alpha: 0.0),
             ],
             const <double>[0, 0.28, 0.5, 0.72, 1],
           )
@@ -970,8 +932,8 @@ class _ConnectorPainter extends CustomPainter {
           center,
           math.max(0.55, style.thickness * 0.34),
           _paintPool.next()
-            ..color = style.coreColor.withOpacity(
-              0.50 * strength * style.interference * flicker,
+            ..color = style.coreColor.withValues(
+              alpha: 0.50 * strength * style.interference * flicker,
             )
             ..applyBlur(NeonBlur.normal(0.8)),
         );
@@ -993,11 +955,13 @@ class _ConnectorPainter extends CustomPainter {
     for (var index = 0; index < count; index++) {
       final t = (index + 0.5) / count;
       final point = frame.pointAt(t);
-      final interference = NeonTrig.sin(
+      final interference =
+          NeonTrig.sin(
             t * math.pi * style.waveFrequency * 2 + _phaseRadians * 1.7,
           ) *
           NeonTrig.sin(t * math.pi);
-      final half = style.thickness *
+      final half =
+          style.thickness *
           (0.7 + interference.abs() * (1.6 + style.photonSpread * 2.2));
       canvas.drawLine(
         point - frame.normal * half,
@@ -1005,13 +969,14 @@ class _ConnectorPainter extends CustomPainter {
         _paintPool.next()
           ..strokeWidth = 0.34
           ..color = (index.isEven ? style.secondaryColor : style.endColor)
-              .withOpacity(
-            0.10 *
-                strength *
-                style.interference *
-                style.detail *
-                interference.abs(),
-          ),
+              .withValues(
+                alpha:
+                    0.10 *
+                    strength *
+                    style.interference *
+                    style.detail *
+                    interference.abs(),
+              ),
       );
     }
   }
@@ -1027,12 +992,14 @@ class _ConnectorPainter extends CustomPainter {
     final wave = NeonTrig.sin(
       packetPhase * math.pi * style.waveFrequency + _phaseRadians,
     );
-    final packetCenter = center +
+    final packetCenter =
+        center +
         frame.normal *
             wave *
             style.thickness *
             (0.8 + style.photonSpread * 2.4);
-    final trailLength = frame.length *
+    final trailLength =
+        frame.length *
         (0.045 + style.pulseWidth * 0.10) *
         style.trailPersistence;
     final trailStartDistance = (packetPhase * frame.length - trailLength)
@@ -1065,10 +1032,10 @@ class _ConnectorPainter extends CustomPainter {
           packetCenter,
           <Color>[
             Colors.transparent,
-            packetColor.withOpacity(
-              0.18 * strength * style.trailPersistence,
+            packetColor.withValues(
+              alpha: 0.18 * strength * style.trailPersistence,
             ),
-            style.coreColor.withOpacity(0.88 * strength),
+            style.coreColor.withValues(alpha: 0.88 * strength),
           ],
           const <double>[0, 0.62, 1],
         )
@@ -1078,7 +1045,7 @@ class _ConnectorPainter extends CustomPainter {
       packetCenter,
       math.max(1.2, style.thickness * 0.86),
       _paintPool.next()
-        ..color = style.coreColor.withOpacity(0.94 * strength)
+        ..color = style.coreColor.withValues(alpha: 0.94 * strength)
         ..applyBlur(NeonBlur.normal(1.4)),
     );
 
@@ -1092,9 +1059,9 @@ class _ConnectorPainter extends CustomPainter {
           packetCenter + frame.normal * flareHalf,
           <Color>[
             Colors.transparent,
-            packetColor.withOpacity(0.28 * strength),
-            style.coreColor.withOpacity(0.82 * strength),
-            packetColor.withOpacity(0.28 * strength),
+            packetColor.withValues(alpha: 0.28 * strength),
+            style.coreColor.withValues(alpha: 0.82 * strength),
+            packetColor.withValues(alpha: 0.28 * strength),
             Colors.transparent,
           ],
           const <double>[0, 0.36, 0.5, 0.64, 1],
@@ -1141,9 +1108,9 @@ class _ConnectorPainter extends CustomPainter {
             to,
             <Color>[
               Colors.transparent,
-              style.color.withOpacity(0.44 * resolvedStrength),
-              style.coreColor.withOpacity(0.98 * resolvedStrength),
-              style.endColor.withOpacity(0.44 * resolvedStrength),
+              style.color.withValues(alpha: 0.44 * resolvedStrength),
+              style.coreColor.withValues(alpha: 0.98 * resolvedStrength),
+              style.endColor.withValues(alpha: 0.44 * resolvedStrength),
               Colors.transparent,
             ],
             const <double>[0, 0.28, 0.5, 0.72, 1],
@@ -1156,7 +1123,7 @@ class _ConnectorPainter extends CustomPainter {
         center,
         math.max(1.1, style.thickness * 0.72),
         _paintPool.next()
-          ..color = style.coreColor.withOpacity(0.90 * resolvedStrength)
+          ..color = style.coreColor.withValues(alpha: 0.90 * resolvedStrength)
           ..applyBlur(NeonBlur.normal(1.4)),
       );
     }
@@ -1176,9 +1143,8 @@ class _ConnectorPainter extends CustomPainter {
     for (var index = 0; index < style.particleCount; index++) {
       final localPhase = (phase + index / style.particleCount) % 1.0;
       final distance = localPhase * frame.length;
-      final wobble = NeonTrig.sin(
-            localPhase * math.pi * 6 + index * 1.71,
-          ) *
+      final wobble =
+          NeonTrig.sin(localPhase * math.pi * 6 + index * 1.71) *
           math.max(0.8, style.thickness * (0.62 + style.turbulence));
       final position =
           frame.start + frame.direction * distance + frame.normal * wobble;
@@ -1190,12 +1156,13 @@ class _ConnectorPainter extends CustomPainter {
       final radius = 0.48 + (index % 3) * 0.16;
       // Reuse cached Paint objects — just update color to avoid allocations.
       _particleGlowPaint
-        ..color = color.withOpacity(0.12 * strength * style.detail)
+        ..color = color.withValues(alpha: 0.12 * strength * style.detail)
         ..maskFilter = null
         ..applyBlur(_particleBlur);
       canvas.drawCircle(position, radius + 1.2, _particleGlowPaint);
-      _particleDotPaint.color =
-          color.withOpacity(0.66 * strength * style.detail);
+      _particleDotPaint.color = color.withValues(
+        alpha: 0.66 * strength * style.detail,
+      );
       canvas.drawCircle(position, radius, _particleDotPaint);
     }
   }
@@ -1231,9 +1198,8 @@ class _ConnectorPainter extends CustomPainter {
     for (var step = 0; step <= steps; step++) {
       final t = step / steps;
       final envelope = NeonTrig.sin(t * math.pi);
-      final displacement = NeonTrig.sin(
-            t * math.pi * frequency + quantizedPhase,
-          ) *
+      final displacement =
+          NeonTrig.sin(t * math.pi * frequency + quantizedPhase) *
           amplitude *
           envelope;
       final point = frame.pointAt(t) + frame.normal * displacement;
@@ -1281,8 +1247,9 @@ class _ConnectorPainter extends CustomPainter {
     var distance = -phase * period;
     while (distance < frame.length) {
       final dashStart = distance.clamp(0.0, frame.length).toDouble();
-      final dashEnd =
-          (distance + dashLength).clamp(0.0, frame.length).toDouble();
+      final dashEnd = (distance + dashLength)
+          .clamp(0.0, frame.length)
+          .toDouble();
       if (dashEnd > dashStart) {
         canvas.drawLine(
           frame.start + frame.direction * dashStart,

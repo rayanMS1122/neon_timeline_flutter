@@ -1,0 +1,17 @@
+{
+  "neon_timeline_flutter.dart": {
+    "exported_files": 84,
+    "public_declarations": 223,
+    "collisions": {}
+  },
+  "structured_planner.dart": {
+    "exported_files": 25,
+    "public_declarations": 88,
+    "collisions": {}
+  },
+  "timeline_v7.dart": {
+    "exported_files": 24,
+    "public_declarations": 88,
+    "collisions": {}
+  }
+}

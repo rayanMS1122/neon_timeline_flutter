@@ -125,9 +125,7 @@ void main() {
     await tester.pump();
 
     final indicators = tester
-        .widgetList<NeonTimelineIndicator>(
-          find.byType(NeonTimelineIndicator),
-        )
+        .widgetList<NeonTimelineIndicator>(find.byType(NeonTimelineIndicator))
         .toList(growable: false);
     expect(indicators.where((indicator) => indicator.animate), hasLength(1));
     expect(tester.takeException(), isNull);
@@ -154,8 +152,9 @@ void main() {
     expect(tuned.connectorStyle.packetCount, 0);
   });
 
-  testWidgets('shared motion publishes at the configured sample rate',
-      (tester) async {
+  testWidgets('shared motion publishes at the configured sample rate', (
+    tester,
+  ) async {
     var notifications = 0;
 
     await tester.pumpWidget(
@@ -165,8 +164,9 @@ void main() {
           pauseWhenScrolling: false,
           child: Builder(
             builder: (context) {
-              final animation =
-                  NeonTimelineMotionScope.maybeOf(context)!.animation;
+              final animation = NeonTimelineMotionScope.maybeOf(
+                context,
+              )!.animation;
               return AnimatedBuilder(
                 animation: animation,
                 builder: (context, child) {
@@ -192,12 +192,8 @@ void main() {
 Widget _host(Widget child) {
   return MaterialApp(
     theme: ThemeData.dark().copyWith(
-      extensions: <ThemeExtension<dynamic>>[
-        NeonTimelineThemeData.spectral(),
-      ],
+      extensions: <ThemeExtension<dynamic>>[NeonTimelineThemeData.spectral()],
     ),
-    home: Scaffold(
-      body: SizedBox(width: 430, height: 720, child: child),
-    ),
+    home: Scaffold(body: SizedBox(width: 430, height: 720, child: child)),
   );
 }

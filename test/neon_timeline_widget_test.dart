@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neon_timeline_flutter/neon_timeline_flutter.dart';
 
 void main() {
   group('NeonTimeline items constructor', () {
-    testWidgets('renders direct content, opposite content, and indicators',
-        (tester) async {
+    testWidgets('renders direct content, opposite content, and indicators', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _host(
           child: NeonTimeline(
@@ -49,17 +49,17 @@ void main() {
       expect(find.text('09:00'), findsOneWidget);
       expect(find.text('10:00'), findsOneWidget);
       expect(find.text('11:00'), findsOneWidget);
-      expect(find.byKey(const ValueKey<String>('custom-indicator')),
-          findsOneWidget);
+      expect(
+        find.byKey(const ValueKey<String>('custom-indicator')),
+        findsOneWidget,
+      );
       expect(find.byKey(const ValueKey<Object>('pending')), findsOneWidget);
       expect(find.byKey(const ValueKey<Object>('completed')), findsOneWidget);
       expect(find.byType(NeonTimelineTile), findsNWidgets(3));
       expect(find.byType(NeonTimelineConnector), findsWidgets);
 
       final defaultIndicators = tester
-          .widgetList<NeonTimelineIndicator>(
-            find.byType(NeonTimelineIndicator),
-          )
+          .widgetList<NeonTimelineIndicator>(find.byType(NeonTimelineIndicator))
           .toList();
       expect(
         defaultIndicators.map((indicator) => indicator.status),
@@ -73,8 +73,9 @@ void main() {
   });
 
   group('NeonTimeline.builder', () {
-    testWidgets('provides complete details, statuses, keys, and transitions',
-        (tester) async {
+    testWidgets('provides complete details, statuses, keys, and transitions', (
+      tester,
+    ) async {
       final contentDetails = <int, NeonTimelineItemDetails>{};
       final oppositeDetails = <int, NeonTimelineItemDetails>{};
       final indicatorDetails = <int, NeonTimelineItemDetails>{};
@@ -166,8 +167,7 @@ void main() {
           )
           .toList();
       expect(middleConnectors, hasLength(2));
-      expect(middleConnectors[0].style!.variant,
-          NeonConnectorVariant.dashed);
+      expect(middleConnectors[0].style!.variant, NeonConnectorVariant.dashed);
       expect(middleConnectors[0].style!.thickness, 3);
       expect(middleConnectors[0].style!.color, theme.mutedColor);
       expect(middleConnectors[0].style!.endColor, theme.primaryColor);
@@ -178,57 +178,61 @@ void main() {
   });
 
   group('layout and directionality', () {
-    testWidgets('vertical, horizontal, alternating, and RTL layouts are safe',
-        (tester) async {
-      final configurations = <({
-        Axis axis,
-        NeonTimelineLayout layout,
-        TextDirection direction,
-        Size size,
-      })>[
-        (
-          axis: Axis.vertical,
-          layout: NeonTimelineLayout.start,
-          direction: TextDirection.ltr,
-          size: const Size(320, 500),
-        ),
-        (
-          axis: Axis.vertical,
-          layout: NeonTimelineLayout.end,
-          direction: TextDirection.rtl,
-          size: const Size(320, 500),
-        ),
-        (
-          axis: Axis.vertical,
-          layout: NeonTimelineLayout.center,
-          direction: TextDirection.rtl,
-          size: const Size(800, 500),
-        ),
-        (
-          axis: Axis.vertical,
-          layout: NeonTimelineLayout.alternating,
-          direction: TextDirection.ltr,
-          size: const Size(800, 500),
-        ),
-        (
-          axis: Axis.horizontal,
-          layout: NeonTimelineLayout.start,
-          direction: TextDirection.ltr,
-          size: const Size(700, 260),
-        ),
-        (
-          axis: Axis.horizontal,
-          layout: NeonTimelineLayout.center,
-          direction: TextDirection.rtl,
-          size: const Size(700, 260),
-        ),
-        (
-          axis: Axis.horizontal,
-          layout: NeonTimelineLayout.alternating,
-          direction: TextDirection.rtl,
-          size: const Size(700, 260),
-        ),
-      ];
+    testWidgets('vertical, horizontal, alternating, and RTL layouts are safe', (
+      tester,
+    ) async {
+      final configurations =
+          <
+            ({
+              Axis axis,
+              NeonTimelineLayout layout,
+              TextDirection direction,
+              Size size,
+            })
+          >[
+            (
+              axis: Axis.vertical,
+              layout: NeonTimelineLayout.start,
+              direction: TextDirection.ltr,
+              size: const Size(320, 500),
+            ),
+            (
+              axis: Axis.vertical,
+              layout: NeonTimelineLayout.end,
+              direction: TextDirection.rtl,
+              size: const Size(320, 500),
+            ),
+            (
+              axis: Axis.vertical,
+              layout: NeonTimelineLayout.center,
+              direction: TextDirection.rtl,
+              size: const Size(800, 500),
+            ),
+            (
+              axis: Axis.vertical,
+              layout: NeonTimelineLayout.alternating,
+              direction: TextDirection.ltr,
+              size: const Size(800, 500),
+            ),
+            (
+              axis: Axis.horizontal,
+              layout: NeonTimelineLayout.start,
+              direction: TextDirection.ltr,
+              size: const Size(700, 260),
+            ),
+            (
+              axis: Axis.horizontal,
+              layout: NeonTimelineLayout.center,
+              direction: TextDirection.rtl,
+              size: const Size(700, 260),
+            ),
+            (
+              axis: Axis.horizontal,
+              layout: NeonTimelineLayout.alternating,
+              direction: TextDirection.rtl,
+              size: const Size(700, 260),
+            ),
+          ];
 
       for (final configuration in configurations) {
         await tester.pumpWidget(
@@ -250,14 +254,18 @@ void main() {
         await tester.pump();
 
         expect(find.text('Layout content 0'), findsOneWidget);
-        expect(tester.takeException(), isNull,
-            reason:
-                '${configuration.axis}/${configuration.layout}/${configuration.direction}');
+        expect(
+          tester.takeException(),
+          isNull,
+          reason:
+              '${configuration.axis}/${configuration.layout}/${configuration.direction}',
+        );
       }
     });
 
-    testWidgets('adaptive start mirrors in RTL and centers when wide',
-        (tester) async {
+    testWidgets('adaptive start mirrors in RTL and centers when wide', (
+      tester,
+    ) async {
       Future<double> indicatorX({
         required Size size,
         required TextDirection direction,
@@ -276,9 +284,7 @@ void main() {
         );
         await tester.pump();
         expect(tester.takeException(), isNull);
-        return tester
-            .getCenter(find.byType(NeonTimelineIndicator).first)
-            .dx;
+        return tester.getCenter(find.byType(NeonTimelineIndicator).first).dx;
       }
 
       final narrowLtr = await indicatorX(
@@ -301,8 +307,9 @@ void main() {
   });
 
   group('empty state', () {
-    testWidgets('emptyBuilder replaces the list and builders stay lazy',
-        (tester) async {
+    testWidgets('emptyBuilder replaces the list and builders stay lazy', (
+      tester,
+    ) async {
       var contentBuilds = 0;
       await tester.pumpWidget(
         _host(
@@ -322,17 +329,14 @@ void main() {
       expect(find.byType(ListView), findsNothing);
       expect(contentBuilds, 0);
 
-      await tester.pumpWidget(
-        _host(child: NeonTimeline(items: const [])),
-      );
+      await tester.pumpWidget(_host(child: NeonTimeline(items: const [])));
       expect(find.byType(ListView), findsNothing);
       expect(tester.takeException(), isNull);
     });
   });
 
   group('activation and semantics', () {
-    testWidgets('tap and keyboard activation invoke callback',
-        (tester) async {
+    testWidgets('tap and keyboard activation invoke callback', (tester) async {
       var activations = 0;
 
       await tester.pumpWidget(
@@ -364,8 +368,7 @@ void main() {
       expect(activations, 2);
     });
 
-    testWidgets('disabled item suppresses pointer activation',
-        (tester) async {
+    testWidgets('disabled item suppresses pointer activation', (tester) async {
       var activations = 0;
 
       await tester.pumpWidget(
@@ -391,11 +394,10 @@ void main() {
     });
   });
 
-
-
   group('sliver integration', () {
-    testWidgets('builder composes with CustomScrollView and remains lazy',
-        (tester) async {
+    testWidgets('builder composes with CustomScrollView and remains lazy', (
+      tester,
+    ) async {
       final controller = ScrollController();
       addTearDown(controller.dispose);
       final built = <int>{};
@@ -437,18 +439,17 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('empty sliver uses SliverToBoxAdapter emptyBuilder',
-        (tester) async {
+    testWidgets('empty sliver uses SliverToBoxAdapter emptyBuilder', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _host(
           child: CustomScrollView(
             slivers: [
               NeonSliverTimeline(
                 items: const [],
-                emptyBuilder: (context) => const SizedBox(
-                  height: 80,
-                  child: Text('No sliver items'),
-                ),
+                emptyBuilder: (context) =>
+                    const SizedBox(height: 80, child: Text('No sliver items')),
               ),
             ],
           ),
@@ -461,8 +462,9 @@ void main() {
     });
   });
 
-  testWidgets('high-level timelines expose deterministic motion controls',
-      (tester) async {
+  testWidgets('high-level timelines expose deterministic motion controls', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       _host(
         child: NeonTimeline(
@@ -488,26 +490,28 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('disableAnimations removes reveal motion and stops active pulse',
-      (tester) async {
-    await tester.pumpWidget(
-      _host(
-        disableAnimations: true,
-        child: NeonTimeline.builder(
-          itemCount: 1,
-          animate: true,
-          statusBuilder: (_) => NeonTimelineStatus.active,
-          contentBuilder: (context, details) =>
-              const Text('Reduced-motion item'),
+  testWidgets(
+    'disableAnimations removes reveal motion and stops active pulse',
+    (tester) async {
+      await tester.pumpWidget(
+        _host(
+          disableAnimations: true,
+          child: NeonTimeline.builder(
+            itemCount: 1,
+            animate: true,
+            statusBuilder: (_) => NeonTimelineStatus.active,
+            contentBuilder: (context, details) =>
+                const Text('Reduced-motion item'),
+          ),
         ),
-      ),
-    );
+      );
 
-    expect(find.byType(TweenAnimationBuilder<double>), findsNothing);
-    await tester.pumpAndSettle(const Duration(milliseconds: 50));
-    expect(find.text('Reduced-motion item'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
+      expect(find.byType(TweenAnimationBuilder<double>), findsNothing);
+      await tester.pumpAndSettle(const Duration(milliseconds: 50));
+      expect(find.text('Reduced-motion item'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
 
 Widget _host({
@@ -520,10 +524,7 @@ Widget _host({
   return MaterialApp(
     theme: theme ?? ThemeData.dark(),
     home: MediaQuery(
-      data: MediaQueryData(
-        size: size,
-        disableAnimations: disableAnimations,
-      ),
+      data: MediaQueryData(size: size, disableAnimations: disableAnimations),
       child: Directionality(
         textDirection: direction,
         child: Scaffold(

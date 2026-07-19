@@ -23,9 +23,9 @@ class NeonTimelineDayPager extends StatefulWidget {
     this.transitionDuration = const Duration(milliseconds: 220),
     this.haptics = true,
     super.key,
-  })  : assert(velocityThreshold >= 0),
-        assert(distanceThreshold >= 0),
-        assert(maximumVisualOffset >= 0);
+  }) : assert(velocityThreshold >= 0),
+       assert(distanceThreshold >= 0),
+       assert(maximumVisualOffset >= 0);
 
   /// Currently selected calendar date.
   final DateTime selectedDate;
@@ -66,18 +66,18 @@ class _NeonTimelineDayPagerState extends State<NeonTimelineDayPager> {
 
   double get _velocityThreshold =>
       widget.velocityThreshold.isFinite && widget.velocityThreshold >= 0
-          ? widget.velocityThreshold
-          : 400;
+      ? widget.velocityThreshold
+      : 400;
 
   double get _distanceThreshold =>
       widget.distanceThreshold.isFinite && widget.distanceThreshold >= 0
-          ? widget.distanceThreshold
-          : 72;
+      ? widget.distanceThreshold
+      : 72;
 
   double get _maximumVisualOffset =>
       widget.maximumVisualOffset.isFinite && widget.maximumVisualOffset >= 0
-          ? widget.maximumVisualOffset
-          : 52;
+      ? widget.maximumVisualOffset
+      : 52;
 
   void _handleUpdate(DragUpdateDetails details) {
     if (!widget.enabled) return;
@@ -108,10 +108,10 @@ class _NeonTimelineDayPagerState extends State<NeonTimelineDayPager> {
       _pendingDragDelta = 0;
     }
     final velocity = details.primaryVelocity ?? 0;
-    final moveNext = velocity <= -_velocityThreshold ||
-        _dragDistance <= -_distanceThreshold;
-    final movePrevious = velocity >= _velocityThreshold ||
-        _dragDistance >= _distanceThreshold;
+    final moveNext =
+        velocity <= -_velocityThreshold || _dragDistance <= -_distanceThreshold;
+    final movePrevious =
+        velocity >= _velocityThreshold || _dragDistance >= _distanceThreshold;
 
     if (moveNext || movePrevious) {
       if (widget.haptics) {
@@ -144,9 +144,7 @@ class _NeonTimelineDayPagerState extends State<NeonTimelineDayPager> {
         .toDouble();
     final progress = maximumVisualOffset == 0
         ? 0.0
-        : (visualOffset.abs() / maximumVisualOffset)
-            .clamp(0.0, 1.0)
-            .toDouble();
+        : (visualOffset.abs() / maximumVisualOffset).clamp(0.0, 1.0).toDouble();
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
@@ -162,10 +160,7 @@ class _NeonTimelineDayPagerState extends State<NeonTimelineDayPager> {
               ),
         curve: Curves.easeOutCubic,
         transform: Matrix4.translationValues(visualOffset, 0, 0),
-        child: Opacity(
-          opacity: 1 - progress * 0.08,
-          child: widget.child,
-        ),
+        child: Opacity(opacity: 1 - progress * 0.08, child: widget.child),
       ),
     );
   }

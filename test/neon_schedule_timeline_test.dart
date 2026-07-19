@@ -4,8 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:neon_timeline_flutter/neon_timeline_flutter.dart';
 
 void main() {
-  testWidgets('schedule sorts entries and computes current state',
-      (tester) async {
+  testWidgets('schedule sorts entries and computes current state', (
+    tester,
+  ) async {
     final day = DateTime(2026, 7, 11);
     final entries = <NeonScheduleEntry<_Task>>[
       NeonScheduleEntry<_Task>(
@@ -45,7 +46,9 @@ void main() {
       find.byType(NeonTimelineIndicator),
     );
     expect(
-      indicators.any((indicator) => indicator.status == NeonTimelineStatus.active),
+      indicators.any(
+        (indicator) => indicator.status == NeonTimelineStatus.active,
+      ),
       isTrue,
     );
     expect(tester.takeException(), isNull);
@@ -68,8 +71,7 @@ void main() {
           selectedDate: day,
           now: day.subtract(const Duration(days: 1)),
           motionEnabled: false,
-          itemBuilder: (context, details) =>
-              Text(details.entry.value.title),
+          itemBuilder: (context, details) => Text(details.entry.value.title),
         ),
       );
     }
@@ -112,8 +114,7 @@ void main() {
             pixelsPerMinute: 1,
             snapMinutes: 5,
           ),
-          itemBuilder: (context, details) =>
-              Text(details.entry.value.title),
+          itemBuilder: (context, details) => Text(details.entry.value.title),
           onEntryMoved: (context, details, newStart) {
             movedTo = newStart;
           },
@@ -144,9 +145,7 @@ class _Task {
 Widget _host(Widget child) {
   return MaterialApp(
     theme: ThemeData.dark().copyWith(
-      extensions: <ThemeExtension<dynamic>>[
-        NeonTimelineThemeData.spectral(),
-      ],
+      extensions: <ThemeExtension<dynamic>>[NeonTimelineThemeData.spectral()],
     ),
     home: Scaffold(body: SizedBox(width: 430, height: 760, child: child)),
   );

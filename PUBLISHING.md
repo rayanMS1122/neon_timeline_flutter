@@ -16,12 +16,7 @@
 From the package root:
 
 ```bash
-flutter clean
-flutter pub get
-dart format --set-exit-if-changed lib test example/lib
-flutter analyze
-flutter test
-flutter pub publish --dry-run
+./tool/verify_release.sh
 ```
 
 Inspect every file shown by the dry run. The package must not contain keys,
@@ -55,7 +50,7 @@ Publishing requires a pub.dev account. A verified publisher is recommended for
 an organization-owned package.
 
 ```bash
-dart pub publish
+flutter pub publish
 ```
 
 Old versions remain available after publication. Fixes require a new version,
@@ -68,3 +63,11 @@ so do not upload an untested build.
 - Major: breaking API or behavior changes.
 - Update `CHANGELOG.md` before every upload.
 - Tag the matching repository commit after publication.
+
+## Version 16 release gate
+
+Before publishing 16.0.0, verify that `timeline_v16.dart`, the complete package
+entrypoint, the v16 example, and every test under `test/v16/` compile on the
+minimum supported Flutter version. Do not publish when the dry run reports
+warnings about missing documentation, stale versions, unresolved dependencies,
+or excluded source files.

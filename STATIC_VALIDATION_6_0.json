@@ -1,0 +1,14 @@
+{
+  "root": "/mnt/data/neon_timeline_flutter_6_0_0",
+  "dart_files": 143,
+  "test_files": 31,
+  "v6_source_files": 11,
+  "main_public_reachable_files": 80,
+  "public_symbols": 205,
+  "versions": {
+    "pubspec.yaml": "6.0.0",
+    "example/pubspec.yaml": "6.0.0"
+  },
+  "issues": [],
+  "issue_count": 0
+}

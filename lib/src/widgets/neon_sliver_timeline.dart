@@ -34,12 +34,12 @@ class NeonSliverTimeline extends StatelessWidget {
     this.addRepaintBoundaries = true,
     this.addSemanticIndexes = true,
     super.key,
-  })  : assert(itemExtent == null || itemExtent > 0),
-        assert(indicatorPosition >= 0 && indicatorPosition <= 1),
-        assert(motionPhaseOffset >= 0 && motionPhaseOffset <= 1),
-        assert(motionFramesPerSecond >= 1 && motionFramesPerSecond <= 120),
-        assert(maxAnimatedItems >= 0),
-        _source = NeonTimelineSource.items(items);
+  }) : assert(itemExtent == null || itemExtent > 0),
+       assert(indicatorPosition >= 0 && indicatorPosition <= 1),
+       assert(motionPhaseOffset >= 0 && motionPhaseOffset <= 1),
+       assert(motionFramesPerSecond >= 1 && motionFramesPerSecond <= 120),
+       assert(maxAnimatedItems >= 0),
+       _source = NeonTimelineSource.items(items);
 
   /// Creates a lazily built sliver timeline.
   NeonSliverTimeline.builder({
@@ -72,23 +72,23 @@ class NeonSliverTimeline extends StatelessWidget {
     this.addRepaintBoundaries = true,
     this.addSemanticIndexes = true,
     super.key,
-  })  : assert(itemCount >= 0),
-        assert(itemExtent == null || itemExtent > 0),
-        assert(indicatorPosition >= 0 && indicatorPosition <= 1),
-        assert(motionPhaseOffset >= 0 && motionPhaseOffset <= 1),
-        assert(motionFramesPerSecond >= 1 && motionFramesPerSecond <= 120),
-        assert(maxAnimatedItems >= 0),
-        _source = NeonTimelineSource.builder(
-          itemCount: itemCount,
-          contentBuilder: contentBuilder,
-          oppositeContentBuilder: oppositeContentBuilder,
-          indicatorBuilder: indicatorBuilder,
-          statusBuilder: statusBuilder,
-          semanticLabelBuilder: semanticLabelBuilder,
-          onItemTap: onItemTap,
-          connectorStyleBuilder: connectorStyleBuilder,
-          keyBuilder: keyBuilder,
-        );
+  }) : assert(itemCount >= 0),
+       assert(itemExtent == null || itemExtent > 0),
+       assert(indicatorPosition >= 0 && indicatorPosition <= 1),
+       assert(motionPhaseOffset >= 0 && motionPhaseOffset <= 1),
+       assert(motionFramesPerSecond >= 1 && motionFramesPerSecond <= 120),
+       assert(maxAnimatedItems >= 0),
+       _source = NeonTimelineSource.builder(
+         itemCount: itemCount,
+         contentBuilder: contentBuilder,
+         oppositeContentBuilder: oppositeContentBuilder,
+         indicatorBuilder: indicatorBuilder,
+         statusBuilder: statusBuilder,
+         semanticLabelBuilder: semanticLabelBuilder,
+         onItemTap: onItemTap,
+         connectorStyleBuilder: connectorStyleBuilder,
+         keyBuilder: keyBuilder,
+       );
 
   final NeonTimelineSource _source;
 
@@ -201,13 +201,14 @@ class NeonSliverTimeline extends StatelessWidget {
       );
     } else {
       final configuredItemExtent = itemExtent;
-      final resolvedItemExtent = configuredItemExtent != null &&
+      final resolvedItemExtent =
+          configuredItemExtent != null &&
               configuredItemExtent.isFinite &&
               configuredItemExtent > 0
           ? configuredItemExtent
           : (axis == Axis.horizontal
-              ? resolvedTheme.horizontalItemExtent
-              : null);
+                ? resolvedTheme.horizontalItemExtent
+                : null);
       final delegate = SliverChildBuilderDelegate(
         (context, index) {
           return _source.buildTile(
@@ -241,12 +242,13 @@ class NeonSliverTimeline extends StatelessWidget {
         enabled: motionEnabled && animatedIndexes.isNotEmpty,
         duration: resolvedTheme.motionDuration,
         phaseOffset: motionPhaseOffset,
-        framesPerSecond: resolvedPerformance?.motionFramesPerSecond ??
-            motionFramesPerSecond,
+        framesPerSecond:
+            resolvedPerformance?.motionFramesPerSecond ?? motionFramesPerSecond,
         pauseWhenScrolling:
             resolvedPerformance?.pauseMotionWhileScrolling ??
-                pauseMotionWhileScrolling,
-        startupDelay: resolvedPerformance?.motionStartupDelay ??
+            pauseMotionWhileScrolling,
+        startupDelay:
+            resolvedPerformance?.motionStartupDelay ??
             const Duration(milliseconds: 120),
         child: sliver,
       ),

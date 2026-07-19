@@ -1,0 +1,34 @@
+{
+  "package_version": "9.0.0",
+  "dart_files": 185,
+  "test_files": 37,
+  "v9_dart_files": 14,
+  "tree_sitter_syntax_errors": [],
+  "missing_relative_imports_or_exports": [],
+  "yaml_errors": [],
+  "artifact_directories": [],
+  "pubspec_locks": [],
+  "generic_const_type_variable_patterns": [],
+  "entrypoints": {
+    "lib/neon_timeline_flutter.dart": {
+      "reachable_files": 111,
+      "public_symbols": 330,
+      "ambiguous_symbols": 0
+    },
+    "lib/structured_planner.dart": {
+      "reachable_files": 50,
+      "public_symbols": 196,
+      "ambiguous_symbols": 0
+    },
+    "lib/timeline_v9.dart": {
+      "reachable_files": 49,
+      "public_symbols": 196,
+      "ambiguous_symbols": 0
+    }
+  },
+  "public_symbol_ambiguities": [],
+  "required_public_symbols_missing_from_timeline_v9": [],
+  "flutter_tool_available": false,
+  "dart_tool_available": false,
+  "static_checks_passed": true
+}

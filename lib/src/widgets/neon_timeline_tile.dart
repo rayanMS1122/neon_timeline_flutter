@@ -32,11 +32,11 @@ class NeonTimelineTile extends StatelessWidget {
     this.semanticIndex,
     this.onTap,
     super.key,
-  })  : assert(indicatorPosition >= 0 && indicatorPosition <= 1),
-        assert(extent == null || extent > 0),
-        assert(contentGap == null || contentGap >= 0),
-        assert(nodeLaneExtent == null || nodeLaneExtent > 0),
-        assert(adaptiveBreakpoint == null || adaptiveBreakpoint >= 0);
+  }) : assert(indicatorPosition >= 0 && indicatorPosition <= 1),
+       assert(extent == null || extent > 0),
+       assert(contentGap == null || contentGap >= 0),
+       assert(nodeLaneExtent == null || nodeLaneExtent > 0),
+       assert(adaptiveBreakpoint == null || adaptiveBreakpoint >= 0);
 
   /// Primary item content.
   final Widget content;
@@ -203,7 +203,7 @@ class NeonTimelineTile extends StatelessWidget {
       axis: axis,
       indicator:
           indicator ??
-              NeonTimelineIndicator(status: status, animate: animateIndicator),
+          NeonTimelineIndicator(status: status, animate: animateIndicator),
       showBeforeConnector: !isFirst,
       showAfterConnector: !isLast,
       beforeStyle: beforeConnectorStyle,
@@ -265,7 +265,7 @@ class NeonTimelineTile extends StatelessWidget {
       axis: axis,
       indicator:
           indicator ??
-              NeonTimelineIndicator(status: status, animate: animateIndicator),
+          NeonTimelineIndicator(status: status, animate: animateIndicator),
       showBeforeConnector: !isFirst,
       showAfterConnector: !isLast,
       beforeStyle: beforeConnectorStyle,
@@ -278,21 +278,9 @@ class NeonTimelineTile extends StatelessWidget {
       children: [
         column,
         if (resolvedLayout == NeonTimelineLayout.start)
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: lane,
-            child: node,
-          )
+          Positioned(top: 0, left: 0, right: 0, height: lane, child: node)
         else if (resolvedLayout == NeonTimelineLayout.end)
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: lane,
-            child: node,
-          )
+          Positioned(bottom: 0, left: 0, right: 0, height: lane, child: node)
         else
           Positioned(
             top: (constraints.maxHeight - lane) / 2,
@@ -313,10 +301,8 @@ class NeonTimelineTile extends StatelessWidget {
     return switch (resolvedLayout) {
       NeonTimelineLayout.start => (null, combined),
       NeonTimelineLayout.end => (combined, null),
-      NeonTimelineLayout.center || NeonTimelineLayout.adaptive => (
-          oppositeContent,
-          content
-        ),
+      NeonTimelineLayout.center ||
+      NeonTimelineLayout.adaptive => (oppositeContent, content),
       NeonTimelineLayout.alternating =>
         alternate ? (content, oppositeContent) : (oppositeContent, content),
     };
@@ -384,8 +370,10 @@ class NeonTimelineTile extends StatelessWidget {
 }
 
 class _CombinedContent extends StatelessWidget {
-  const _CombinedContent(
-      {required this.oppositeContent, required this.content});
+  const _CombinedContent({
+    required this.oppositeContent,
+    required this.content,
+  });
 
   final Widget? oppositeContent;
   final Widget content;
@@ -410,25 +398,22 @@ class _SideContent extends StatelessWidget {
   const _SideContent({required this.child, required this.alignment});
 
   const _SideContent.verticalBefore({required Widget? child})
-      : this(child: child, alignment: AlignmentDirectional.centerEnd);
+    : this(child: child, alignment: AlignmentDirectional.centerEnd);
 
   const _SideContent.verticalAfter({required Widget? child})
-      : this(child: child, alignment: AlignmentDirectional.centerStart);
+    : this(child: child, alignment: AlignmentDirectional.centerStart);
 
   const _SideContent.horizontalBefore({required Widget? child})
-      : this(child: child, alignment: Alignment.bottomCenter);
+    : this(child: child, alignment: Alignment.bottomCenter);
 
   const _SideContent.horizontalAfter({required Widget? child})
-      : this(child: child, alignment: Alignment.topCenter);
+    : this(child: child, alignment: Alignment.topCenter);
 
   final Widget? child;
   final AlignmentGeometry alignment;
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: alignment,
-      child: child ?? const SizedBox.shrink(),
-    );
+    return Align(alignment: alignment, child: child ?? const SizedBox.shrink());
   }
 }

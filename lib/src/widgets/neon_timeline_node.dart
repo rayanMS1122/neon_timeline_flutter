@@ -19,9 +19,9 @@ class NeonTimelineNode extends StatelessWidget {
     this.indicatorExtent,
     this.connectorGap = 2,
     super.key,
-  })  : assert(indicatorPosition >= 0 && indicatorPosition <= 1),
-        assert(indicatorExtent == null || indicatorExtent > 0),
-        assert(connectorGap >= 0);
+  }) : assert(indicatorPosition >= 0 && indicatorPosition <= 1),
+       assert(indicatorExtent == null || indicatorExtent > 0),
+       assert(connectorGap >= 0);
 
   /// Marker displayed by the node.
   final Widget indicator;
@@ -67,15 +67,17 @@ class NeonTimelineNode extends StatelessWidget {
           );
         }
 
-        final center = (available <= markerExtent
-                ? available / 2
-                : (available * indicatorPosition).clamp(
-                    markerExtent / 2,
-                    available - markerExtent / 2,
-                  ))
+        final center =
+            (available <= markerExtent
+                    ? available / 2
+                    : (available * indicatorPosition).clamp(
+                        markerExtent / 2,
+                        available - markerExtent / 2,
+                      ))
+                .toDouble();
+        final beforeExtent = math
+            .max(0, center - markerExtent / 2 - connectorGap)
             .toDouble();
-        final beforeExtent =
-            math.max(0, center - markerExtent / 2 - connectorGap).toDouble();
         final afterStart = math
             .min(available, center + markerExtent / 2 + connectorGap)
             .toDouble();
@@ -87,19 +89,13 @@ class NeonTimelineNode extends StatelessWidget {
               _positionedSegment(
                 start: 0,
                 extent: beforeExtent,
-                child: NeonTimelineConnector(
-                  axis: axis,
-                  style: beforeStyle,
-                ),
+                child: NeonTimelineConnector(axis: axis, style: beforeStyle),
               ),
             if (showAfterConnector && afterStart < available)
               _positionedSegment(
                 start: afterStart,
                 extent: available - afterStart,
-                child: NeonTimelineConnector(
-                  axis: axis,
-                  style: afterStyle,
-                ),
+                child: NeonTimelineConnector(axis: axis, style: afterStyle),
               ),
             _positionedIndicator(
               start: center - markerExtent / 2,
@@ -134,10 +130,7 @@ class NeonTimelineNode extends StatelessWidget {
     );
   }
 
-  Widget _positionedIndicator({
-    required double start,
-    required double extent,
-  }) {
+  Widget _positionedIndicator({required double start, required double extent}) {
     if (axis == Axis.vertical) {
       return Positioned(
         top: start,

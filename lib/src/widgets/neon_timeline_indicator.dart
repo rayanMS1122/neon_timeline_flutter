@@ -113,8 +113,9 @@ class _NeonTimelineIndicatorState extends State<NeonTimelineIndicator> {
   void _syncAnimation() {
     final reduceMotion =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-    final tickerEnabled = TickerMode.of(context);
-    final shouldAnimate = widget.animate &&
+    final tickerEnabled = TickerMode.valuesOf(context).enabled;
+    final shouldAnimate =
+        widget.animate &&
         widget.status == NeonTimelineStatus.active &&
         !reduceMotion &&
         tickerEnabled &&
@@ -174,15 +175,16 @@ class _NeonTimelineIndicatorState extends State<NeonTimelineIndicator> {
     );
     final advanced = style.effect != NeonIndicatorEffect.classic;
     final visualExtent = style.visualExtent;
-    final hitExtent =
-        widget.onTap == null ? visualExtent : math.max(48.0, visualExtent);
+    final hitExtent = widget.onTap == null
+        ? visualExtent
+        : math.max(48.0, visualExtent);
     final animation = _effectiveAnimation;
 
     final interactionScale = _pressed
         ? 0.966
         : (_hovered || _focused)
-            ? 1.018
-            : 1.0;
+        ? 1.018
+        : 1.0;
     Widget result = SizedBox.square(
       dimension: hitExtent,
       child: Center(
@@ -198,7 +200,8 @@ class _NeonTimelineIndicatorState extends State<NeonTimelineIndicator> {
             focused: _focused,
             pressed: _pressed,
             pointer: _pointer,
-            child: widget.child ??
+            child:
+                widget.child ??
                 _StatusGlyph(
                   status: widget.status,
                   hideActiveGlyph: advanced,
@@ -235,8 +238,9 @@ class _NeonTimelineIndicatorState extends State<NeonTimelineIndicator> {
     }
 
     result = MouseRegion(
-      cursor:
-          widget.onTap == null ? MouseCursor.defer : SystemMouseCursors.click,
+      cursor: widget.onTap == null
+          ? MouseCursor.defer
+          : SystemMouseCursors.click,
       onEnter: (_) {
         if (!_hovered) setState(() => _hovered = true);
       },
@@ -296,8 +300,7 @@ class _IndicatorBody extends StatelessWidget {
         animation: animation,
         child: child,
         builder: (context, child) {
-          final pulse =
-              0.5 + 0.5 * NeonTrig.sin(animation.value * math.pi * 2);
+          final pulse = 0.5 + 0.5 * NeonTrig.sin(animation.value * math.pi * 2);
           return Transform.scale(
             scale: 1 + pulse * 0.07,
             child: _ClassicIndicatorBody(
@@ -315,7 +318,8 @@ class _IndicatorBody extends StatelessWidget {
       dimension: extent,
       child: CustomPaint(
         isComplex: true,
-        willChange: status == NeonTimelineStatus.active &&
+        willChange:
+            status == NeonTimelineStatus.active &&
             animation is! AlwaysStoppedAnimation<double>,
         painter: _AdvancedIndicatorPainter(
           style: style,
@@ -357,10 +361,7 @@ class _ClassicIndicatorBody extends StatelessWidget {
       decoration: BoxDecoration(
         color: style.color,
         borderRadius: radius,
-        border: Border.all(
-          color: style.borderColor,
-          width: style.borderWidth,
-        ),
+        border: Border.all(color: style.borderColor, width: style.borderWidth),
         boxShadow: style.glowRadius == 0
             ? null
             : <BoxShadow>[
@@ -417,7 +418,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       NeonTimelineStatus.pending => 0.47,
       NeonTimelineStatus.disabled => 0.24,
     };
-    final interaction = (hovered ? 1.11 : 1.0) *
+    final interaction =
+        (hovered ? 1.11 : 1.0) *
         (focused ? 1.08 : 1.0) *
         (pressed ? 0.94 : 1.0);
     return (statusFactor * interaction * style.intensity)
@@ -426,10 +428,10 @@ class _AdvancedIndicatorPainter extends CustomPainter {
   }
 
   int get _qualityFactor => switch (style.quality) {
-        NeonTimelineRenderQuality.balanced => 1,
-        NeonTimelineRenderQuality.high => 2,
-        NeonTimelineRenderQuality.ultra => 3,
-      };
+    NeonTimelineRenderQuality.balanced => 1,
+    NeonTimelineRenderQuality.high => 2,
+    NeonTimelineRenderQuality.ultra => 3,
+  };
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -444,7 +446,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
     canvas.translate(center.dx, center.dy);
     canvas.scale(pulseScale);
     canvas.translate(-center.dx, -center.dy);
-    final radius = style.size / 2 +
+    final radius =
+        style.size / 2 +
         (status == NeonTimelineStatus.active ? (pulse - 0.5) * 0.7 : 0) -
         (pressed ? style.depth * 0.65 : 0);
     final bounds = Rect.fromCircle(center: center, radius: radius);
@@ -506,15 +509,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         parallax,
       );
     } else {
-      _paintGlass(
-        canvas,
-        shape,
-        bounds,
-        center,
-        radius,
-        strength,
-        parallax,
-      );
+      _paintGlass(canvas, shape, bounds, center, radius, strength, parallax);
     }
 
     _paintChromaticFringe(canvas, shape, strength);
@@ -568,7 +563,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       center.translate(0, radius * (0.08 + style.depth * 0.08)),
       radius * 0.92,
       _paintPool.next()
-        ..color = Colors.black.withOpacity(0.44)
+        ..color = Colors.black.withValues(alpha: 0.44)
         ..applyBlur(_blurs.shadow),
     );
   }
@@ -588,7 +583,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         height: radius * 2.15 * breath,
       ),
       _paintPool.next()
-        ..color = style.glowColor.withOpacity(0.055 * strength)
+        ..color = style.glowColor.withValues(alpha: 0.055 * strength)
         ..applyBlur(_blurs.auraSoft),
     );
     canvas.drawCircle(
@@ -599,8 +594,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
           center,
           radius * 1.45,
           <Color>[
-            style.secondaryColor.withOpacity(0.06 * strength),
-            style.tertiaryColor.withOpacity(0.028 * strength),
+            style.secondaryColor.withValues(alpha: 0.06 * strength),
+            style.tertiaryColor.withValues(alpha: 0.028 * strength),
             Colors.transparent,
           ],
           const <double>[0, 0.55, 1],
@@ -608,28 +603,23 @@ class _AdvancedIndicatorPainter extends CustomPainter {
     );
   }
 
-  void _paintBloom(
-    Canvas canvas,
-    Path shape,
-    double radius,
-    double strength,
-  ) {
+  void _paintBloom(Canvas canvas, Path shape, double radius, double strength) {
     if (style.glowRadius <= 0 || strength <= 0) return;
     final layers = <({double width, double sigma, Color color})>[
       (
         width: math.max(4.0, radius * 0.24),
         sigma: math.max(5.0, style.glowRadius * 1.38),
-        color: style.glowColor.withOpacity(0.13 * strength),
+        color: style.glowColor.withValues(alpha: 0.13 * strength),
       ),
       (
         width: math.max(3.0, radius * 0.15),
         sigma: math.max(3.0, style.glowRadius * 0.74),
-        color: style.secondaryColor.withOpacity(0.20 * strength),
+        color: style.secondaryColor.withValues(alpha: 0.20 * strength),
       ),
       (
         width: math.max(2.0, radius * 0.08),
         sigma: math.max(1.5, style.glowRadius * 0.32),
-        color: style.color.withOpacity(0.31 * strength),
+        color: style.color.withValues(alpha: 0.31 * strength),
       ),
     ];
     for (final layer in layers) {
@@ -639,13 +629,11 @@ class _AdvancedIndicatorPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeWidth = layer.width
           ..color = layer.color
-          ..applyBlur(
-            switch (layer.sigma) {
-              >= 5.0 => _blurs.bloomOuter,
-              >= 3.0 => _blurs.bloomMid,
-              _ => _blurs.bloomInner,
-            },
-          ),
+          ..applyBlur(switch (layer.sigma) {
+            >= 5.0 => _blurs.bloomOuter,
+            >= 3.0 => _blurs.bloomMid,
+            _ => _blurs.bloomInner,
+          }),
       );
     }
   }
@@ -661,7 +649,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
   ) {
     final hot = Color.lerp(style.interiorColor, style.color, 0.48)!;
     final mid = Color.lerp(style.interiorColor, style.secondaryColor, 0.20)!;
-    final focal = center.translate(
+    final focal =
+        center.translate(
           -radius * (0.16 + style.depth * 0.10),
           -radius * (0.22 + style.depth * 0.13),
         ) +
@@ -673,9 +662,9 @@ class _AdvancedIndicatorPainter extends CustomPainter {
           focal,
           radius * (1.20 + style.refraction * 0.16),
           <Color>[
-            hot.withOpacity(0.92),
-            mid.withOpacity(0.88),
-            style.interiorColor.withOpacity(0.99),
+            hot.withValues(alpha: 0.92),
+            mid.withValues(alpha: 0.88),
+            style.interiorColor.withValues(alpha: 0.99),
           ],
           const <double>[0, 0.48, 1],
         ),
@@ -691,7 +680,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
           center.translate(radius * 0.18, radius * 0.20),
           radius * 0.82,
           <Color>[
-            style.tertiaryColor.withOpacity(0.13 * strength),
+            style.tertiaryColor.withValues(alpha: 0.13 * strength),
             Colors.transparent,
           ],
         ),
@@ -705,8 +694,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       _paintPool.next()
         ..shader = LinearGradient(
           colors: <Color>[
-            Colors.white.withOpacity(0.22 * strength),
-            Colors.white.withOpacity(0.02),
+            Colors.white.withValues(alpha: 0.22 * strength),
+            Colors.white.withValues(alpha: 0.02),
           ],
         ).createShader(bounds)
         ..applyBlur(NeonBlur.normal(3)),
@@ -730,10 +719,13 @@ class _AdvancedIndicatorPainter extends CustomPainter {
           center + parallax * 0.35,
           radius * 1.16,
           <Color>[
-            Color.lerp(style.color, style.interiorColor, 0.55)!
-                .withOpacity(0.94),
-            style.interiorColor.withOpacity(0.99),
-            Colors.black.withOpacity(0.99),
+            Color.lerp(
+              style.color,
+              style.interiorColor,
+              0.55,
+            )!.withValues(alpha: 0.94),
+            style.interiorColor.withValues(alpha: 0.99),
+            Colors.black.withValues(alpha: 0.99),
           ],
           <double>[0, 0.56, 1],
         ),
@@ -746,7 +738,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       center + parallax * 0.18,
       horizonRadius * 1.55,
       _paintPool.next()
-        ..color = style.secondaryColor.withOpacity(0.10 * strength)
+        ..color = style.secondaryColor.withValues(alpha: 0.10 * strength)
         ..applyBlur(NeonBlur.normal(math.max(4.0, style.glowRadius * 0.42))),
     );
     canvas.drawCircle(
@@ -756,11 +748,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         ..shader = ui.Gradient.radial(
           center + parallax * 0.18,
           horizonRadius,
-          <Color>[
-            Colors.black,
-            Colors.black,
-            style.interiorColor,
-          ],
+          <Color>[Colors.black, Colors.black, style.interiorColor],
           const <double>[0, 0.78, 1],
         ),
     );
@@ -782,10 +770,10 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         ..shader = SweepGradient(
           colors: <Color>[
             Colors.transparent,
-            style.secondaryColor.withOpacity(0.72 * strength),
-            style.borderColor.withOpacity(0.98 * strength),
-            style.color.withOpacity(0.90 * strength),
-            style.tertiaryColor.withOpacity(0.70 * strength),
+            style.secondaryColor.withValues(alpha: 0.72 * strength),
+            style.borderColor.withValues(alpha: 0.98 * strength),
+            style.color.withValues(alpha: 0.90 * strength),
+            style.tertiaryColor.withValues(alpha: 0.70 * strength),
             Colors.transparent,
           ],
           stops: const <double>[0, 0.16, 0.38, 0.62, 0.84, 1],
@@ -797,7 +785,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       _paintPool.next()
         ..style = PaintingStyle.stroke
         ..strokeWidth = math.max(0.55, style.borderWidth * 0.54)
-        ..color = Colors.white.withOpacity(0.78 * strength),
+        ..color = Colors.white.withValues(alpha: 0.78 * strength),
     );
     canvas.restore();
 
@@ -811,8 +799,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
           Offset(bounds.right, y),
           _paintPool.next()
             ..strokeWidth = 0.45
-            ..color = style.tertiaryColor.withOpacity(
-              style.scanlineOpacity * 0.12 * shimmer * strength,
+            ..color = style.tertiaryColor.withValues(
+              alpha: style.scanlineOpacity * 0.12 * shimmer * strength,
             ),
         );
       }
@@ -836,9 +824,9 @@ class _AdvancedIndicatorPainter extends CustomPainter {
           center.translate(-radius * 0.18, -radius * 0.22) + parallax,
           radius * 1.28,
           <Color>[
-            style.color.withOpacity(0.30 * strength),
-            style.interiorColor.withOpacity(0.80),
-            style.interiorColor.withOpacity(0.96),
+            style.color.withValues(alpha: 0.30 * strength),
+            style.interiorColor.withValues(alpha: 0.80),
+            style.interiorColor.withValues(alpha: 0.96),
           ],
           const <double>[0, 0.55, 1],
         ),
@@ -856,8 +844,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         Offset(bounds.right, yy),
         _paintPool.next()
           ..strokeWidth = 0.55
-          ..color = style.color.withOpacity(
-            (style.scanlineOpacity * 0.34 * shimmer * strength)
+          ..color = style.color.withValues(
+            alpha: (style.scanlineOpacity * 0.34 * shimmer * strength)
                 .clamp(0.0, 1.0)
                 .toDouble(),
           ),
@@ -874,19 +862,15 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         Offset(x, bounds.bottom),
         _paintPool.next()
           ..strokeWidth = 0.35
-          ..color = style.tertiaryColor.withOpacity(
-            0.025 * flicker * style.detail * strength,
+          ..color = style.tertiaryColor.withValues(
+            alpha: 0.025 * flicker * style.detail * strength,
           ),
       );
     }
     canvas.restore();
   }
 
-  void _paintChromaticFringe(
-    Canvas canvas,
-    Path shape,
-    double strength,
-  ) {
+  void _paintChromaticFringe(Canvas canvas, Path shape, double strength) {
     if (style.chromaticAberration <= 0 || style.detail <= 0.05) return;
     final shift = 0.45 + style.chromaticAberration * 0.75;
     canvas.save();
@@ -896,8 +880,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       _paintPool.next()
         ..style = PaintingStyle.stroke
         ..strokeWidth = math.max(0.45, style.borderWidth * 0.52)
-        ..color = style.secondaryColor.withOpacity(
-          0.22 * strength * style.detail,
+        ..color = style.secondaryColor.withValues(
+          alpha: 0.22 * strength * style.detail,
         ),
     );
     canvas.restore();
@@ -908,8 +892,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       _paintPool.next()
         ..style = PaintingStyle.stroke
         ..strokeWidth = math.max(0.45, style.borderWidth * 0.48)
-        ..color = style.tertiaryColor.withOpacity(
-          0.20 * strength * style.detail,
+        ..color = style.tertiaryColor.withValues(
+          alpha: 0.20 * strength * style.detail,
         ),
     );
     canvas.restore();
@@ -952,7 +936,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       _paintPool.next()
         ..style = PaintingStyle.stroke
         ..strokeWidth = math.max(0.65, style.borderWidth * 0.58)
-        ..color = Colors.white.withOpacity(0.42 * strength),
+        ..color = Colors.white.withValues(alpha: 0.42 * strength),
     );
   }
 
@@ -970,7 +954,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       _paintPool.next()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 0.75
-        ..color = style.borderColor.withOpacity(0.20 * strength),
+        ..color = style.borderColor.withValues(alpha: 0.20 * strength),
     );
 
     if (style.shape == NeonIndicatorShape.circle && style.detail > 0.2) {
@@ -990,7 +974,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
           ..shader = LinearGradient(
             colors: <Color>[
               Colors.transparent,
-              Colors.white.withOpacity(0.36 * strength * style.detail),
+              Colors.white.withValues(alpha: 0.36 * strength * style.detail),
               Colors.transparent,
             ],
             stops: const <double>[0, 0.5, 1],
@@ -1008,8 +992,9 @@ class _AdvancedIndicatorPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round
           ..strokeWidth = 0.62
-          ..color =
-              style.tertiaryColor.withOpacity(0.16 * strength * style.detail),
+          ..color = style.tertiaryColor.withValues(
+            alpha: 0.16 * strength * style.detail,
+          ),
       );
     }
   }
@@ -1050,12 +1035,18 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         _paintPool.next()
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round
-          ..strokeWidth =
-              math.max(0.7, style.borderWidth * (0.72 - index * 0.1))
-          ..color = colors[index].withOpacity(
-            (0.34 - index * 0.055) * coronaStrength,
+          ..strokeWidth = math.max(
+            0.7,
+            style.borderWidth * (0.72 - index * 0.1),
           )
-          ..applyBlur(NeonBlur.normal(math.max(1.2, style.glowRadius * (0.18 + index * 0.05)))),
+          ..color = colors[index].withValues(
+            alpha: (0.34 - index * 0.055) * coronaStrength,
+          )
+          ..applyBlur(
+            NeonBlur.normal(
+              math.max(1.2, style.glowRadius * (0.18 + index * 0.05)),
+            ),
+          ),
       );
       canvas.restore();
     }
@@ -1069,9 +1060,9 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         ..shader = SweepGradient(
           colors: <Color>[
             Colors.transparent,
-            style.secondaryColor.withOpacity(0.28 * coronaStrength),
+            style.secondaryColor.withValues(alpha: 0.28 * coronaStrength),
             Colors.transparent,
-            style.tertiaryColor.withOpacity(0.24 * coronaStrength),
+            style.tertiaryColor.withValues(alpha: 0.24 * coronaStrength),
             Colors.transparent,
           ],
           stops: const <double>[0, 0.2, 0.43, 0.73, 1],
@@ -1090,7 +1081,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
     for (var index = 0; index < arcCount; index++) {
       final normalized = index / arcCount;
       final direction = index.isEven ? 1.0 : -1.0;
-      final rotation = direction *
+      final rotation =
+          direction *
           phase *
           math.pi *
           2 *
@@ -1114,8 +1106,9 @@ class _AdvancedIndicatorPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round
           ..strokeWidth = math.max(0.52, style.borderWidth * 0.52)
-          ..color = color.withOpacity(
-            (0.16 + (1 - normalized) * 0.16) *
+          ..color = color.withValues(
+            alpha:
+                (0.16 + (1 - normalized) * 0.16) *
                 strength *
                 style.corona *
                 style.detail,
@@ -1134,7 +1127,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
           angle * (2 + field) +
               phase * math.pi * 2 * (field.isEven ? 0.34 : -0.22),
         );
-        final orbit = radius * (1.18 + field * 0.10) +
+        final orbit =
+            radius * (1.18 + field * 0.10) +
             modulation * radius * 0.035 * style.refraction;
         final point = Offset(
           center.dx + NeonTrig.cos(angle) * orbit,
@@ -1152,8 +1146,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         _paintPool.next()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 0.42 + field * 0.12
-          ..color = color.withOpacity(
-            (0.10 - field * 0.018) * strength * style.detail,
+          ..color = color.withValues(
+            alpha: (0.10 - field * 0.018) * strength * style.detail,
           )
           ..applyBlur(NeonBlur.normal(1.2)),
       );
@@ -1183,7 +1177,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round
           ..strokeWidth = math.max(0.65, style.borderWidth * 0.58)
-          ..color = color.withOpacity(0.32 * strength * style.detail)
+          ..color = color.withValues(alpha: 0.32 * strength * style.detail)
           ..applyBlur(NeonBlur.normal(1.1)),
       );
     }
@@ -1206,8 +1200,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         _paintPool.next()
           ..strokeWidth = index % 4 == 0 ? 0.85 : 0.48
           ..strokeCap = StrokeCap.round
-          ..color = style.borderColor.withOpacity(
-            (index % 4 == 0 ? 0.34 : 0.16) * strength * style.detail,
+          ..color = style.borderColor.withValues(
+            alpha: (index % 4 == 0 ? 0.34 : 0.16) * strength * style.detail,
           ),
       );
     }
@@ -1230,7 +1224,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       for (var step = 0; step <= 24; step++) {
         final t = step / 24;
         final x = center.dx - radius + t * radius * 2;
-        final y = top +
+        final y =
+            top +
             NeonTrig.sin(
                   t * math.pi * (3.2 + band * 0.7) +
                       phase * math.pi * 2 * (band.isEven ? 0.55 : -0.38),
@@ -1248,7 +1243,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeWidth = 0.48 + band * 0.12
           ..color = (band.isEven ? style.tertiaryColor : style.secondaryColor)
-              .withOpacity(0.11 * strength * style.detail)
+              .withValues(alpha: 0.11 * strength * style.detail)
           ..applyBlur(NeonBlur.normal(0.8)),
       );
     }
@@ -1275,8 +1270,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         ..shader = SweepGradient(
           colors: <Color>[
             Colors.transparent,
-            style.borderColor.withOpacity(0.62 * strength),
-            style.secondaryColor.withOpacity(0.28 * strength),
+            style.borderColor.withValues(alpha: 0.62 * strength),
+            style.secondaryColor.withValues(alpha: 0.28 * strength),
             Colors.transparent,
           ],
         ).createShader(outer),
@@ -1290,8 +1285,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
         ..strokeWidth = 0.58
-        ..color = style.tertiaryColor.withOpacity(
-          0.22 * strength * style.refraction,
+        ..color = style.tertiaryColor.withValues(
+          alpha: 0.22 * strength * style.refraction,
         ),
     );
   }
@@ -1316,7 +1311,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         Rect.fromLTWH(x, y, width, 0.45),
         _paintPool.next()
           ..color = (index.isEven ? style.color : style.tertiaryColor)
-              .withOpacity(alpha * strength * style.detail),
+              .withValues(alpha: alpha * strength * style.detail),
       );
     }
     canvas.restore();
@@ -1329,14 +1324,12 @@ class _AdvancedIndicatorPainter extends CustomPainter {
     double radius,
     double strength,
   ) {
-    final haloCount = math.min(
-      12,
-      style.haloRingCount + (_qualityFactor - 1),
-    );
+    final haloCount = math.min(12, style.haloRingCount + (_qualityFactor - 1));
     for (var index = 0; index < haloCount; index++) {
       final normalized = haloCount <= 1 ? 0.0 : index / (haloCount - 1);
       final orbitRadius = radius * (1.16 + normalized * 0.72);
-      final wobble = NeonTrig.sin(
+      final wobble =
+          NeonTrig.sin(
             phase * math.pi * 2 * (0.32 + index * 0.035) + index * 1.41,
           ) *
           radius *
@@ -1350,7 +1343,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         height: orbitRadius * (1.18 + (index.isEven ? 0.08 : -0.04)),
       );
       final sweep = math.pi * (0.72 + 0.16 * NeonTrig.sin(index + phase * 5));
-      final start = phase * math.pi * 2 * (index.isEven ? 0.18 : -0.13) +
+      final start =
+          phase * math.pi * 2 * (index.isEven ? 0.18 : -0.13) +
           index * math.pi * 0.37;
       final color = switch (index % 3) {
         0 => style.secondaryColor,
@@ -1366,8 +1360,9 @@ class _AdvancedIndicatorPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round
           ..strokeWidth = math.max(0.42, style.borderWidth * 0.46)
-          ..color = color.withOpacity(
-            (0.08 + (1 - normalized) * 0.11) *
+          ..color = color.withValues(
+            alpha:
+                (0.08 + (1 - normalized) * 0.11) *
                 strength *
                 style.corona *
                 style.detail,
@@ -1382,13 +1377,17 @@ class _AdvancedIndicatorPainter extends CustomPainter {
     );
     if (lineCount <= 0) return;
     for (var index = 0; index < lineCount; index++) {
-      final angle = index / lineCount * math.pi * 2 +
+      final angle =
+          index / lineCount * math.pi * 2 +
           phase * math.pi * 2 * (index.isEven ? 0.11 : -0.08);
       final start =
-          center + Offset(NeonTrig.cos(angle), NeonTrig.sin(angle)) * (radius * 0.82);
+          center +
+          Offset(NeonTrig.cos(angle), NeonTrig.sin(angle)) * (radius * 0.82);
       final endAngle = angle + math.pi * (0.82 + (index % 3) * 0.12);
-      final end = center +
-          Offset(NeonTrig.cos(endAngle), NeonTrig.sin(endAngle)) * (radius * 0.90);
+      final end =
+          center +
+          Offset(NeonTrig.cos(endAngle), NeonTrig.sin(endAngle)) *
+              (radius * 0.90);
       final tangentA = Offset(-NeonTrig.sin(angle), NeonTrig.cos(angle));
       final tangentB = Offset(-NeonTrig.sin(endAngle), NeonTrig.cos(endAngle));
       final lift = radius * (0.58 + (index % 4) * 0.09);
@@ -1409,8 +1408,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeWidth = 0.45 + (index % 3) * 0.12
           ..strokeCap = StrokeCap.round
-          ..color = color.withOpacity(
-            0.12 * strength * style.refraction * style.detail,
+          ..color = color.withValues(
+            alpha: 0.12 * strength * style.refraction * style.detail,
           )
           ..applyBlur(NeonBlur.normal(0.8)),
       );
@@ -1434,10 +1433,17 @@ class _AdvancedIndicatorPainter extends CustomPainter {
           focal,
           radius * 1.24,
           <Color>[
-            Color.lerp(style.borderColor, style.color, 0.34)!.withOpacity(0.94),
-            Color.lerp(style.color, style.interiorColor, 0.58)!
-                .withOpacity(0.96),
-            style.interiorColor.withOpacity(0.995),
+            Color.lerp(
+              style.borderColor,
+              style.color,
+              0.34,
+            )!.withValues(alpha: 0.94),
+            Color.lerp(
+              style.color,
+              style.interiorColor,
+              0.58,
+            )!.withValues(alpha: 0.96),
+            style.interiorColor.withValues(alpha: 0.995),
           ],
           const <double>[0, 0.42, 1],
         ),
@@ -1450,7 +1456,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       final shellPhase =
           phase * math.pi * 2 * (index.isEven ? 0.22 : -0.17) + index;
       final shellRadius = radius * (0.22 + index * 0.105);
-      final shellCenter = center +
+      final shellCenter =
+          center +
           Offset(
             NeonTrig.cos(shellPhase) * radius * 0.055,
             NeonTrig.sin(shellPhase * 1.13) * radius * 0.048,
@@ -1467,8 +1474,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         _paintPool.next()
           ..style = PaintingStyle.stroke
           ..strokeWidth = math.max(0.52, style.borderWidth * 0.52)
-          ..color = color.withOpacity(
-            (0.08 + index * 0.018) * strength * style.detail,
+          ..color = color.withValues(
+            alpha: (0.08 + index * 0.018) * strength * style.detail,
           )
           ..applyBlur(NeonBlur.normal(0.7)),
       );
@@ -1483,10 +1490,10 @@ class _AdvancedIndicatorPainter extends CustomPainter {
           nucleus.translate(-radius * 0.07, -radius * 0.08),
           radius * 0.34,
           <Color>[
-            Colors.white.withOpacity(0.98 * strength),
-            style.borderColor.withOpacity(0.88 * strength),
-            style.secondaryColor.withOpacity(0.42 * strength),
-            style.interiorColor.withOpacity(0.0),
+            Colors.white.withValues(alpha: 0.98 * strength),
+            style.borderColor.withValues(alpha: 0.88 * strength),
+            style.secondaryColor.withValues(alpha: 0.42 * strength),
+            style.interiorColor.withValues(alpha: 0.0),
           ],
           const <double>[0, 0.18, 0.55, 1],
         )
@@ -1498,8 +1505,10 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       final angle =
           phase * math.pi * 2 * 0.18 + index / causticCount * math.pi * 2;
       final inner =
-          center + Offset(NeonTrig.cos(angle), NeonTrig.sin(angle)) * (radius * 0.20);
-      final outer = center +
+          center +
+          Offset(NeonTrig.cos(angle), NeonTrig.sin(angle)) * (radius * 0.20);
+      final outer =
+          center +
           Offset(
             NeonTrig.cos(angle + 0.32) * radius * 0.74,
             NeonTrig.sin(angle + 0.32) * radius * 0.74,
@@ -1514,9 +1523,9 @@ class _AdvancedIndicatorPainter extends CustomPainter {
             inner,
             outer,
             <Color>[
-              Colors.white.withOpacity(0.42 * strength),
+              Colors.white.withValues(alpha: 0.42 * strength),
               (index.isEven ? style.secondaryColor : style.tertiaryColor)
-                  .withOpacity(0.17 * strength),
+                  .withValues(alpha: 0.17 * strength),
               Colors.transparent,
             ],
             const <double>[0, 0.48, 1],
@@ -1530,7 +1539,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       _paintPool.next()
         ..style = PaintingStyle.stroke
         ..strokeWidth = math.max(0.7, style.borderWidth * 0.62)
-        ..color = Colors.white.withOpacity(0.19 * strength),
+        ..color = Colors.white.withValues(alpha: 0.19 * strength),
     );
   }
 
@@ -1550,11 +1559,14 @@ class _AdvancedIndicatorPainter extends CustomPainter {
     };
     final points = <Offset>[];
     for (var index = 0; index < nodeCount; index++) {
-      final angle = index / nodeCount * math.pi * 2 +
+      final angle =
+          index / nodeCount * math.pi * 2 +
           phase * math.pi * 2 * (index.isEven ? 0.08 : -0.055);
       final radialNoise = 0.48 + _hash01(index * 43 + 7) * 0.34;
-      final point = center +
-          Offset(NeonTrig.cos(angle), NeonTrig.sin(angle)) * (radius * radialNoise);
+      final point =
+          center +
+          Offset(NeonTrig.cos(angle), NeonTrig.sin(angle)) *
+              (radius * radialNoise);
       points.add(point);
     }
 
@@ -1571,9 +1583,9 @@ class _AdvancedIndicatorPainter extends CustomPainter {
           _paintPool.next()
             ..strokeWidth = 0.32 + distanceFactor * 0.24
             ..color = (step == 2 ? style.secondaryColor : style.tertiaryColor)
-                .withOpacity(
-              0.065 * strength * style.detail * distanceFactor,
-            ),
+                .withValues(
+                  alpha: 0.065 * strength * style.detail * distanceFactor,
+                ),
         );
       }
     }
@@ -1585,7 +1597,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       canvas.drawCircle(
         point,
         0.55 + (index % 3) * 0.12,
-        _paintPool.next()..color = color.withOpacity(0.62 * twinkle * strength),
+        _paintPool.next()
+          ..color = color.withValues(alpha: 0.62 * twinkle * strength),
       );
     }
     canvas.restore();
@@ -1605,7 +1618,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
             ..strokeWidth = 0.55 + (1 - progress) * 0.7
             ..color =
                 (index.isEven ? style.secondaryColor : style.tertiaryColor)
-                    .withOpacity(alpha)
+                    .withValues(alpha: alpha)
             ..applyBlur(NeonBlur.normal(1.2)),
         );
       }
@@ -1613,11 +1626,9 @@ class _AdvancedIndicatorPainter extends CustomPainter {
 
     if (style.diffraction > 0) {
       final diagonal = radius * (1.12 + style.rayLength * 0.48);
-      for (final angle in <double>[
-        math.pi / 4,
-        -math.pi / 4,
-      ]) {
-        final vector = Offset(NeonTrig.cos(angle), NeonTrig.sin(angle)) * diagonal;
+      for (final angle in <double>[math.pi / 4, -math.pi / 4]) {
+        final vector =
+            Offset(NeonTrig.cos(angle), NeonTrig.sin(angle)) * diagonal;
         canvas.drawLine(
           center - vector,
           center + vector,
@@ -1627,14 +1638,14 @@ class _AdvancedIndicatorPainter extends CustomPainter {
               center + vector,
               <Color>[
                 Colors.transparent,
-                style.tertiaryColor.withOpacity(
-                  0.12 * strength * style.diffraction,
+                style.tertiaryColor.withValues(
+                  alpha: 0.12 * strength * style.diffraction,
                 ),
-                Colors.white.withOpacity(
-                  0.46 * strength * style.diffraction,
+                Colors.white.withValues(
+                  alpha: 0.46 * strength * style.diffraction,
                 ),
-                style.secondaryColor.withOpacity(
-                  0.12 * strength * style.diffraction,
+                style.secondaryColor.withValues(
+                  alpha: 0.12 * strength * style.diffraction,
                 ),
                 Colors.transparent,
               ],
@@ -1654,7 +1665,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       _paintPool.next()
         ..style = PaintingStyle.stroke
         ..strokeWidth = math.max(2.0, style.borderWidth * 1.6)
-        ..color = Colors.white.withOpacity(0.42 * strength)
+        ..color = Colors.white.withValues(alpha: 0.42 * strength)
         ..applyBlur(_blurs.focusHalo),
     );
   }
@@ -1673,24 +1684,25 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       center.translate(0, -verticalLength),
       center.translate(0, verticalLength),
       _paintPool.next()
-        ..shader = LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: <Color>[
-            Colors.transparent,
-            style.secondaryColor.withOpacity(0.22 * strength),
-            Colors.white.withOpacity(0.78 * strength),
-            style.secondaryColor.withOpacity(0.22 * strength),
-            Colors.transparent,
-          ],
-          stops: const <double>[0, 0.36, 0.5, 0.64, 1],
-        ).createShader(
-          Rect.fromCenter(
-            center: center,
-            width: 2,
-            height: verticalLength * 2,
-          ),
-        )
+        ..shader =
+            LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: <Color>[
+                Colors.transparent,
+                style.secondaryColor.withValues(alpha: 0.22 * strength),
+                Colors.white.withValues(alpha: 0.78 * strength),
+                style.secondaryColor.withValues(alpha: 0.22 * strength),
+                Colors.transparent,
+              ],
+              stops: const <double>[0, 0.36, 0.5, 0.64, 1],
+            ).createShader(
+              Rect.fromCenter(
+                center: center,
+                width: 2,
+                height: verticalLength * 2,
+              ),
+            )
         ..strokeWidth = 1.5
         ..strokeCap = StrokeCap.round
         ..applyBlur(NeonBlur.normal(2.4)),
@@ -1700,22 +1712,23 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       center.translate(-horizontalLength, 0),
       center.translate(horizontalLength, 0),
       _paintPool.next()
-        ..shader = LinearGradient(
-          colors: <Color>[
-            Colors.transparent,
-            style.tertiaryColor.withOpacity(0.18 * strength),
-            Colors.white.withOpacity(0.62 * strength),
-            style.secondaryColor.withOpacity(0.18 * strength),
-            Colors.transparent,
-          ],
-          stops: const <double>[0, 0.36, 0.5, 0.64, 1],
-        ).createShader(
-          Rect.fromCenter(
-            center: center,
-            width: horizontalLength * 2,
-            height: 2,
-          ),
-        )
+        ..shader =
+            LinearGradient(
+              colors: <Color>[
+                Colors.transparent,
+                style.tertiaryColor.withValues(alpha: 0.18 * strength),
+                Colors.white.withValues(alpha: 0.62 * strength),
+                style.secondaryColor.withValues(alpha: 0.18 * strength),
+                Colors.transparent,
+              ],
+              stops: const <double>[0, 0.36, 0.5, 0.64, 1],
+            ).createShader(
+              Rect.fromCenter(
+                center: center,
+                width: horizontalLength * 2,
+                height: 2,
+              ),
+            )
         ..strokeWidth = 1.05
         ..strokeCap = StrokeCap.round
         ..applyBlur(NeonBlur.normal(2)),
@@ -1731,14 +1744,15 @@ class _AdvancedIndicatorPainter extends CustomPainter {
     for (var index = 0; index < style.particleCount; index++) {
       final direction = index.isEven ? 1.0 : -0.64;
       final speed = 0.62 + (index % 4) * 0.18;
-      final angle = phase * math.pi * 2 * direction * speed +
+      final angle =
+          phase * math.pi * 2 * direction * speed +
           index / style.particleCount * math.pi * 2;
       final orbit = radius + 3.5 + (index % 3) * 1.6;
       final elliptic = style.effect == NeonIndicatorEffect.singularity
           ? 0.74 + (index % 2) * 0.08
           : style.effect == NeonIndicatorEffect.neuralCore
-              ? 0.82 + (index % 3) * 0.07
-              : 1.0;
+          ? 0.82 + (index % 3) * 0.07
+          : 1.0;
       final position = Offset(
         center.dx + NeonTrig.cos(angle) * orbit,
         center.dy + NeonTrig.sin(angle) * orbit * elliptic,
@@ -1749,13 +1763,14 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         position,
         dotRadius + 1.4,
         _paintPool.next()
-          ..color = color.withOpacity(0.13 * strength * style.detail)
+          ..color = color.withValues(alpha: 0.13 * strength * style.detail)
           ..applyBlur(NeonBlur.normal(2)),
       );
       canvas.drawCircle(
         position,
         dotRadius,
-        _paintPool.next()..color = color.withOpacity(0.72 * strength * style.detail),
+        _paintPool.next()
+          ..color = color.withValues(alpha: 0.72 * strength * style.detail),
       );
     }
   }
@@ -1776,7 +1791,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         center.dx + NeonTrig.cos(angle) * orbit,
         center.dy + NeonTrig.sin(angle) * orbit,
       );
-      final twinkle = 0.45 +
+      final twinkle =
+          0.45 +
           0.55 * NeonTrig.sin(phase * math.pi * 2 * 1.7 + index * 1.93).abs();
       final color = switch (index % 3) {
         0 => style.borderColor,
@@ -1788,8 +1804,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         position,
         size + 0.9,
         _paintPool.next()
-          ..color = color.withOpacity(
-            0.08 * strength * style.detail * twinkle * style.noise,
+          ..color = color.withValues(
+            alpha: 0.08 * strength * style.detail * twinkle * style.noise,
           )
           ..applyBlur(NeonBlur.normal(1.5)),
       );
@@ -1797,8 +1813,8 @@ class _AdvancedIndicatorPainter extends CustomPainter {
         position,
         size,
         _paintPool.next()
-          ..color = color.withOpacity(
-            0.38 * strength * style.detail * twinkle,
+          ..color = color.withValues(
+            alpha: 0.38 * strength * style.detail * twinkle,
           ),
       );
     }
@@ -1817,7 +1833,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
     canvas.drawPath(
       spark,
       _paintPool.next()
-        ..color = style.secondaryColor.withOpacity(0.32 * strength)
+        ..color = style.secondaryColor.withValues(alpha: 0.32 * strength)
         ..applyBlur(_blurs.sparkGlow),
     );
     canvas.drawPath(
@@ -1838,7 +1854,7 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       center,
       math.max(1.6, radius * 0.08),
       _paintPool.next()
-        ..color = Colors.white.withOpacity(0.92 * strength)
+        ..color = Colors.white.withValues(alpha: 0.92 * strength)
         ..applyBlur(NeonBlur.normal(1.8)),
     );
   }
@@ -1848,13 +1864,9 @@ class _AdvancedIndicatorPainter extends CustomPainter {
       case NeonIndicatorShape.circle:
         return _pathPool.next()..addOval(rect);
       case NeonIndicatorShape.square:
-        return _pathPool.next()
-          ..addRRect(
-            RRect.fromRectAndRadius(
-              rect,
-              Radius.circular(rect.width * 0.24),
-            ),
-          );
+        return _pathPool.next()..addRRect(
+          RRect.fromRectAndRadius(rect, Radius.circular(rect.width * 0.24)),
+        );
       case NeonIndicatorShape.diamond:
         final center = rect.center;
         return _pathPool.next()
@@ -1949,9 +1961,10 @@ class _StatusGlyph extends StatelessWidget {
       NeonTimelineStatus.active => Icons.circle,
     };
     final size = switch (status) {
-      NeonTimelineStatus.pending ||
-      NeonTimelineStatus.active =>
-        math.max(7.0, math.min(11.0, indicatorSize * 0.16)),
+      NeonTimelineStatus.pending || NeonTimelineStatus.active => math.max(
+        7.0,
+        math.min(11.0, indicatorSize * 0.16),
+      ),
       _ => math.max(16.0, math.min(24.0, indicatorSize * 0.34)),
     };
     return Icon(icon, size: size, color: Colors.white);

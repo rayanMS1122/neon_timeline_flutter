@@ -15,7 +15,6 @@ extension NeonPaintBlur on Paint {
   }
 }
 
-
 /// Fast trigonometry lookup table for painter hot paths.
 ///
 /// Replaces repeated `math.sin` / `math.cos` calls with a 4096-entry lookup.
@@ -180,21 +179,20 @@ class NeonBlur {
 /// (i.e., once per style change) and reused across frames.
 class NeonBlurCache {
   NeonBlurCache({required double glowRadius})
-      : shadow = NeonBlur.normal(math.max(4.0, glowRadius * 0.52)),
-        auraSoft = NeonBlur.normal(math.max(8.0, glowRadius * 1.35)),
-        auraHard = NeonBlur.normal(math.max(4.5, glowRadius * 0.72)),
-        bloomOuter = NeonBlur.normal(math.max(5.0, glowRadius * 1.38)),
-        bloomMid = NeonBlur.normal(math.max(3.0, glowRadius * 0.74)),
-        bloomInner = NeonBlur.normal(math.max(1.5, glowRadius * 0.32)),
-        focusHalo = NeonBlur.normal(math.max(2.0, glowRadius * 0.24)),
-        sparkGlow = NeonBlur.normal(math.max(5.0, glowRadius * 0.55)),
-        singularityDisk = NeonBlur.normal(math.max(1.5, glowRadius * 0.22)),
-        singularityHorizon =
-            NeonBlur.normal(math.max(4.0, glowRadius * 0.42)),
-        coronaArc = NeonBlur.normal(math.max(1.2, glowRadius * 0.18)),
-        energyGlow = NeonBlur.normal(math.max(3.0, glowRadius * 1.35)),
-        energyMid = NeonBlur.normal(math.max(1.5, glowRadius * 0.52)),
-        warpField = NeonBlur.normal(math.max(4.0, glowRadius * 1.5));
+    : shadow = NeonBlur.normal(math.max(4.0, glowRadius * 0.52)),
+      auraSoft = NeonBlur.normal(math.max(8.0, glowRadius * 1.35)),
+      auraHard = NeonBlur.normal(math.max(4.5, glowRadius * 0.72)),
+      bloomOuter = NeonBlur.normal(math.max(5.0, glowRadius * 1.38)),
+      bloomMid = NeonBlur.normal(math.max(3.0, glowRadius * 0.74)),
+      bloomInner = NeonBlur.normal(math.max(1.5, glowRadius * 0.32)),
+      focusHalo = NeonBlur.normal(math.max(2.0, glowRadius * 0.24)),
+      sparkGlow = NeonBlur.normal(math.max(5.0, glowRadius * 0.55)),
+      singularityDisk = NeonBlur.normal(math.max(1.5, glowRadius * 0.22)),
+      singularityHorizon = NeonBlur.normal(math.max(4.0, glowRadius * 0.42)),
+      coronaArc = NeonBlur.normal(math.max(1.2, glowRadius * 0.18)),
+      energyGlow = NeonBlur.normal(math.max(3.0, glowRadius * 1.35)),
+      energyMid = NeonBlur.normal(math.max(1.5, glowRadius * 0.52)),
+      warpField = NeonBlur.normal(math.max(4.0, glowRadius * 1.5));
 
   final MaskFilter? shadow;
   final MaskFilter? auraSoft;

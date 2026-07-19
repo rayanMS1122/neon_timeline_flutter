@@ -1,0 +1,44 @@
+# Changed Files 7.0
+
+- Added: **19**
+- Modified: **8**
+- Removed: **0**
+- Total changed paths: **27**
+- Text insertions: **3488**
+- Text deletions: **478**
+
+## Added
+
+- `API_CHANGES_7_0.md`
+- `CHANGED_FILES_7_0.md`
+- `MIGRATION_7_0.md`
+- `PERFORMANCE_7_0.md`
+- `PUBLIC_API_VALIDATION_7_0.json`
+- `RELEASE_REPORT_7_0.md`
+- `STATIC_VALIDATION_7_0.json`
+- `STRUCTURED_TIMELINE_7_0.md`
+- `TEST_REPORT_7_0.md`
+- `V7_DIFF_EVIDENCE.json`
+- `VIDEO_BEHAVIOR_MAP_7_0.md`
+- `example/lib/screens/v7_structured_timeline_showcase.dart`
+- `lib/src/v7/models/structured_timeline_details.dart`
+- `lib/src/v7/models/structured_timeline_style.dart`
+- `lib/src/v7/widgets/structured_timeline_planner.dart`
+- `lib/src/v7/widgets/structured_timeline_view.dart`
+- `lib/timeline_v7.dart`
+- `test/structured_timeline_style_test.dart`
+- `test/structured_timeline_view_test.dart`
+
+## Modified
+
+- `CHANGELOG.md`
+- `README.md`
+- `example/lib/main.dart`
+- `example/pubspec.yaml`
+- `lib/structured_planner.dart`
+- `lib/timeline_themes.dart`
+- `lib/timeline_views.dart`
+- `pubspec.yaml`
+
+## Removed
+

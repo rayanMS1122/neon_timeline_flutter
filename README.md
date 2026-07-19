@@ -1,495 +1,464 @@
 # Neon Timeline Flutter
 
-![Neon Timeline Showcase](https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/spectral.png)
+[![pub package](https://img.shields.io/pub/v/neon_timeline_flutter.svg)](https://pub.dev/packages/neon_timeline_flutter)
 
-Production-ready Flutter timelines and planner schedules with animated neon
-rendering, slivers, drag-to-reschedule, overlap detection, current-time markers,
-and polished slide actions.
+A highly adaptive, responsive timeline and day planner platform for Flutter. It features stable coordinate-correct drag-and-drop, snapping grid, overlap handling, continuous zoom, frame diagnostics, and legacy migration APIs.
 
-## Screenshots
+---
 
-These previews mirror the package assets and use GitHub raw URLs so they also
-render on pub.dev.
+## Visual Showcase Gallery
 
-| | |
-| --- | --- |
-| ![Schedule showcase in the spectral theme][spectral] | ![Schedule showcase in the omniverse theme][omniverse] |
-| ![Schedule showcase in the Hyperion theme][hyperion] | ![Holographic theme showcase][hologram] |
-| ![Aurora theme showcase][aurora] | ![Solar flare theme showcase][solar-flare] |
-| ![Cryogenic theme showcase][cryogenic] | ![Custom seeded theme showcase][seeded] |
-| ![Light theme showcase][light] | ![Midnight theme showcase][midnight] |
-| ![Neon theme showcase][neon] | ![Neural Aurora showcase][neural-aurora] |
-| ![Neural Ember showcase][neural-ember] | ![Ember showcase][ember] |
-| ![Void pulses showcase][void-pules] | ![Quantum showcase][quanntum] |
+Every generation is preserved in the example app. All image links below use
+package-relative paths, so the complete gallery is also rendered on pub.dev.
 
-[spectral]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/spectral.png
-[omniverse]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/omniverse.png
-[hyperion]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/Hyperion.png
-[hologram]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/hologram.png
-[aurora]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/aurora.png
-[solar-flare]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/solar_flare.png
-[cryogenic]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/cryogenic.png
-[seeded]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/seeded.png
-[light]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/light.png
-[midnight]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/midnight.png
-[neon]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/neon.png
-[neural-aurora]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/neural_aurora.png
-[neural-ember]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/neural_ember.png
-[ember]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/ember.png
-[void-pules]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/void_pules.png
-[quanntum]: https://raw.githubusercontent.com/rayanMS1122/neon_timeline_flutter/main/assets/Quanntum.png
+| v16 Compact Mobile | v15 Ultra Planner | v14 Friendly UI |
+| :---: | :---: | :---: |
+| ![v16 compact mobile planner](assets/screenshots/v16/home.png) | ![v15 ultra planner](assets/screenshots/v15/home.png) | ![v14 friendly timeline UI](assets/screenshots/v14/home.png) |
 
-The package has two independent layers:
+| v13 Workspace Shell | v12 Neon Design System | v11 Accessible History |
+| :---: | :---: | :---: |
+| ![v13 multi-panel workspace](assets/screenshots/v13/home.png) | ![v12 neon design system](assets/screenshots/v12/home.png) | ![v11 accessible timeline with undo and redo](assets/screenshots/v11/home.png) |
 
-1. `NeonTimeline`, `NeonFixedTimeline`, and `NeonSliverTimeline` for generic
-   status timelines.
-2. `NeonScheduleTimeline<T>` for planner and calendar applications.
+| v10 Delight Snapping | v9 Zoom & Virtualization | v8 Drag & Resize |
+| :---: | :---: | :---: |
+| ![v10 magnetic snapping timeline](assets/screenshots/v10/home.png) | ![v9 zoomable virtualized timeline](assets/screenshots/v9/home.png) | ![v8 drag and resize timeline](assets/screenshots/v8/home.png) |
 
-Your application owns its models, state management, persistence, localization,
-and business rules. The package only renders and reports user intent through
-callbacks.
+| v7 Structured UI | v6 Planning Engine | v5 Command Center |
+| :---: | :---: | :---: |
+| ![v7 structured timeline UI](assets/screenshots/v7/home.png) | ![v6 planning engine](assets/screenshots/v6/home.png) | ![v5 command center board](assets/screenshots/v5/board.png) |
 
-## Features
+### V4 Enterprise Views
 
-- Vertical and horizontal generic timelines.
-- Start, center, end, alternating, and adaptive layouts.
-- Box, fixed, and sliver APIs.
-- Pending, active, completed, error, and disabled states.
-- Advanced indicator, connector, and card painters.
-- Shared sampled motion clock, scroll pausing, and reduced-motion support.
-- Planner-grade lazy `NeonScheduleTimeline<T>`.
-- Automatic sorting, duration sizing, gap rendering, and overlap detection.
-- Long-press drag-to-reschedule with configurable minute snapping.
-- Day-boundary clamping, haptic feedback, and edge auto-scroll.
-- Current-time marker and automatic current-entry activation.
-- `flutter_slidable` facade with package-owned actions and optional full-swipe dismissal.
-- Previous/next-day swipe wrapper.
-- Keyboard, pointer, semantics, and right-to-left support.
-- No dependency on Bloc, Provider, Firebase, Hive, or an application model.
+| Agenda | Day | Planner |
+| :---: | :---: | :---: |
+| ![v4 agenda view](assets/screenshots/v4/agenda.png) | ![v4 day view](assets/screenshots/v4/day.png) | ![v4 planner view](assets/screenshots/v4/planner.png) |
 
-## Requirements
+| Resources | Roadmap | Studio |
+| :---: | :---: | :---: |
+| ![v4 resource view](assets/screenshots/v4/resources.png) | ![v4 roadmap view](assets/screenshots/v4/roadmap.png) | ![v4 studio view](assets/screenshots/v4/studio.png) |
 
-- Dart `>=3.4.0 <4.0.0`
-- Flutter `>=3.22.0`
-- `flutter_slidable >=3.1.2 <4.0.0`
+### V5 Productivity Views
 
-The slidable range intentionally matches applications already using
-`flutter_slidable: ^3.1.2`.
+| Board | Focus | Matrix | Scenarios |
+| :---: | :---: | :---: | :---: |
+| ![v5 board view](assets/screenshots/v5/board.png) | ![v5 focus view](assets/screenshots/v5/focus.png) | ![v5 matrix view](assets/screenshots/v5/matrix.png) | ![v5 scenarios view](assets/screenshots/v5/scenarios.png) |
 
-## Installation
+### Theme Gallery
 
-After publication:
+| Aurora | Cryogenic | Ember | Hologram |
+| :---: | :---: | :---: | :---: |
+| ![Aurora theme](assets/screenshots/themes/aurora.png) | ![Cryogenic theme](assets/screenshots/themes/cryogenic.png) | ![Ember theme](assets/screenshots/themes/ember.png) | ![Hologram theme](assets/screenshots/themes/hologram.png) |
 
+| Hyperion | Light | Midnight | Neon |
+| :---: | :---: | :---: | :---: |
+| ![Hyperion theme](assets/screenshots/themes/hyperion.png) | ![Light theme](assets/screenshots/themes/light.png) | ![Midnight theme](assets/screenshots/themes/midnight.png) | ![Neon theme](assets/screenshots/themes/neon.png) |
+
+| Neural Aurora | Neural Ember | Omniverse |
+| :---: | :---: | :---: |
+| ![Neural Aurora theme](assets/screenshots/themes/neural_aurora.png) | ![Neural Ember theme](assets/screenshots/themes/neural_ember.png) | ![Omniverse theme](assets/screenshots/themes/omniverse.png) |
+
+| Seeded | Solar Flare | Spectral |
+| :---: | :---: | :---: |
+| ![Seeded theme](assets/screenshots/themes/seeded.png) | ![Solar Flare theme](assets/screenshots/themes/solar_flare.png) | ![Spectral theme](assets/screenshots/themes/spectral.png) |
+
+---
+
+## Table of Contents
+1. [Installation & Requirements](#installation--requirements)
+2. [Quick Start (V16 Compact Planner)](#quick-start-v16-compact-planner)
+3. [V16 Mapping with Entry Adapters](#v16-mapping-with-entry-adapters)
+4. [V16 API Parameter Reference](#v16-api-parameter-reference)
+5. [Snapping & Drag-and-Drop Interaction](#snapping--drag-and-drop-interaction)
+6. [Theming & Color Customization](#theming--color-customization)
+7. [Responsive Breakpoints & Density](#responsive-breakpoints--density)
+8. [Virtualization & Performance Policy](#virtualization--performance-policy)
+9. [Legacy API Catalog (V15 - V10)](#legacy-api-catalog-v15---v10)
+
+---
+
+## Installation & Requirements
+
+### System Requirements
+* **Dart SDK:** `>=3.12.0 <4.0.0`
+* **Flutter SDK:** `>=3.44.0`
+* **Dependencies:** `flutter_slidable: '>=3.1.2 <4.0.0'`
+
+### Add to Project
+Run this command in your package root:
 ```bash
 flutter pub add neon_timeline_flutter
 ```
 
-Before publication, use a path dependency:
-
+Or reference a local path dependency in `pubspec.yaml`:
 ```yaml
 dependencies:
   neon_timeline_flutter:
-    path: ../neon_timeline_flutter
+    path: /path/to/neon_timeline_flutter
 ```
 
-Import the complete public API:
-
+### Imports
+Import the modern V16 unified namespace:
 ```dart
-import 'package:neon_timeline_flutter/neon_timeline_flutter.dart';
+import 'package:neon_timeline_flutter/timeline_v16.dart';
 ```
 
-Or keep a web/application build focused by importing only the layer you use:
-
+Or keep imports focused on specific library layers:
 ```dart
-import 'package:neon_timeline_flutter/core.dart';
-import 'package:neon_timeline_flutter/advanced.dart';
-import 'package:neon_timeline_flutter/slidable.dart';
+import 'package:neon_timeline_flutter/timeline_core.dart';
+import 'package:neon_timeline_flutter/timeline_views.dart';
+import 'package:neon_timeline_flutter/timeline_themes.dart';
 ```
 
-The original all-in-one import remains supported.
+---
 
-## Production performance policy
+## Quick Start (V16 Compact Planner)
 
-Version 3.4 defaults planner timelines to an adaptive rendering budget. It does
-not replace the UI: layout, colors, borders, cards, indicators, connectors,
-semantics, drag, and slide behavior stay the same. It limits only continuous
-work.
+Initialize the timeline by projecting your local task models onto the timeline engine.
 
+### 1. Define Your Model
 ```dart
-NeonScheduleTimeline<Task>(
-  entries: entries,
-  selectedDate: selectedDate,
-  dataRevision: state.revision,
-  performance: const NeonTimelinePerformanceConfig.adaptive(),
-  itemBuilder: buildTask,
-)
-```
+class Task {
+  final String id;
+  final String title;
+  final String? note;
+  final DateTime start;
+  final Duration duration;
+  final IconData icon;
+  final NeonPlannerEntryKind kind;
 
-Available policies:
+  Task({
+    required this.id,
+    required this.title,
+    this.note,
+    required this.start,
+    required this.duration,
+    required this.icon,
+    required this.kind,
+  });
 
-```dart
-const NeonTimelinePerformanceConfig.adaptive();
-const NeonTimelinePerformanceConfig.batterySaver();
-const NeonTimelinePerformanceConfig.balanced();
-const NeonTimelinePerformanceConfig.highQuality();
-```
-
-The adaptive policy:
-
-- starts motion after first paint rather than competing with startup;
-- uses one shared sampled clock;
-- pauses during scrolling, inactive lifecycle, inactive routes, disabled
-  `TickerMode`, and reduced-motion preferences;
-- keeps at most one focal schedule row moving by default;
-- avoids large backdrop filters on web and dense lists;
-- reduces particle detail without changing geometry or colors;
-- keeps offscreen list children lazy.
-
-For a very large generic builder timeline, provide the active indexes directly
-so the package does not scan every status just to locate the animated row:
-
-```dart
-NeonTimeline.builder(
-  itemCount: events.length,
-  animatedItemIndexes: <int>[activeIndex],
-  performance: const NeonTimelinePerformanceConfig.adaptive(),
-  statusBuilder: (index) => events[index].status,
-  contentBuilder: buildEvent,
-)
-```
-
-Use `highQuality()` only for a short hero/showcase surface after profiling the
-slowest supported device. It is deliberately not the production default.
-
-## Planner schedule quick start
-
-Map your own model into `NeonScheduleEntry<T>`:
-
-```dart
-final entries = tasks.map((task) {
-  return NeonScheduleEntry<Task>(
-    id: task.id,
-    value: task,
-    start: task.startTime,
-    duration: Duration(minutes: task.duration ?? 30),
-    status: task.isCompleted
-        ? NeonTimelineStatus.completed
-        : NeonTimelineStatus.pending,
-    color: task.color,
-    semanticLabel: task.title,
-    draggable: !task.isCalendarEvent,
-  );
-}).toList();
-```
-
-Render the schedule and keep all persistence in your application:
-
-```dart
-NeonScheduleTimeline<Task>(
-  entries: entries,
-  selectedDate: selectedDate,
-  itemBuilder: (context, details) {
-    final task = details.entry.value;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(task.title),
-        Text('${details.displayDuration.inMinutes} min'),
-      ],
+  Task copyWith({DateTime? start, Duration? duration}) {
+    return Task(
+      id: id,
+      title: title,
+      note: note,
+      start: start ?? this.start,
+      duration: duration ?? this.duration,
+      icon: icon,
+      kind: kind,
     );
-  },
-  onEntryTap: (context, details) {
-    openTask(details.entry.value);
-  },
-  onEntryMoved: (context, details, newStart) async {
-    await repository.update(
-      details.entry.value.copyWith(startTime: newStart),
-    );
-  },
-)
+  }
+}
 ```
 
-### What the schedule computes
-
-Each builder receives `NeonScheduleEntryDetails<T>` with:
-
-- normalized display start and duration;
-- previous and next entries;
-- free-time gaps;
-- previous and next overlap flags;
-- back-to-back flags;
-- current-entry state;
-- first and last positions.
-
-This keeps scheduling geometry out of application widgets.
-
-## Slide actions
-
-`NeonSlidableTimeline` is backed by `flutter_slidable`, but the public action
-configuration belongs to this package:
-
+### 2. Implement the Widget
 ```dart
-NeonScheduleTimeline<Task>(
-  entries: entries,
-  selectedDate: selectedDate,
-  itemBuilder: (context, details) => Text(details.entry.value.title),
-  startActionsBuilder: (context, details) => [
-    NeonTimelineAction(
-      icon: Icons.calendar_month,
-      label: 'PLAN',
-      color: const Color(0xFF2980B9),
-      onPressed: (_) => schedule(details.entry.value),
+class PlannerPage extends StatefulWidget {
+  const PlannerPage({super.key});
+
+  @override
+  State<PlannerPage> createState() => _PlannerPageState();
+}
+
+class _PlannerPageState extends State<PlannerPage> {
+  final _day = DateTime(2026, 7, 19);
+
+  List<Task> _tasks = [
+    Task(
+      id: 'sleep',
+      title: 'Nachtschlaf',
+      note: 'Erholungsphase',
+      start: DateTime(2026, 7, 19, 0, 0),
+      duration: const Duration(hours: 7, minutes: 30),
+      icon: Icons.brightness_3_rounded,
+      kind: NeonPlannerEntryKind.sleep,
     ),
-  ],
-  endActionsBuilder: (context, details) => [
-    NeonTimelineAction(
-      icon: Icons.delete_outline,
-      label: 'DELETE',
-      color: const Color(0xFFE5485D),
-      onPressed: (_) => delete(details.entry.value),
+    Task(
+      id: 'focus',
+      title: 'Konzentriertes Arbeiten',
+      note: 'Wichtigstes Projekt zuerst',
+      start: DateTime(2026, 7, 19, 8, 30),
+      duration: const Duration(minutes: 50),
+      icon: Icons.center_focus_strong_rounded,
+      kind: NeonPlannerEntryKind.focus,
     ),
-  ],
-  onEntryEndDismissed: (context, details) async {
-    await delete(details.entry.value);
-  },
-)
-```
+  ];
 
-
-To keep an existing application-specific action layout, provide `child` while
-retaining the package surface, semantics, and gesture behavior:
-
-```dart
-NeonTimelineAction(
-  icon: Icons.delete_outline,
-  label: 'Delete',
-  color: Colors.red,
-  onPressed: (_) => delete(task),
-  child: YourExistingSwipeActionContent(task: task),
-)
-```
-
-When using full-swipe dismissal on `NeonSlidableTimeline` directly, pass a stable `slidableKey` (or key the child). `NeonScheduleTimeline` does this automatically from each entry id.
-
-The action and full-swipe callbacks accept synchronous or asynchronous work.
-The package does not remove data automatically; your state update remains the
-source of truth.
-
-## Day swipe navigation
-
-```dart
-NeonTimelineDayPager(
-  selectedDate: selectedDate,
-  onDateChanged: cubit.setSelectedDate,
-  child: NeonScheduleTimeline<Task>(
-    entries: entries,
-    selectedDate: selectedDate,
-    itemBuilder: buildTask,
-  ),
-)
-```
-
-Do not combine whole-page day swiping with a card action gesture unless the
-interaction is tested on real devices. Both use horizontal gestures. A common
-production choice is to keep day swiping on empty timeline space and slide
-actions on cards.
-
-## Generic status timeline
-
-```dart
-NeonTimeline(
-  padding: const EdgeInsets.all(16),
-  theme: NeonTimelineThemeData.omniverse(),
-  items: const [
-    NeonTimelineItem(
-      id: 'created',
-      status: NeonTimelineStatus.completed,
-      oppositeContent: Text('09:00'),
-      content: NeonTimelineCard(child: Text('Created')),
-    ),
-    NeonTimelineItem(
-      id: 'review',
-      status: NeonTimelineStatus.active,
-      oppositeContent: Text('10:30'),
-      content: NeonTimelineCard(child: Text('Review')),
-    ),
-  ],
-)
-```
-
-Use `NeonTimeline.builder` for dynamic lists and `NeonSliverTimeline.builder`
-inside `CustomScrollView`.
-
-## Schedule styling
-
-`NeonTimelineThemeData` controls color and painter effects.
-`NeonScheduleTimelineStyle` controls schedule geometry and gestures:
-
-```dart
-const style = NeonScheduleTimelineStyle(
-  pixelsPerMinute: 1.35,
-  snapMinutes: 5,
-  minimumEntryExtent: 64,
-  maximumEntryExtent: 260,
-  cardVariant: NeonTimelineCardVariant.liquidCrystal,
-  showGapLabels: true,
-  keepEntriesInsideDay: true,
-);
-```
-
-For dense lists, use a lighter card and render quality:
-
-```dart
-final theme = NeonTimelineThemeData.spectral().copyWith(
-  indicatorStyle: const NeonTimelineIndicatorStyle(
-    effect: NeonIndicatorEffect.glass,
-    quality: NeonTimelineRenderQuality.balanced,
-  ),
-  connectorStyle: const NeonTimelineConnectorStyle(
-    effect: NeonConnectorEffect.energy,
-    quality: NeonTimelineRenderQuality.balanced,
-  ),
-);
-```
-
-## Optional presentation components
-
-The package includes optional page-level widgets. They are not inserted around
-existing timelines automatically:
-
-```dart
-NeonTimelineSurface(
-  child: Column(
-    children: [
-      const NeonTimelineHeader(
-        title: 'Today',
-        trailing: NeonTimelineBadge(label: 'Live'),
+  @override
+  Widget build(BuildContext context) {
+    // 1. Define the adapter to project models into presentation
+    final adapter = NeonPlannerEntryAdapter<Task>(
+      id: (task) => task.id,
+      start: (task) => task.start,
+      duration: (task) => task.duration,
+      presentation: (task) => NeonPlannerEntryPresentation(
+        title: task.title,
+        subtitle: task.note,
+        icon: task.icon,
+        kind: task.kind,
       ),
-      Expanded(
-        child: NeonScheduleTimeline<Task>(
-          entries: entries,
-          selectedDate: selectedDate,
-          itemBuilder: buildTask,
+    );
+
+    // 2. Render the timeline widget
+    return Scaffold(
+      body: SafeArea(
+        child: NeonPlannerDayTimeline<Task>(
+          entries: _tasks,
+          adapter: adapter,
+          selectedDate: _day,
+          fit: NeonPlannerDayFit.scroll,
+          autoResponsiveDensity: true,
+          dragMode: NeonPlannerDayDragMode.time,
+          snapInterval: const Duration(minutes: 5),
+          enableResize: true,
+          onEntryMove: (proposal) {
+            setState(() {
+              _tasks = _tasks.map((t) => t.id == proposal.entry.data.id
+                  ? t.copyWith(start: proposal.proposedStart)
+                  : t).toList();
+            });
+            return const NeonPlannerMutationResult.accepted('Erfolgreich verschoben.');
+          },
+          onEntryResize: (proposal) {
+            setState(() {
+              _tasks = _tasks.map((t) => t.id == proposal.entry.data.id
+                  ? t.copyWith(
+                      start: proposal.proposedStart,
+                      duration: proposal.proposedEnd.difference(proposal.proposedStart),
+                    )
+                  : t).toList();
+            });
+            return const NeonPlannerMutationResult.accepted('Zeitdauer angepasst.');
+          },
         ),
       ),
-    ],
+    );
+  }
+}
+```
+
+---
+
+## V16 Mapping with Entry Adapters
+
+`NeonPlannerEntryAdapter<T>` adapts any data type `T` to the timeline presentation model without modifying your domain model.
+
+```dart
+NeonPlannerEntryAdapter<T>(
+  id: (T item) => Object,        // Unique ID for delta updates
+  start: (T item) => DateTime,   // Entry start boundary
+  duration: (T item) => Duration,// Entry temporal length
+  presentation: (T item) => NeonPlannerEntryPresentation, // Styling mapping
+)
+```
+
+### Presentation Configs (`NeonPlannerEntryPresentation`)
+* **`title`:** Primary header label.
+* **`subtitle`:** Supporting info (displayed when height is sufficient).
+* **`metadata`:** High-density details line.
+* **`icon`:** Displayed inside the circular hub timeline markers.
+* **`kind`:** Maps to standard category colors and default badges (Sleep, Travel, Focus, Break, etc.).
+* **`accentColor`:** Explicit color override bypassing category theme palettes.
+* **`completion`:** Fractional value (`0.0` - `1.0`) rendering a progress ring around the entry node.
+
+---
+
+## V16 API Parameter Reference
+
+### `NeonPlannerDayTimeline<T>`
+
+| Parameter | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `entries` | `List<T>` | *Required* | List of domain model items to project. |
+| `adapter` | `NeonPlannerEntryAdapter<T>` | *Required* | Projector converting `T` into UI presentations. |
+| `selectedDate` | `DateTime` | *Required* | Bounding date for the schedule. |
+| `fit` | `NeonPlannerDayFit` | `smart` | Fits layout to `content`, `scroll` internally, or selects automatically (`smart`). |
+| `density` | `double` | `1.0` | Vertical density scaler for timeline rows. |
+| `autoResponsiveDensity`| `bool` | `false` | Automatically scales rows based on screen width. |
+| `dragMode` | `NeonPlannerDayDragMode` | `disabled` | Allows pointer drag: `disabled`, `time` scaling, or `slot` suggestions. |
+| `enableResize` | `bool` | `false` | Enables start/end bounds handle dragging. |
+| `snapInterval` | `Duration` | `Duration(minutes: 5)`| Intervals to clamp start/end boundaries on drag. |
+| `conflictPolicy` | `NeonPlannerConflictPolicy`| `allow` | Overlap behavior: `allow`, `block`, or `delegate`. |
+| `showGrabber` | `bool` | `true` | Renders a sheet drawer notch at the container top. |
+| `showHeader` | `bool` | `true` | Renders the timeline navigation header. |
+| `showMetrics` | `bool` | `true` | Renders KPI summaries (Tasks count, focus hours, sleep tracker). |
+| `borderRadius` | `double` | `42.0` | Outer card boundary border radius. Set to `0` for flat layouts. |
+| `backgroundColor` | `Color?` | `null` | Widget base container color (defaults to theme surface). |
+| `theme` | `NeonPlannerTimelineThemeData?`| `null` | Timeline visual styling values and override colors. |
+
+### `NeonPlannerTimelineConfig` (Advanced Planner Configurations)
+* **`zoomLevel`:** Standardized scale preset (e.g. `balanced`, `comfortable`).
+* **`snapStrength`:** Magnetic pull radius towards adjacent entries (`soft`, `balanced`, `strong`).
+* **`showTimeScrubber`:** Displays duration feedback tags while resizing.
+* **`enableHaptics`:** Fires subtle vibration ticks on snap transitions.
+
+---
+
+## Snapping & Drag-and-Drop Interaction
+
+The scheduling engine handles complex temporal mutations out-of-the-box.
+
+```
+       [Drag Handle] -> Lift entry
+            |
+            v
+       [Magnetic Snap] -> Pulls boundaries to adjacent gaps/slots
+            |
+            v
+   [Conflict Checking] -> Evaluates overlap policy
+            |
+            v
+     [onEntryMove()] -> Dispatches proposal back to host app
+```
+
+### Mutation Callback Contracts
+* **`onEntryMove`:** Fired when dragging is finalized. Returns a `NeonPlannerMutationResult`.
+* **`onEntryResize`:** Fired when edge resizing completes. Returns a `NeonPlannerMutationResult`.
+
+```dart
+onEntryMove: (proposal) {
+  if (proposal.hasConflict && _mustBlock) {
+    return const NeonPlannerMutationResult.rejected('Kollision blockiert.');
+  }
+  // Persist model updates...
+  return const NeonPlannerMutationResult.accepted('Änderung gespeichert.');
+}
+```
+
+---
+
+## Theming & Color Customization
+
+### Preset Themes
+The package exports visual styling configurations out-of-the-box:
+* `NeonPlannerTimelineThemeData.light()` - Balanced, clean professional theme.
+* `NeonPlannerTimelineThemeData.dark()` - Ambient, glow-accented dark mode.
+
+### Custom Styling Override
+To override colors, shadows, and fonts:
+```dart
+final customTheme = NeonPlannerTimelineThemeData.light().copyWith(
+  accentColor: const Color(0xFF6C5CE7),
+  surfaceColor: const Color(0xFFF9F9FB),
+  gridColor: const Color(0xFFE2E8F0),
+);
+```
+
+### Borderless Flat Layout
+To integrate the planner seamlessly as a flat page widget (as shown in our Dashboard Showcase):
+```dart
+NeonPlannerDayTimeline<Task>(
+  borderRadius: 0,
+  showGrabber: false,
+  showHeader: false,
+  backgroundColor: Colors.transparent,
+  theme: NeonPlannerTimelineTheme.of(context).copyWith(
+    shadowColor: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0),
   ),
+  // ...
 )
 ```
 
-`NeonTimelineEmptyState` provides a matching empty screen while still allowing
-a completely custom `emptyBuilder`.
+---
 
-## Complete example
+## Responsive Breakpoints & Density
 
-The `example/` application demonstrates the real public package API rather than
-copying private implementation code:
+The planner dynamically shifts details density depending on available width constraints:
 
-- schedule timeline with overlap and free-time logic;
-- long-press drag and five-minute snapping;
-- start/end slide actions, async busy locking, full swipe, delete, and undo;
-- previous/next day paging and empty state;
-- lazy, fixed, horizontal, and sliver timelines;
-- every indicator, connector, and card renderer;
-- runtime themes, reduced motion, adaptive performance, and 500 lazy rows;
-- web contour-glow fallback and accessible web metadata.
+* **Micro Layout (`<360px`):** Drops text fields, merges timelines into single compact line, maps status indicator tags.
+* **Compact Layout (`360px` - `480px`):** Renders compact labels and side-by-side gap metrics.
+* **Regular Layout (`>480px`):** Full-bleed double track, semantic timelines, expanded task descriptions, and persistent metrics.
 
-Run it with:
+---
 
-```bash
-cd example
-flutter pub get
-flutter run --profile
-```
+## Virtualization & Performance Policy
 
-For Lighthouse, build and serve the release output rather than measuring
-`flutter run` debug mode:
+Timelines manage dense data using an adaptive virtualization layer:
+* **Lazy Rendering:** Off-viewport entry cards are not instantiated, keeping list layout computations at a constant $O(N)$ with respect to screen size rather than task count.
+* **Diagnostics Overlay:** Set `showDiagnostics: true` inside `NeonPlannerTimelineConfig` to audit frame times, layout cache misses, and overlaps during runtime.
 
-```bash
-flutter build web --release
-cd build/web
-python -m http.server 7357
-```
+---
 
-## Performance defaults
+## Legacy API Catalog (V15 - V10)
 
-The advanced appearance remains enabled, but continuous work is constrained:
+All original timeline paradigms are preserved for backwards compatibility.
 
-- schedule rows are built lazily near the viewport;
-- one 24 Hz sampled motion clock is shared by visible painters;
-- clocks sleep completely when no animated painter is listening;
-- decorative motion pauses while scrolling and when the app is inactive;
-- at most one current/active schedule row animates continuously by default;
-- standalone indicators and connectors use the same sampled clock rather than a
-  display-refresh controller;
-- standalone advanced cards animate on interaction unless
-  `continuousAnimation: true` is requested;
-- Gaussian painter blur is cached on native platforms and avoided on Web;
-- advanced backdrop filters share one grouped backdrop input;
-- drag and hover updates are snapped, coalesced, and throttled;
-- asynchronous slide actions are protected against duplicate submission.
-
+### V15: Ultra Adaptive Planner
+Semantic continuous zoom and magnetic snapping:
 ```dart
-NeonScheduleTimeline<Task>(
-  entries: entries,
+AdaptivePlannerTimeline<T>(
+  values: tasks,
+  engine: engine,
   selectedDate: selectedDate,
-  motionFramesPerSecond: 24,
-  pauseMotionWhileScrolling: true,
-  animateOnlyCurrentEntry: true,
-  maxAnimatedEntries: 1,
-  addAutomaticKeepAlives: false,
-  itemBuilder: buildTask,
+  title: 'Ultra Planner v15',
+  controller: ultraController,
+  config: const UltraTimelineConfig.production(),
+  onMove: moveTask,
+  onResize: resizeTask,
 )
 ```
 
-For constrained hardware, keep the same painted card design but disable the
-backdrop sampling layer:
-
+### V14: Friendly UI Structured Timeline
+Colorful, icon-led presentation with card abstraction:
 ```dart
-const NeonScheduleTimelineStyle(
-  cardVariant: NeonTimelineCardVariant.liquidCrystal,
-  useBackdropFilter: false,
-  enableCardParallax: false,
+FriendlyUiStructuredTimeline<T>(
+  values: tasks,
+  engine: engine,
+  selectedDate: selectedDate,
+  title: 'Friendly Planner',
+  onMove: moveTask,
+  entryPresentationBuilder: (context, details) =>
+      FriendlyTimelineEntryPresentation(
+        details: details,
+        title: details.value.toString(),
+        icon: Icons.calendar_month,
+        tone: FriendlyTimelineIconTone.mint,
+      ),
 )
 ```
 
-See [PERFORMANCE.md](PERFORMANCE.md) for production, battery, and hero profiles.
-
-## State-management integration
-
-The package is intentionally state-management agnostic. It works with Bloc,
-Cubit, Riverpod, Provider, ChangeNotifier, Redux, or local state because it
-only needs immutable input and callbacks.
-
-A callback should update the application state. The rebuilt entry list then
-becomes the new visual state. The package never edits an entry object in place.
-
-## Accessibility and motion
-
-- Entry semantics can be supplied through `semanticLabel`.
-- Disabled entries suppress interaction.
-- Active animation respects `MediaQuery.disableAnimations`.
-- Interactive indicators and cards support keyboard activation.
-- Logical start and end actions follow text direction.
-- Gap, conflict, current-time, and entry-time labels can be localized with builders.
-- Set `motionEnabled: false` for golden tests or battery-sensitive surfaces.
-
-## Publication
-
-Read [PUBLISHING.md](PUBLISHING.md) before uploading. At minimum run:
-
-```bash
-flutter pub get
-flutter analyze
-flutter test
-flutter pub publish --dry-run
+### V13: Advanced Workspace Shell
+Fully responsive workspace with built-in KPI banners, navigation rail, and commands:
+```dart
+AdvancedUiStructuredTimeline<T>(
+  values: tasks,
+  engine: engine,
+  selectedDate: selectedDate,
+  title: 'Workspace Planner',
+  metrics: const [
+    AdvancedTimelineMetric(
+      label: 'Completed',
+      value: '3 / 5',
+      icon: Icons.check_circle_rounded,
+    )
+  ],
+  onMove: moveTask,
+)
 ```
 
-Publishing is permanent. Verify the package name, license ownership,
-repository metadata, the screenshot gallery, and the dry-run file list before
-the final command.
+### V12: Ultimate Structured Timeline
+Adaptive cards, auto-scroll bounds, and focus gaps:
+```dart
+UltimateStructuredTimeline<T>(
+  values: tasks,
+  engine: engine,
+  selectedDate: selectedDate,
+  config: const UltimateStructuredTimelineConfig.production(),
+  onMove: moveTask,
+)
+```
 
-## License
+### V10: Delight Snapping Timeline
+Coordinate-correct pixel-to-time mapping engine:
+```dart
+DelightStructuredTimeline<T>(
+  values: tasks,
+  engine: engine,
+  selectedDate: selectedDate,
+  experience: const StructuredTimelineExperience.delight(),
+  onMove: moveTask,
+)
+```
 
-MIT. See [LICENSE](LICENSE).
+---
+
+Created and maintained by **rayanMS1122**. Licensed under the MIT License.

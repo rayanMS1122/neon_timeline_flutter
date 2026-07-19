@@ -1,0 +1,11 @@
+{
+  "package_version": "14.0.0",
+  "dart_files_parsed": 233,
+  "syntax_errors": 0,
+  "missing_relative_uris": 0,
+  "flutter_sdk_available": false,
+  "dart_sdk_available": false,
+  "flutter_analyze_executed": false,
+  "flutter_test_executed": false,
+  "flutter_web_build_executed": false
+}

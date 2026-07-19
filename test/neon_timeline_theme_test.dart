@@ -47,62 +47,66 @@ void main() {
       expect(copy.completedColor, base.completedColor);
     });
 
-    test('lerp interpolates continuous fields and switches discrete fields', () {
-      const start = NeonTimelineThemeData(
-        primaryColor: Color(0xFF000000),
-        contentGap: 10,
-        tilePadding: EdgeInsets.zero,
-        animationDuration: Duration(milliseconds: 100),
-        animationCurve: Curves.linear,
-        motionDuration: Duration(milliseconds: 2000),
-        indicatorStyle: NeonTimelineIndicatorStyle(
-          size: 20,
-          shape: NeonIndicatorShape.circle,
-        ),
-        connectorStyle: NeonTimelineConnectorStyle(
-          thickness: 2,
-          variant: NeonConnectorVariant.solid,
-        ),
-      );
-      const end = NeonTimelineThemeData(
-        primaryColor: Color(0xFFFFFFFF),
-        contentGap: 30,
-        tilePadding: EdgeInsets.all(20),
-        animationDuration: Duration(milliseconds: 900),
-        animationCurve: Curves.bounceIn,
-        motionDuration: Duration(milliseconds: 6000),
-        indicatorStyle: NeonTimelineIndicatorStyle(
-          size: 40,
-          shape: NeonIndicatorShape.diamond,
-        ),
-        connectorStyle: NeonTimelineConnectorStyle(
-          thickness: 6,
-          variant: NeonConnectorVariant.dashed,
-        ),
-      );
+    test(
+      'lerp interpolates continuous fields and switches discrete fields',
+      () {
+        const start = NeonTimelineThemeData(
+          primaryColor: Color(0xFF000000),
+          contentGap: 10,
+          tilePadding: EdgeInsets.zero,
+          animationDuration: Duration(milliseconds: 100),
+          animationCurve: Curves.linear,
+          motionDuration: Duration(milliseconds: 2000),
+          indicatorStyle: NeonTimelineIndicatorStyle(
+            size: 20,
+            shape: NeonIndicatorShape.circle,
+          ),
+          connectorStyle: NeonTimelineConnectorStyle(
+            thickness: 2,
+            variant: NeonConnectorVariant.solid,
+          ),
+        );
+        const end = NeonTimelineThemeData(
+          primaryColor: Color(0xFFFFFFFF),
+          contentGap: 30,
+          tilePadding: EdgeInsets.all(20),
+          animationDuration: Duration(milliseconds: 900),
+          animationCurve: Curves.bounceIn,
+          motionDuration: Duration(milliseconds: 6000),
+          indicatorStyle: NeonTimelineIndicatorStyle(
+            size: 40,
+            shape: NeonIndicatorShape.diamond,
+          ),
+          connectorStyle: NeonTimelineConnectorStyle(
+            thickness: 6,
+            variant: NeonConnectorVariant.dashed,
+          ),
+        );
 
-      final beforeSwitch = start.lerp(end, 0.49);
-      final midpoint = start.lerp(end, 0.5);
+        final beforeSwitch = start.lerp(end, 0.49);
+        final midpoint = start.lerp(end, 0.5);
 
-      expect(midpoint.primaryColor.red, closeTo(128, 2));
-      expect(midpoint.primaryColor.green, closeTo(128, 2));
-      expect(midpoint.primaryColor.blue, closeTo(128, 2));
-      expect(midpoint.contentGap, 20);
-      expect(midpoint.tilePadding, const EdgeInsets.all(10));
-      expect(midpoint.indicatorStyle.size, 30);
-      expect(midpoint.connectorStyle.thickness, 4);
-      expect(beforeSwitch.indicatorStyle.shape, NeonIndicatorShape.circle);
-      expect(midpoint.indicatorStyle.shape, NeonIndicatorShape.diamond);
-      expect(beforeSwitch.connectorStyle.variant,
-          NeonConnectorVariant.solid);
-      expect(midpoint.connectorStyle.variant, NeonConnectorVariant.dashed);
-      expect(beforeSwitch.animationDuration,
-          const Duration(milliseconds: 100));
-      expect(midpoint.animationDuration, const Duration(milliseconds: 900));
-      expect(midpoint.animationCurve, Curves.bounceIn);
-      expect(midpoint.motionDuration, const Duration(milliseconds: 4000));
-      expect(start.lerp(null, 0.5), same(start));
-    });
+        expect(midpoint.primaryColor.r * 255, closeTo(128, 2));
+        expect(midpoint.primaryColor.g * 255, closeTo(128, 2));
+        expect(midpoint.primaryColor.b * 255, closeTo(128, 2));
+        expect(midpoint.contentGap, 20);
+        expect(midpoint.tilePadding, const EdgeInsets.all(10));
+        expect(midpoint.indicatorStyle.size, 30);
+        expect(midpoint.connectorStyle.thickness, 4);
+        expect(beforeSwitch.indicatorStyle.shape, NeonIndicatorShape.circle);
+        expect(midpoint.indicatorStyle.shape, NeonIndicatorShape.diamond);
+        expect(beforeSwitch.connectorStyle.variant, NeonConnectorVariant.solid);
+        expect(midpoint.connectorStyle.variant, NeonConnectorVariant.dashed);
+        expect(
+          beforeSwitch.animationDuration,
+          const Duration(milliseconds: 100),
+        );
+        expect(midpoint.animationDuration, const Duration(milliseconds: 900));
+        expect(midpoint.animationCurve, Curves.bounceIn);
+        expect(midpoint.motionDuration, const Duration(milliseconds: 4000));
+        expect(start.lerp(null, 0.5), same(start));
+      },
+    );
 
     test('colorForStatus maps every status to its semantic color', () {
       const theme = NeonTimelineThemeData(
@@ -113,15 +117,23 @@ void main() {
         disabledColor: Color(0xFF000005),
       );
 
-      expect(theme.colorForStatus(NeonTimelineStatus.pending),
-          theme.mutedColor);
-      expect(theme.colorForStatus(NeonTimelineStatus.active),
-          theme.primaryColor);
-      expect(theme.colorForStatus(NeonTimelineStatus.completed),
-          theme.completedColor);
+      expect(
+        theme.colorForStatus(NeonTimelineStatus.pending),
+        theme.mutedColor,
+      );
+      expect(
+        theme.colorForStatus(NeonTimelineStatus.active),
+        theme.primaryColor,
+      );
+      expect(
+        theme.colorForStatus(NeonTimelineStatus.completed),
+        theme.completedColor,
+      );
       expect(theme.colorForStatus(NeonTimelineStatus.error), theme.errorColor);
-      expect(theme.colorForStatus(NeonTimelineStatus.disabled),
-          theme.disabledColor);
+      expect(
+        theme.colorForStatus(NeonTimelineStatus.disabled),
+        theme.disabledColor,
+      );
     });
 
     test('spectral preset enables the advanced renderer', () {
@@ -131,7 +143,10 @@ void main() {
       expect(theme.indicatorStyle.detail, 1);
       expect(theme.connectorStyle.effect, NeonConnectorEffect.energy);
       expect(theme.connectorStyle.animated, isTrue);
-      expect(theme.nodeLaneExtent, greaterThan(theme.indicatorStyle.visualExtent));
+      expect(
+        theme.nodeLaneExtent,
+        greaterThan(theme.indicatorStyle.visualExtent),
+      );
     });
 
     test('quantum preset enables maximum-depth synchronized rendering', () {
@@ -143,7 +158,10 @@ void main() {
       expect(theme.connectorStyle.trailCount, 3);
       expect(theme.connectorStyle.animated, isTrue);
       expect(theme.motionDuration, theme.connectorStyle.animationDuration);
-      expect(theme.nodeLaneExtent, greaterThan(theme.indicatorStyle.visualExtent));
+      expect(
+        theme.nodeLaneExtent,
+        greaterThan(theme.indicatorStyle.visualExtent),
+      );
     });
 
     test('hyperion enables singularity and warp rendering', () {
@@ -157,28 +175,21 @@ void main() {
       expect(theme.connectorStyle.packetCount, greaterThanOrEqualTo(3));
       expect(theme.connectorStyle.animated, isTrue);
       expect(theme.motionDuration, theme.connectorStyle.animationDuration);
-      expect(theme.nodeLaneExtent,
-          greaterThan(theme.indicatorStyle.visualExtent));
+      expect(
+        theme.nodeLaneExtent,
+        greaterThan(theme.indicatorStyle.visualExtent),
+      );
     });
 
     test('omniverse enables neural-core and photon-lattice rendering', () {
       final theme = NeonTimelineThemeData.omniverse();
 
       expect(theme.indicatorStyle.effect, NeonIndicatorEffect.neuralCore);
-      expect(
-        theme.indicatorStyle.quality,
-        NeonTimelineRenderQuality.ultra,
-      );
+      expect(theme.indicatorStyle.quality, NeonTimelineRenderQuality.ultra);
       expect(theme.indicatorStyle.haloRingCount, greaterThanOrEqualTo(6));
       expect(theme.indicatorStyle.fieldLineCount, greaterThanOrEqualTo(12));
-      expect(
-        theme.connectorStyle.effect,
-        NeonConnectorEffect.photonLattice,
-      );
-      expect(
-        theme.connectorStyle.quality,
-        NeonTimelineRenderQuality.ultra,
-      );
+      expect(theme.connectorStyle.effect, NeonConnectorEffect.photonLattice);
+      expect(theme.connectorStyle.quality, NeonTimelineRenderQuality.ultra);
       expect(theme.connectorStyle.latticeDensity, greaterThanOrEqualTo(10));
       expect(theme.connectorStyle.trailPersistence, greaterThan(0.8));
       expect(theme.connectorStyle.animated, isTrue);
@@ -195,10 +206,7 @@ void main() {
         NeonTimelineThemeData.neuralEmber(),
       ]) {
         expect(theme.indicatorStyle.effect, NeonIndicatorEffect.neuralCore);
-        expect(
-          theme.connectorStyle.effect,
-          NeonConnectorEffect.photonLattice,
-        );
+        expect(theme.connectorStyle.effect, NeonConnectorEffect.photonLattice);
       }
     });
 
@@ -236,8 +244,7 @@ void main() {
 
     testWidgets('local theme overrides ThemeData extension', (tester) async {
       const appTheme = NeonTimelineThemeData(primaryColor: Color(0xFF101010));
-      const localTheme =
-          NeonTimelineThemeData(primaryColor: Color(0xFF202020));
+      const localTheme = NeonTimelineThemeData(primaryColor: Color(0xFF202020));
       NeonTimelineThemeData? resolved;
 
       await tester.pumpWidget(
@@ -260,8 +267,9 @@ void main() {
       expect(resolved, same(localTheme));
     });
 
-    testWidgets('ThemeData extension is used when no local theme exists',
-        (tester) async {
+    testWidgets('ThemeData extension is used when no local theme exists', (
+      tester,
+    ) async {
       const appTheme = NeonTimelineThemeData(primaryColor: Color(0xFF303030));
       NeonTimelineThemeData? resolved;
 
@@ -428,9 +436,7 @@ void main() {
       ];
 
       await tester.pumpWidget(
-        _materialHost(
-          Wrap(spacing: 8, runSpacing: 8, children: connectors),
-        ),
+        _materialHost(Wrap(spacing: 8, runSpacing: 8, children: connectors)),
       );
 
       expect(find.byType(NeonTimelineConnector), findsNWidgets(6));
@@ -519,8 +525,9 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('quantum indicators and plasma connectors render safely',
-        (tester) async {
+    testWidgets('quantum indicators and plasma connectors render safely', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _materialHost(
           const Row(
@@ -558,8 +565,9 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('high-level timelines install one shared motion scope',
-        (tester) async {
+    testWidgets('high-level timelines install one shared motion scope', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _materialHost(
           NeonTimeline(
@@ -579,8 +587,9 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('all card variants render and interactive card activates',
-        (tester) async {
+    testWidgets('all card variants render and interactive card activates', (
+      tester,
+    ) async {
       var taps = 0;
       await tester.pumpWidget(
         _materialHost(
@@ -592,10 +601,9 @@ void main() {
                   variant: variant,
                   blurSigma: variant == NeonTimelineCardVariant.glass ? 4 : 0,
                   padding: const EdgeInsets.all(4),
-                  semanticLabel:
-                      variant == NeonTimelineCardVariant.solid
-                          ? 'Interactive card'
-                          : null,
+                  semanticLabel: variant == NeonTimelineCardVariant.solid
+                      ? 'Interactive card'
+                      : null,
                   onTap: variant == NeonTimelineCardVariant.solid
                       ? () => taps++
                       : null,
@@ -619,8 +627,9 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('standalone node renders custom indicator and both segments',
-        (tester) async {
+    testWidgets('standalone node renders custom indicator and both segments', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _materialHost(
           const SizedBox(

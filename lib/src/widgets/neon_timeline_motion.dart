@@ -27,8 +27,8 @@ class NeonTimelineMotionScope extends StatefulWidget {
     this.startupDelay = const Duration(milliseconds: 120),
     this.groupBackdropFilters = true,
     super.key,
-  })  : assert(phaseOffset >= 0 && phaseOffset <= 1),
-        assert(framesPerSecond >= 1 && framesPerSecond <= 120);
+  }) : assert(phaseOffset >= 0 && phaseOffset <= 1),
+       assert(framesPerSecond >= 1 && framesPerSecond <= 120);
 
   /// Subtree that consumes the shared animation phase.
   final Widget child;
@@ -98,20 +98,20 @@ class _NeonTimelineMotionScopeState extends State<NeonTimelineMotionScope>
   double _phase = 0;
 
   Duration get _effectiveDuration => neonPositiveDuration(
-        widget.duration,
-        fallback: _fallbackDuration,
-        debugLabel: 'NeonTimelineMotionScope.duration',
-      );
+    widget.duration,
+    fallback: _fallbackDuration,
+    debugLabel: 'NeonTimelineMotionScope.duration',
+  );
 
   Duration get _effectiveResumeDelay => neonNonNegativeDuration(
-        widget.scrollResumeDelay,
-        debugLabel: 'NeonTimelineMotionScope.scrollResumeDelay',
-      );
+    widget.scrollResumeDelay,
+    debugLabel: 'NeonTimelineMotionScope.scrollResumeDelay',
+  );
 
   Duration get _effectiveStartupDelay => neonNonNegativeDuration(
-        widget.startupDelay,
-        debugLabel: 'NeonTimelineMotionScope.startupDelay',
-      );
+    widget.startupDelay,
+    debugLabel: 'NeonTimelineMotionScope.startupDelay',
+  );
 
   int get _effectiveFramesPerSecond =>
       widget.framesPerSecond.clamp(1, 120).toInt();
@@ -120,11 +120,9 @@ class _NeonTimelineMotionScopeState extends State<NeonTimelineMotionScope>
       widget.phaseOffset.clamp(0.0, 1.0).toDouble();
 
   Duration get _frameInterval {
-    final micros =
-        (Duration.microsecondsPerSecond / _effectiveFramesPerSecond).round();
-    return Duration(
-      microseconds: micros.clamp(1000, 1000000).toInt(),
-    );
+    final micros = (Duration.microsecondsPerSecond / _effectiveFramesPerSecond)
+        .round();
+    return Duration(microseconds: micros.clamp(1000, 1000000).toInt());
   }
 
   bool get _canRun {
@@ -163,7 +161,7 @@ class _NeonTimelineMotionScopeState extends State<NeonTimelineMotionScope>
   void didChangeDependencies() {
     super.didChangeDependencies();
     _reduceMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-    _tickerEnabled = TickerMode.of(context);
+    _tickerEnabled = TickerMode.valuesOf(context).enabled;
     _routeIsCurrent = ModalRoute.of(context)?.isCurrent ?? true;
     _attachAncestorScrollable();
     _sync();
@@ -181,7 +179,8 @@ class _NeonTimelineMotionScopeState extends State<NeonTimelineMotionScope>
     if (oldWidget.pauseWhenScrolling != widget.pauseWhenScrolling) {
       _resumeTimer?.cancel();
       _resumeTimer = null;
-      _scrolling = widget.pauseWhenScrolling &&
+      _scrolling =
+          widget.pauseWhenScrolling &&
           (_ancestorScrollingNotifier?.value ?? false);
     }
 
@@ -385,13 +384,13 @@ class NeonTimelineMotionClock with WidgetsBindingObserver {
     required Duration duration,
     int framesPerSecond = 24,
     double initialValue = 0,
-  })  : _duration = neonPositiveDuration(
-          duration,
-          fallback: const Duration(milliseconds: 4200),
-          debugLabel: 'NeonTimelineMotionClock.duration',
-        ),
-        _framesPerSecond = framesPerSecond.clamp(1, 120).toInt(),
-        _phase = initialValue.clamp(0.0, 1.0).toDouble() {
+  }) : _duration = neonPositiveDuration(
+         duration,
+         fallback: const Duration(milliseconds: 4200),
+         debugLabel: 'NeonTimelineMotionClock.duration',
+       ),
+       _framesPerSecond = framesPerSecond.clamp(1, 120).toInt(),
+       _phase = initialValue.clamp(0.0, 1.0).toDouble() {
     final lifecycleState = WidgetsBinding.instance.lifecycleState;
     _appIsActive =
         lifecycleState == null || lifecycleState == AppLifecycleState.resumed;
@@ -416,16 +415,14 @@ class NeonTimelineMotionClock with WidgetsBindingObserver {
   Animation<double> get animation => _animation;
 
   Duration get _interval => Duration(
-        microseconds: (Duration.microsecondsPerSecond / _framesPerSecond)
-            .round()
-            .clamp(1000, 1000000)
-            .toInt(),
-      );
+    microseconds: (Duration.microsecondsPerSecond / _framesPerSecond)
+        .round()
+        .clamp(1000, 1000000)
+        .toInt(),
+  );
 
-  bool get _canRun => !_disposed &&
-      _requested &&
-      _appIsActive &&
-      _animation.hasConsumers;
+  bool get _canRun =>
+      !_disposed && _requested && _appIsActive && _animation.hasConsumers;
 
   /// Updates clock parameters without replacing the [animation] object.
   void configure({Duration? duration, int? framesPerSecond}) {
@@ -471,11 +468,7 @@ class NeonTimelineMotionClock with WidgetsBindingObserver {
     _timer?.cancel();
     _timer = null;
     _phase = value.clamp(0.0, 1.0).toDouble();
-    _animation.update(
-      _phase,
-      AnimationStatus.dismissed,
-      isAnimating: false,
-    );
+    _animation.update(_phase, AnimationStatus.dismissed, isAnimating: false);
   }
 
   void _sync() {
@@ -515,11 +508,7 @@ class NeonTimelineMotionClock with WidgetsBindingObserver {
         ? 0.0
         : _interval.inMicroseconds / durationMicros;
     _phase = (_phase + step) % 1.0;
-    _animation.update(
-      _phase,
-      AnimationStatus.forward,
-      isAnimating: true,
-    );
+    _animation.update(_phase, AnimationStatus.forward, isAnimating: true);
     _schedule();
   }
 
@@ -566,11 +555,10 @@ class NeonTimelineMotionData {
 
 class _SampledAnimation extends ChangeNotifier implements Animation<double> {
   _SampledAnimation({
-    required double value,
-    required AnimationStatus status,
+    required this._value,
+    required this._status,
     required this.onListenerStateChanged,
-  })  : _value = value,
-        _status = status;
+  });
 
   final VoidCallback onListenerStateChanged;
   double _value;

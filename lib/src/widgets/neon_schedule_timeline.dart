@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter/services.dart';
 
 import '../models/neon_schedule_entry.dart';
@@ -16,18 +17,20 @@ import 'neon_timeline_indicator.dart';
 import 'neon_timeline_motion.dart';
 
 /// Builds slide actions for one scheduled entry.
-typedef NeonScheduleActionsBuilder<T> = List<NeonTimelineAction> Function(
-  BuildContext context,
-  NeonScheduleEntryDetails<T> details,
-);
+typedef NeonScheduleActionsBuilder<T> =
+    List<NeonTimelineAction> Function(
+      BuildContext context,
+      NeonScheduleEntryDetails<T> details,
+    );
 
 /// Receives a guarded asynchronous schedule-operation failure.
-typedef NeonScheduleOperationErrorCallback<T> = void Function(
-  BuildContext context,
-  NeonScheduleEntryDetails<T> details,
-  Object error,
-  StackTrace stackTrace,
-);
+typedef NeonScheduleOperationErrorCallback<T> =
+    void Function(
+      BuildContext context,
+      NeonScheduleEntryDetails<T> details,
+      Object error,
+      StackTrace stackTrace,
+    );
 
 /// A planner-grade, generic schedule timeline.
 ///
@@ -80,10 +83,10 @@ class NeonScheduleTimeline<T> extends StatefulWidget {
     this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
     this.now,
     super.key,
-  })  : assert(motionPhaseOffset >= 0 && motionPhaseOffset <= 1),
-        assert(motionFramesPerSecond >= 1 && motionFramesPerSecond <= 120),
-        assert(maxAnimatedEntries >= 0),
-        assert(cacheExtent == null || cacheExtent >= 0);
+  }) : assert(motionPhaseOffset >= 0 && motionPhaseOffset <= 1),
+       assert(motionFramesPerSecond >= 1 && motionFramesPerSecond <= 120),
+       assert(maxAnimatedEntries >= 0),
+       assert(cacheExtent == null || cacheExtent >= 0);
 
   /// Application entries. They can arrive in any order when [sortEntries] is
   /// true. Treat this list as immutable and replace it when data changes.
@@ -252,7 +255,7 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
         oldWidget.dataRevision != null || widget.dataRevision != null;
     final entriesChanged = revisionDriven
         ? oldWidget.dataRevision != widget.dataRevision ||
-            oldWidget.entries.length != widget.entries.length
+              oldWidget.entries.length != widget.entries.length
         : !_sameEntryObjects(oldWidget.entries, widget.entries);
     if (entriesChanged ||
         oldWidget.selectedDate != widget.selectedDate ||
@@ -333,12 +336,16 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
       plan,
       resolvedPerformance?.maxAnimatedEntries ?? widget.maxAnimatedEntries,
     );
+    final resolvedCacheExtent = _resolvedCacheExtent(resolvedPerformance);
 
     Widget result;
     if (plan.entryCount == 0) {
       result = widget.emptyBuilder?.call(context) ?? const SizedBox.shrink();
     } else {
       result = ListView.builder(
+        scrollCacheExtent: resolvedCacheExtent == null
+            ? null
+            : ScrollCacheExtent.pixels(resolvedCacheExtent),
         controller: _controller,
         physics: widget.physics,
         padding: EdgeInsets.fromLTRB(
@@ -359,7 +366,6 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
         addAutomaticKeepAlives: widget.addAutomaticKeepAlives,
         addRepaintBoundaries: true,
         addSemanticIndexes: true,
-        cacheExtent: _resolvedCacheExtent(resolvedPerformance),
         clipBehavior: widget.clipBehavior,
         keyboardDismissBehavior: widget.keyboardDismissBehavior,
       );
@@ -371,21 +377,21 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
         enabled: widget.motionEnabled && animatedKeys.isNotEmpty,
         duration: resolvedTheme.motionDuration,
         phaseOffset: widget.motionPhaseOffset,
-        framesPerSecond: resolvedPerformance?.motionFramesPerSecond ??
+        framesPerSecond:
+            resolvedPerformance?.motionFramesPerSecond ??
             widget.motionFramesPerSecond,
         pauseWhenScrolling:
             resolvedPerformance?.pauseMotionWhileScrolling ??
-                widget.pauseMotionWhileScrolling,
-        startupDelay: resolvedPerformance?.motionStartupDelay ??
+            widget.pauseMotionWhileScrolling,
+        startupDelay:
+            resolvedPerformance?.motionStartupDelay ??
             const Duration(milliseconds: 120),
         child: result,
       ),
     );
   }
 
-  double? _resolvedCacheExtent(
-    NeonTimelineResolvedPerformance? performance,
-  ) {
+  double? _resolvedCacheExtent(NeonTimelineResolvedPerformance? performance) {
     final configured = widget.cacheExtent ?? performance?.cacheExtent;
     if (configured == null || !configured.isFinite) return null;
     return math.max(0.0, configured);
@@ -395,7 +401,7 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
     final revisionDriven = widget.dataRevision != null;
     final entriesUnchanged = revisionDriven
         ? _cachedDataRevision == widget.dataRevision &&
-            _cachedEntryCount == widget.entries.length
+              _cachedEntryCount == widget.entries.length
         : _sameEntryObjects(_cachedEntrySnapshot, widget.entries);
     if (_cachedPlan != null &&
         entriesUnchanged &&
@@ -407,10 +413,7 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
     _cachedPlan = plan;
     _cachedEntrySnapshot = revisionDriven
         ? null
-        : List<NeonScheduleEntry<T>>.of(
-            widget.entries,
-            growable: false,
-          );
+        : List<NeonScheduleEntry<T>>.of(widget.entries, growable: false);
     _cachedEntryCount = widget.entries.length;
     _cachedSelectedDate = widget.selectedDate;
     _cachedSortEntries = widget.sortEntries;
@@ -439,12 +442,14 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
       final duration = _positiveDuration(entry.duration);
       final end = entry.start.add(duration);
       if (entry.start.isBefore(dayEnd) && end.isAfter(dayStart)) {
-        normalized.add(_NormalizedScheduleEntry<T>(
-          entry: entry,
-          duration: duration,
-          end: end,
-          originalIndex: index,
-        ));
+        normalized.add(
+          _NormalizedScheduleEntry<T>(
+            entry: entry,
+            duration: duration,
+            end: end,
+            originalIndex: index,
+          ),
+        );
       }
     }
 
@@ -477,7 +482,8 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
       if (occupiedEnd == null || current.end.isAfter(occupiedEnd)) {
         occupiedEnd = current.end;
       }
-      final occupiedThroughCurrent = previousOccupiedEnd == null ||
+      final occupiedThroughCurrent =
+          previousOccupiedEnd == null ||
               current.end.isAfter(previousOccupiedEnd)
           ? current.end
           : previousOccupiedEnd;
@@ -489,11 +495,13 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
       final displayDuration = rawDisplayDuration > Duration.zero
           ? rawDisplayDuration
           : const Duration(minutes: 1);
-      final gapBefore = previousOccupiedEnd != null &&
+      final gapBefore =
+          previousOccupiedEnd != null &&
               current.entry.start.isAfter(previousOccupiedEnd)
           ? current.entry.start.difference(previousOccupiedEnd)
           : null;
-      final gapAfter = next != null && next.start.isAfter(occupiedThroughCurrent)
+      final gapAfter =
+          next != null && next.start.isAfter(occupiedThroughCurrent)
           ? next.start.difference(occupiedThroughCurrent)
           : null;
 
@@ -508,38 +516,46 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
               _ScheduleEntryIdentity(current.entry.id, occurrence),
             );
 
-      records.add(_ScheduleRecord<T>(
-        key: rowKey,
-        entry: current.entry,
-        index: index,
-        itemCount: normalized.length,
-        day: dayStart,
-        displayStart: displayStart,
-        displayDuration: displayDuration,
-        occupiedThrough: occupiedThroughCurrent,
-        previousEntry: previous,
-        nextEntry: next,
-        gapBefore: gapBefore,
-        gapAfter: gapAfter,
-        overlapsPrevious: previousOccupiedEnd != null &&
-            current.entry.start.isBefore(previousOccupiedEnd),
-        overlapsNext: next != null && next.start.isBefore(occupiedThroughCurrent),
-        backToBackWithPrevious: previousOccupiedEnd != null &&
-            current.entry.start.isAtSameMomentAs(previousOccupiedEnd),
-        backToBackWithNext:
-            next != null && next.start.isAtSameMomentAs(occupiedThroughCurrent),
-      ));
+      records.add(
+        _ScheduleRecord<T>(
+          key: rowKey,
+          entry: current.entry,
+          index: index,
+          itemCount: normalized.length,
+          day: dayStart,
+          displayStart: displayStart,
+          displayDuration: displayDuration,
+          occupiedThrough: occupiedThroughCurrent,
+          previousEntry: previous,
+          nextEntry: next,
+          gapBefore: gapBefore,
+          gapAfter: gapAfter,
+          overlapsPrevious:
+              previousOccupiedEnd != null &&
+              current.entry.start.isBefore(previousOccupiedEnd),
+          overlapsNext:
+              next != null && next.start.isBefore(occupiedThroughCurrent),
+          backToBackWithPrevious:
+              previousOccupiedEnd != null &&
+              current.entry.start.isAtSameMomentAs(previousOccupiedEnd),
+          backToBackWithNext:
+              next != null &&
+              next.start.isAtSameMomentAs(occupiedThroughCurrent),
+        ),
+      );
     }
 
     final nodes = <_ScheduleNode<T>>[];
     final first = records.first;
     if (first.displayStart.isAfter(dayStart)) {
-      nodes.add(_ScheduleGapNode<T>(
-        key: const ValueKey<String>('neon_schedule_top_gap'),
-        start: dayStart,
-        duration: first.displayStart.difference(dayStart),
-        showLabel: true,
-      ));
+      nodes.add(
+        _ScheduleGapNode<T>(
+          key: const ValueKey<String>('neon_schedule_top_gap'),
+          start: dayStart,
+          duration: first.displayStart.difference(dayStart),
+          showLabel: true,
+        ),
+      );
     }
 
     for (var index = 0; index < records.length; index++) {
@@ -553,16 +569,20 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
           : record.occupiedThrough;
       final gap = next.displayStart.difference(occupiedEndForDay);
       if (gap > Duration.zero) {
-        nodes.add(_ScheduleGapNode<T>(
-          key: ValueKey<String>('neon_schedule_gap_$index'),
-          start: occupiedEndForDay,
-          duration: gap,
-          showLabel: true,
-        ));
+        nodes.add(
+          _ScheduleGapNode<T>(
+            key: ValueKey<String>('neon_schedule_gap_$index'),
+            start: occupiedEndForDay,
+            duration: gap,
+            showLabel: true,
+          ),
+        );
       } else if (next.entry.start.isBefore(record.occupiedThrough)) {
-        nodes.add(_ScheduleConflictNode<T>(
-          key: ValueKey<String>('neon_schedule_conflict_$index'),
-        ));
+        nodes.add(
+          _ScheduleConflictNode<T>(
+            key: ValueKey<String>('neon_schedule_conflict_$index'),
+          ),
+        );
       }
     }
 
@@ -570,13 +590,15 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
         ? dayEnd
         : records.last.occupiedThrough;
     if (finalOccupiedEnd.isBefore(dayEnd)) {
-      nodes.add(_ScheduleGapNode<T>(
-        key: const ValueKey<String>('neon_schedule_bottom_now_gap'),
-        start: finalOccupiedEnd,
-        duration: dayEnd.difference(finalOccupiedEnd),
-        showLabel: false,
-        onlyWhenContainsNow: true,
-      ));
+      nodes.add(
+        _ScheduleGapNode<T>(
+          key: const ValueKey<String>('neon_schedule_bottom_now_gap'),
+          start: finalOccupiedEnd,
+          duration: dayEnd.difference(finalOccupiedEnd),
+          showLabel: false,
+          onlyWhenContainsNow: true,
+        ),
+      );
     }
 
     return _SchedulePlan<T>(
@@ -589,10 +611,7 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
     );
   }
 
-  Set<Key> _resolveAnimatedKeys(
-    _SchedulePlan<T> plan,
-    int requestedLimit,
-  ) {
+  Set<Key> _resolveAnimatedKeys(_SchedulePlan<T> plan, int requestedLimit) {
     final limit = requestedLimit.clamp(0, 1000).toInt();
     if (!widget.motionEnabled || limit == 0) return const <Key>{};
 
@@ -635,9 +654,11 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
         content: widget.itemBuilder(context, details),
         time: widget.timeBuilder?.call(context, details),
         indicator: widget.indicatorBuilder?.call(context, details),
-        startActions: widget.startActionsBuilder?.call(context, details) ??
+        startActions:
+            widget.startActionsBuilder?.call(context, details) ??
             const <NeonTimelineAction>[],
-        endActions: widget.endActionsBuilder?.call(context, details) ??
+        endActions:
+            widget.endActionsBuilder?.call(context, details) ??
             const <NeonTimelineAction>[],
         onTap: widget.onEntryTap == null
             ? null
@@ -654,11 +675,13 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
         onOperationError: widget.onOperationError == null
             ? null
             : (error, stackTrace) =>
-                widget.onOperationError!(context, details, error, stackTrace),
+                  widget.onOperationError!(context, details, error, stackTrace),
         autoActivateCurrent: widget.autoActivateCurrentEntry,
         useDefaultCard: widget.useDefaultCard,
-        animateEffects: animatedKeys.contains(node.key) &&
-            (!widget.animateOnlyCurrentEntry || details.isCurrent ||
+        animateEffects:
+            animatedKeys.contains(node.key) &&
+            (!widget.animateOnlyCurrentEntry ||
+                details.isCurrent ||
                 status == NeonTimelineStatus.active),
         enableHaptics: widget.enableDragHaptics,
         slidableMotion: widget.slidableMotion,
@@ -669,7 +692,8 @@ class _NeonScheduleTimelineState<T> extends State<NeonScheduleTimeline<T>> {
     }
 
     if (node is _ScheduleGapNode<T>) {
-      final showNow = widget.showNowIndicator &&
+      final showNow =
+          widget.showNowIndicator &&
           _sameDay(_now, widget.selectedDate) &&
           !_now.isBefore(node.start) &&
           _now.isBefore(node.start.add(node.duration));
@@ -963,10 +987,10 @@ class _ScheduleEntryRowState<T> extends State<_ScheduleEntryRow<T>> {
   void _updateDrag(LongPressMoveUpdateDetails details) {
     if (!_dragging) return;
     _autoScroll(details.globalPosition.dy);
-    final scrollDelta = (_scrollPosition?.pixels ?? _initialScrollOffset) -
+    final scrollDelta =
+        (_scrollPosition?.pixels ?? _initialScrollOffset) -
         _initialScrollOffset;
-    final rawOffset =
-        details.globalPosition.dy - _initialGlobalY + scrollDelta;
+    final rawOffset = details.globalPosition.dy - _initialGlobalY + scrollDelta;
     final pixelsPerMinute = widget.style.resolvedPixelsPerMinute;
     final snapMinutes = widget.style.resolvedSnapMinutes;
     final rawMinutes = rawOffset / pixelsPerMinute;
@@ -1036,8 +1060,9 @@ class _ScheduleEntryRowState<T> extends State<_ScheduleEntryRow<T>> {
     final latestStart = unclampedLatestStart.isBefore(dayStart)
         ? dayStart
         : unclampedLatestStart;
-    final projected =
-        widget.details.entry.start.add(Duration(minutes: minutes));
+    final projected = widget.details.entry.start.add(
+      Duration(minutes: minutes),
+    );
     if (projected.isBefore(dayStart)) {
       return dayStart.difference(widget.details.entry.start).inMinutes;
     }
@@ -1073,10 +1098,12 @@ class _ScheduleEntryRowState<T> extends State<_ScheduleEntryRow<T>> {
     );
     var delta = 0.0;
     if (globalY < _viewportTop + edge) {
-      delta = -widget.style.resolvedAutoScrollStep *
+      delta =
+          -widget.style.resolvedAutoScrollStep *
           ((_viewportTop + edge - globalY) / edge).clamp(0.15, 1.0);
     } else if (globalY > _viewportBottom - edge) {
-      delta = widget.style.resolvedAutoScrollStep *
+      delta =
+          widget.style.resolvedAutoScrollStep *
           ((globalY - (_viewportBottom - edge)) / edge).clamp(0.15, 1.0);
     }
     if (delta == 0) return;
@@ -1094,24 +1121,28 @@ class _ScheduleEntryRowState<T> extends State<_ScheduleEntryRow<T>> {
         handler(error, stackTrace);
         return;
       } catch (handlerError, handlerStackTrace) {
-        FlutterError.reportError(FlutterErrorDetails(
-          exception: handlerError,
-          stack: handlerStackTrace,
-          library: 'neon_timeline_flutter',
-          context: ErrorDescription('while reporting a schedule error'),
-          informationCollector: () sync* {
-            yield ErrorDescription('Original error: $error');
-          },
-        ));
+        FlutterError.reportError(
+          FlutterErrorDetails(
+            exception: handlerError,
+            stack: handlerStackTrace,
+            library: 'neon_timeline_flutter',
+            context: ErrorDescription('while reporting a schedule error'),
+            informationCollector: () sync* {
+              yield ErrorDescription('Original error: $error');
+            },
+          ),
+        );
         return;
       }
     }
-    FlutterError.reportError(FlutterErrorDetails(
-      exception: error,
-      stack: stackTrace,
-      library: 'neon_timeline_flutter',
-      context: ErrorDescription('while committing a schedule operation'),
-    ));
+    FlutterError.reportError(
+      FlutterErrorDetails(
+        exception: error,
+        stack: stackTrace,
+        library: 'neon_timeline_flutter',
+        context: ErrorDescription('while committing a schedule operation'),
+      ),
+    );
   }
 
   @override
@@ -1192,7 +1223,7 @@ class _ScheduleEntryRowState<T> extends State<_ScheduleEntryRow<T>> {
                 ? NeonTimelineConnector(
                     style: widget.theme.connectorStyle.copyWith(
                       color: accent,
-                      endColor: accent.withOpacity(0.18),
+                      endColor: accent.withValues(alpha: 0.18),
                       animated: widget.animateEffects,
                       phaseOffset: (details.index * 0.173) % 1,
                     ),
@@ -1214,12 +1245,11 @@ class _ScheduleEntryRowState<T> extends State<_ScheduleEntryRow<T>> {
                 _formatTime(details.displayEnd),
                 textAlign: TextAlign.end,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withOpacity(0.48),
-                      fontWeight: FontWeight.w700,
-                    ),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.48),
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           Positioned(
@@ -1229,7 +1259,8 @@ class _ScheduleEntryRowState<T> extends State<_ScheduleEntryRow<T>> {
             child: Center(child: widget.indicator ?? defaultIndicator),
           ),
           Positioned(
-            left: style.timeColumnWidth +
+            left:
+                style.timeColumnWidth +
                 style.railLaneExtent +
                 style.contentGap +
                 (overlap ? style.overlapIndent : 0),
@@ -1243,7 +1274,8 @@ class _ScheduleEntryRowState<T> extends State<_ScheduleEntryRow<T>> {
               top: 8,
               child: _ConflictPill(
                 color: style.conflictColor,
-                label: widget.conflictLabelBuilder?.call(context, details) ??
+                label:
+                    widget.conflictLabelBuilder?.call(context, details) ??
                     'Conflict',
               ),
             ),
@@ -1253,9 +1285,7 @@ class _ScheduleEntryRowState<T> extends State<_ScheduleEntryRow<T>> {
               top: 34,
               width: style.timeColumnWidth,
               child: _DragTimeBadge(
-                time: details.entry.start.add(
-                  Duration(minutes: _dragMinutes),
-                ),
+                time: details.entry.start.add(Duration(minutes: _dragMinutes)),
                 color: accent,
               ),
             ),
@@ -1304,7 +1334,8 @@ class _ScheduleEntryRowState<T> extends State<_ScheduleEntryRow<T>> {
       child: Semantics(
         container: true,
         enabled: details.entry.enabled,
-        label: details.entry.semanticLabel ??
+        label:
+            details.entry.semanticLabel ??
             '${_formatTime(details.displayStart)}, '
                 '${details.entry.status.name}, '
                 'item ${details.index + 1} of ${details.itemCount}',
@@ -1325,9 +1356,9 @@ class _DefaultTimeLabel<T> extends StatelessWidget {
       _formatTime(details.displayStart),
       textAlign: TextAlign.end,
       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.2,
-          ),
+        fontWeight: FontWeight.w800,
+        letterSpacing: -0.2,
+      ),
     );
   }
 }
@@ -1362,8 +1393,8 @@ class _ScheduleGap extends StatelessWidget {
         ? 0.5
         : now.difference(start).inMilliseconds / duration.inMilliseconds;
     final availableMarkerTravel = math.max(0.0, height - 24);
-    final nowTop =
-        (fraction.clamp(0.0, 1.0) * availableMarkerTravel).toDouble();
+    final nowTop = (fraction.clamp(0.0, 1.0) * availableMarkerTravel)
+        .toDouble();
 
     return SizedBox(
       height: height,
@@ -1379,8 +1410,8 @@ class _ScheduleGap extends StatelessWidget {
               style: theme.connectorStyle.copyWith(
                 effect: NeonConnectorEffect.classic,
                 variant: NeonConnectorVariant.dashed,
-                color: theme.pendingColor.withOpacity(0.35),
-                endColor: theme.pendingColor.withOpacity(0.12),
+                color: theme.pendingColor.withValues(alpha: 0.35),
+                endColor: theme.pendingColor.withValues(alpha: 0.12),
                 thickness: 1.4,
                 glowRadius: 0,
                 animated: false,
@@ -1389,7 +1420,8 @@ class _ScheduleGap extends StatelessWidget {
           ),
           if (label != null && height >= 42)
             Positioned(
-              left: style.timeColumnWidth +
+              left:
+                  style.timeColumnWidth +
                   style.railLaneExtent +
                   style.contentGap,
               top: height / 2 - 10,
@@ -1430,7 +1462,7 @@ class _ScheduleConflictBridge extends StatelessWidget {
                 borderRadius: BorderRadius.circular(3),
                 boxShadow: <BoxShadow>[
                   BoxShadow(
-                    color: style.conflictColor.withOpacity(0.36),
+                    color: style.conflictColor.withValues(alpha: 0.36),
                     blurRadius: 9,
                   ),
                 ],
@@ -1460,7 +1492,7 @@ class _NowMarker extends StatelessWidget {
             color: color,
             shape: BoxShape.circle,
             boxShadow: <BoxShadow>[
-              BoxShadow(color: color.withOpacity(0.55), blurRadius: 12),
+              BoxShadow(color: color.withValues(alpha: 0.55), blurRadius: 12),
             ],
           ),
         ),
@@ -1469,7 +1501,7 @@ class _NowMarker extends StatelessWidget {
             height: 1.5,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: <Color>[color, color.withOpacity(0)],
+                colors: <Color>[color, color.withValues(alpha: 0)],
               ),
             ),
           ),
@@ -1482,7 +1514,7 @@ class _NowMarker extends StatelessWidget {
             borderRadius: BorderRadius.circular(100),
             boxShadow: <BoxShadow>[
               BoxShadow(
-                color: color.withOpacity(0.28),
+                color: color.withValues(alpha: 0.28),
                 blurRadius: 14,
                 offset: const Offset(0, 4),
               ),
@@ -1514,14 +1546,14 @@ class _GapPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.045),
+        color: color.withValues(alpha: 0.045),
         borderRadius: BorderRadius.circular(100),
-        border: Border.all(color: color.withOpacity(0.07)),
+        border: Border.all(color: color.withValues(alpha: 0.07)),
       ),
       child: Text(
         label,
         style: TextStyle(
-          color: color.withOpacity(0.45),
+          color: color.withValues(alpha: 0.45),
           fontSize: 9,
           fontWeight: FontWeight.w700,
         ),
@@ -1541,9 +1573,9 @@ class _ConflictPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(100),
-        border: Border.all(color: color.withOpacity(0.28)),
+        border: Border.all(color: color.withValues(alpha: 0.28)),
       ),
       child: Text(
         label.toUpperCase(),
@@ -1575,7 +1607,7 @@ class _DragTimeBadge extends StatelessWidget {
           borderRadius: BorderRadius.circular(100),
           boxShadow: <BoxShadow>[
             BoxShadow(
-              color: color.withOpacity(0.35),
+              color: color.withValues(alpha: 0.35),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),

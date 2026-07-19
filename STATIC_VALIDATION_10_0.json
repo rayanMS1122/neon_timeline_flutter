@@ -1,0 +1,15 @@
+{
+  "version": "10.0.0",
+  "generated_at_utc": "2026-07-16T23:20:28.380608+00:00",
+  "dart_files": 195,
+  "test_files": 40,
+  "public_declarations": 352,
+  "delimiter_errors": [],
+  "missing_relative_references": [],
+  "duplicate_public_declarations": {},
+  "yaml_errors": [],
+  "artifact_paths": [],
+  "flutter_analyze": "not_run_flutter_unavailable",
+  "flutter_test": "not_run_flutter_unavailable",
+  "release_builds": "not_run_flutter_unavailable"
+}

@@ -1,0 +1,27 @@
+Version: 16.0.0
+
+YAML OK:
+- pubspec.yaml
+- analysis_options.yaml
+- example/pubspec.yaml
+- example/analysis_options.yaml
+- .github/workflows/ci.yml
+
+Static source checks:
+- 324 Dart files parsed with tree-sitter Dart
+- 38 compact planner source files copied byte-for-byte into lib/src/v16
+- all local import/export/part targets resolved
+- all package:neon_timeline_flutter imports resolved
+- no package:neon_planner_timeline imports remain
+- no public symbol collisions found across 55 v16 declarations
+- package and example versions both equal 16.0.0
+
+STATIC VALIDATION PASSED
+
+Not executed in this environment:
+- dart format
+- flutter pub get
+- flutter analyze
+- flutter test
+- Flutter example builds
+- flutter pub publish --dry-run

@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'neon_timeline_types.dart';
@@ -135,56 +134,44 @@ class NeonScheduleEntryDetails<T> {
 }
 
 /// Builds the visible content of one scheduled entry.
-typedef NeonScheduleEntryBuilder<T> = Widget Function(
-  BuildContext context,
-  NeonScheduleEntryDetails<T> details,
-);
+typedef NeonScheduleEntryBuilder<T> =
+    Widget Function(BuildContext context, NeonScheduleEntryDetails<T> details);
 
 /// Builds a time label for one scheduled entry.
-typedef NeonScheduleTimeBuilder<T> = Widget Function(
-  BuildContext context,
-  NeonScheduleEntryDetails<T> details,
-);
+typedef NeonScheduleTimeBuilder<T> =
+    Widget Function(BuildContext context, NeonScheduleEntryDetails<T> details);
 
 /// Builds a marker for one scheduled entry.
-typedef NeonScheduleIndicatorBuilder<T> = Widget Function(
-  BuildContext context,
-  NeonScheduleEntryDetails<T> details,
-);
+typedef NeonScheduleIndicatorBuilder<T> =
+    Widget Function(BuildContext context, NeonScheduleEntryDetails<T> details);
 
 /// Handles activation of one scheduled entry.
-typedef NeonScheduleEntryCallback<T> = void Function(
-  BuildContext context,
-  NeonScheduleEntryDetails<T> details,
-);
+typedef NeonScheduleEntryCallback<T> =
+    void Function(BuildContext context, NeonScheduleEntryDetails<T> details);
 
 /// Handles a snapped, clamped reschedule operation.
-typedef NeonScheduleMoveCallback<T> = FutureOr<void> Function(
-  BuildContext context,
-  NeonScheduleEntryDetails<T> details,
-  DateTime newStart,
-);
+typedef NeonScheduleMoveCallback<T> =
+    FutureOr<void> Function(
+      BuildContext context,
+      NeonScheduleEntryDetails<T> details,
+      DateTime newStart,
+    );
 
 /// Builds a localized free-time label.
-typedef NeonScheduleGapLabelBuilder = String Function(
-  BuildContext context,
-  Duration gap,
-);
+typedef NeonScheduleGapLabelBuilder =
+    String Function(BuildContext context, Duration gap);
 
 /// Builds the localized current-time marker label.
-typedef NeonScheduleNowLabelBuilder = String Function(
-  BuildContext context,
-  DateTime now,
-);
+typedef NeonScheduleNowLabelBuilder =
+    String Function(BuildContext context, DateTime now);
 
 /// Builds a localized conflict label for one entry.
-typedef NeonScheduleConflictLabelBuilder<T> = String Function(
-  BuildContext context,
-  NeonScheduleEntryDetails<T> details,
-);
+typedef NeonScheduleConflictLabelBuilder<T> =
+    String Function(BuildContext context, NeonScheduleEntryDetails<T> details);
 
 /// Handles a full-swipe dismissal request for one schedule entry.
-typedef NeonScheduleDismissCallback<T> = FutureOr<void> Function(
-  BuildContext context,
-  NeonScheduleEntryDetails<T> details,
-);
+typedef NeonScheduleDismissCallback<T> =
+    FutureOr<void> Function(
+      BuildContext context,
+      NeonScheduleEntryDetails<T> details,
+    );

@@ -28,6 +28,14 @@ timeline concepts have similar names even though their APIs differ.
 
 
 
+
+## Upgrading from 3.x to 4.0.0
+
+Version 4.0 introduces a neutral API generation while retaining the existing
+`Neon*` API. Migrate screen by screen rather than rewriting a working app in one
+change. See [`MIGRATION_4_0.md`](MIGRATION_4_0.md) for entry, theme, controller,
+and view examples.
+
 ## Upgrading from 3.3.x to 3.4.0
 
 Version 3.4.0 is additive. Existing timeline layouts, colors, presets, cards,
